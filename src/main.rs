@@ -1,17 +1,28 @@
+use clap::Parser;
 use futures::StreamExt;
 use subxt::{
     OnlineClient,
     PolkadotConfig,
 };
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+   /// URL of Substrate node to connect to.
+   #[arg(short, long)]
+   url: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Check command line parameters.
+    let args = Args::parse();
     // Open database.
     let path = "db";
     let db = sled::open(path)?;
     println!("Opened database.");
     // Connect to Substrate node.
-    let api = OnlineClient::<PolkadotConfig>::new().await.unwrap();
+    let api = OnlineClient::<PolkadotConfig>::from_url(args.url).await.unwrap();
     println!("Connected to Substrate node.");
 
     // Subscribe to all finalized blocks:
@@ -31,10 +42,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         for ext in body.extrinsics() {
             let idx = ext.index();
             let events = ext.events().await?;
-            let bytes_hex = format!("0x{}", hex::encode(ext.bytes()));
 
             println!("    Extrinsic #{idx}:");
-            println!("      Bytes: {bytes_hex}");
             println!("      Events:");
 
             for evt in events.iter() {
