@@ -136,8 +136,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("To: {:?}", ev.to);
                 println!("Amount: {:?}", ev.amount);
 
-                let key = AccountIdKey {
+                let key_from = AccountIdKey {
                     account_id: ev.from.clone(),
+                    block_number: block_number,
+                    idx: idx,
+                    i: 0,
+                }.serialize();
+
+                let key_to = AccountIdKey {
+                    account_id: ev.to.clone(),
                     block_number: block_number,
                     idx: idx,
                     i: 0,
@@ -149,7 +156,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     value: ev.amount,
                 }.serialize();
 
-                db.insert(key, value)?;
+                db.insert(key_from, value.clone())?;
+                db.insert(key_to, value)?;
             } else {
                 println!("  - No balance transfer event found in this xt");
             }
