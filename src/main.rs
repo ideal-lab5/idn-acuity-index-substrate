@@ -6,6 +6,7 @@ use subxt::{
     Config,
     SubstrateConfig,
     config::Header,
+    utils::AccountId32,
 };
 
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
@@ -24,6 +25,42 @@ struct AccountIdKey {
     block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
     idx: u32,
     i: u32,
+}
+
+impl AccountIdKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.account_id.0.to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.idx.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> AccountIdKey {
+        AccountIdKey {
+            account_id: AccountId32(vector_as_u8_32_array(&vec[0..32].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
+            idx: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[40..44].to_vec())),
+        }
+    }
+}
+
+pub fn vector_as_u8_32_array(vector: &Vec<u8>) -> [u8; 32] {
+    let mut arr = [0u8; 32];
+    for i in 0..32 {
+        arr[i] = vector[i];
+    }
+    arr
+}
+
+pub fn vector_as_u8_4_array(vector: &Vec<u8>) -> [u8; 4] {
+    let mut arr = [0u8; 4];
+    for i in 0..4 {
+        arr[i] = vector[i];
+    }
+    arr
 }
 
 #[tokio::main]
@@ -72,7 +109,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     block_number: block_number,
                     idx: idx,
                     i: 0,
-                };
+                }.serialize();
+
 
             } else {
                 println!("  - No balance transfer event found in this xt");
