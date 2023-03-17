@@ -111,7 +111,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     i: 0,
                 }.serialize();
 
+                let value = db.generate_id()?.to_be_bytes();
 
+                db.insert(key, &value)?;
             } else {
                 println!("  - No balance transfer event found in this xt");
             }
