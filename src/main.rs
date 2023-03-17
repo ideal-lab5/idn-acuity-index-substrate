@@ -47,9 +47,41 @@ impl AccountIdKey {
     }
 }
 
+struct TransferEventValue {
+    from: AccountId32,
+    to: AccountId32,
+    value: u128,
+}
+
+impl TransferEventValue {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.from.0.to_vec(),
+            self.to.0.to_vec(),
+            self.value.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> TransferEventValue {
+        TransferEventValue {
+            from: AccountId32(vector_as_u8_32_array(&vec[0..32].to_vec())),
+            to: AccountId32(vector_as_u8_32_array(&vec[32..64].to_vec())),
+            value: u128::from_be_bytes(vector_as_u8_16_array(&vec[64..80].to_vec())),
+        }
+    }
+}
+
 pub fn vector_as_u8_32_array(vector: &Vec<u8>) -> [u8; 32] {
     let mut arr = [0u8; 32];
     for i in 0..32 {
+        arr[i] = vector[i];
+    }
+    arr
+}
+
+pub fn vector_as_u8_16_array(vector: &Vec<u8>) -> [u8; 16] {
+    let mut arr = [0u8; 16];
+    for i in 0..16 {
         arr[i] = vector[i];
     }
     arr
@@ -105,15 +137,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("Amount: {:?}", ev.amount);
 
                 let key = AccountIdKey {
-                    account_id: ev.from,
+                    account_id: ev.from.clone(),
                     block_number: block_number,
                     idx: idx,
                     i: 0,
                 }.serialize();
 
-                let value = db.generate_id()?.to_be_bytes();
+                let value = TransferEventValue {
+                    from: ev.from,
+                    to: ev.to,
+                    value: ev.amount,
+                }.serialize();
 
-                db.insert(key, &value)?;
+                db.insert(key, value)?;
             } else {
                 println!("  - No balance transfer event found in this xt");
             }
