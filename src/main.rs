@@ -5,9 +5,11 @@ use tokio::join;
 
 mod shared;
 mod substrate;
+mod websockets;
 
-use substrate::substrate_listen;
 use crate::shared::*;
+use substrate::substrate_listen;
+use websockets::websockets_listen;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -19,6 +21,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Opened database.");
     // Start Substrate task.
     let substrate_task = tokio::spawn(substrate_listen(db.clone(), args));
+    // Spawn websockets task.
+    let websockets_task = tokio::spawn(websockets_listen(db.clone()));
     // Wait to exit.
     let _result = join!(substrate_task);
     Ok(())
