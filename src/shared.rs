@@ -8,4 +8,3 @@ pub struct Args {
    pub url: String,
 }
 
-

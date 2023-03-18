@@ -1,10 +1,41 @@
 use std::{
     net::SocketAddr,
 };
-
+use serde::{Serialize, Deserialize};
 use tokio::net::{TcpListener, TcpStream};
 use futures::{StreamExt, SinkExt};
+use subxt::utils::AccountId32;
 
+#[derive(Deserialize, Debug, Clone)]
+#[serde(tag = "type")]
+pub enum RequestMessage {
+    GetEventsAccountId {
+        account_id: AccountId32,
+    },
+}
+
+#[derive(Serialize, Debug)]
+#[serde(tag = "type")]
+#[serde(rename_all = "camelCase")]
+enum JsonResponseMessage {
+    #[serde(rename_all = "camelCase")]
+    Transfers {
+    },
+}
+
+async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
+    println!("msg: {:?}", msg);
+
+    match msg {
+        RequestMessage::GetEventsAccountId { account_id } => {
+            println!("getEventsAccountId");
+
+            let response = JsonResponseMessage::Transfers {
+            };
+            serde_json::to_string(&response).unwrap()
+        },
+    }
+}
 
 async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db) {
     println!("Incoming TCP connection from: {}", addr);
@@ -16,24 +47,13 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db
 
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
 
-
-/*
-    let mut iterator = db.iterator_cf(&db.cf_handle("order_value").unwrap(), IteratorMode::Start);
-    let orders = iterator.collect::<Vec<_>>();
-    println!("Orders: {:?}", orders);
-    let mut iterator = db.iterator_cf(&db.cf_handle("order_static").unwrap(), IteratorMode::Start);
-    let orders = iterator.collect::<Vec<_>>();
-    println!("Orders: {:?}", orders);
-*/
     loop {
         tokio::select! {
             Some(msg) = ws_receiver.next() => {
                 let msg = msg.unwrap();
                 if msg.is_text() || msg.is_binary() {
-/*
                     let json = process_msg(&db, serde_json::from_str(msg.to_text().unwrap()).unwrap()).await;
                     ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(json)).await.unwrap();
-*/
                 }
             }
         }
