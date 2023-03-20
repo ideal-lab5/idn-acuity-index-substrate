@@ -5,6 +5,9 @@ use serde::{Serialize, Deserialize};
 use tokio::net::{TcpListener, TcpStream};
 use futures::{StreamExt, SinkExt};
 use subxt::utils::AccountId32;
+use serde_json::{Result, Value};
+
+use crate::shared::*;
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
@@ -28,7 +31,16 @@ async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
 
     match msg {
         RequestMessage::GetEventsAccountId { account_id } => {
-            println!("getEventsAccountId");
+            println!("getEventsAccountId: {}", account_id);
+
+            for kv in db.scan_prefix(account_id) {
+                let kv = kv.unwrap();
+                let key = AccountIdKey::unserialize(kv.0.to_vec());
+                let value = TransferEventValue::unserialize(kv.1.to_vec());
+                println!("From: {:}", value.from);
+                println!("To: {:}", value.to);
+                println!("Amount: {:}", value.value);
+            }
 
             let response = JsonResponseMessage::Transfers {
             };
@@ -51,9 +63,11 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db
         tokio::select! {
             Some(msg) = ws_receiver.next() => {
                 let msg = msg.unwrap();
+                println!("Message: {}", msg.to_text().unwrap());
+
                 if msg.is_text() || msg.is_binary() {
                     let json = process_msg(&db, serde_json::from_str(msg.to_text().unwrap()).unwrap()).await;
-                    ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(json)).await.unwrap();
+                //    ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(json)).await.unwrap();
                 }
             }
         }
