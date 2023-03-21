@@ -40,56 +40,53 @@ pub async fn substrate_listen(db: sled::Db, args: Args) {
             println!("    Extrinsic #{idx}:");
             println!("      Events:");
 
-
-            let transfer_event = events.find_first::<polkadot::balances::events::Transfer>().unwrap();
-
-            if let Some(ev) = transfer_event {
-                println!("From: {:}", ev.from);
-                println!("To: {:}", ev.to);
-                println!("Amount: {:}", ev.amount);
-
-                let key_from = AccountIdKey {
-                    account_id: ev.from.clone(),
-                    block_number: block_number,
-                    idx: idx,
-                    i: 0,
-                }.serialize();
-
-                let key_to = AccountIdKey {
-                    account_id: ev.to.clone(),
-                    block_number: block_number,
-                    idx: idx,
-                    i: 0,
-                }.serialize();
-
-                let value = TransferEventValue {
-                    from: ev.from,
-                    to: ev.to,
-                    value: ev.amount,
-                }.serialize();
-
-                db.insert(key_from, value.clone()).unwrap();
-                db.insert(key_to, value).unwrap();
-            } else {
-                println!("  - No balance transfer event found in this xt");
-            }
-
-/*
             for evt in events.iter() {
-                let evt = evt?;
+                let evt = evt.unwrap();
 
                 let pallet_name = evt.pallet_name();
                 let event_name = evt.variant_name();
 
-                println!("        {pallet_name}_{event_name}");
+println!("        {pallet_name}_{event_name}");
 
-                if pallet_name != "Balances" { continue; }
-                if event_name != "Transfer" { continue; }
+                match evt.pallet_name() {
+                    "Balances" => match evt.variant_name() {
+                        "Transfer" => {
+                            let transfer_event = evt.as_event::<polkadot::balances::events::Transfer>().unwrap();
 
+                            if let Some(ev) = transfer_event {
+                                println!("From: {:}", ev.from);
+                                println!("To: {:}", ev.to);
+                                println!("Amount: {:}", ev.amount);
 
-                println!("balance: {:?}", evt.amount);
+                                let key_from = AccountIdKey {
+                                    account_id: ev.from.clone(),
+                                    block_number: block_number,
+                                    idx: idx,
+                                    i: 0,
+                                }.serialize();
 
-  */
+                                let key_to = AccountIdKey {
+                                    account_id: ev.to.clone(),
+                                    block_number: block_number,
+                                    idx: idx,
+                                    i: 0,
+                                }.serialize();
+
+                                let value = TransferEventValue {
+                                    from: ev.from,
+                                    to: ev.to,
+                                    value: ev.amount,
+                                }.serialize();
+
+                                db.insert(key_from, value.clone()).unwrap();
+                                db.insert(key_to, value).unwrap();
+                            }
+                         },
+                        _ => {},
+                    },
+                    _ => {},
+                }
+            }
         }
     }
 }
