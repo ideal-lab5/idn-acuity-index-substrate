@@ -7,6 +7,7 @@ use subxt::{
     SubstrateConfig,
     config::Header,
     utils::AccountId32,
+    events::Events,
 };
 
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
@@ -27,6 +28,14 @@ pub async fn substrate_listen(db: sled::Db, args: Args) {
 
         let block_number = block.header().number;
         let block_hash = block.hash();
+
+        // Fetch the metadata of the given block.
+        let metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
+        let events = Events::new_from_client(metadata, block_hash, api.clone()).await.unwrap();
+
+        for evt in events.iter() {
+//            println!("Event: {:#?}", evt.unwrap().field_values().unwrap());
+        }
 
         println!("Block #{block_number}:");
         println!("  Hash: {block_hash}");
