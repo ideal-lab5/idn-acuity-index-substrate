@@ -3,9 +3,8 @@ use std::{
 };
 use serde::{Serialize, Deserialize};
 use tokio::net::{TcpListener, TcpStream};
-use futures::{StreamExt, SinkExt};
+use futures::StreamExt;
 use subxt::utils::AccountId32;
-use serde_json::{Result, Value};
 
 use crate::shared::*;
 
@@ -35,7 +34,7 @@ async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
 
             for kv in db.scan_prefix(account_id) {
                 let kv = kv.unwrap();
-                let key = AccountIdKey::unserialize(kv.0.to_vec());
+                let _key = AccountIdKey::unserialize(kv.0.to_vec());
                 let value = TransferEventValue::unserialize(kv.1.to_vec());
                 println!("From: {:}", value.from);
                 println!("To: {:}", value.to);
@@ -57,7 +56,7 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db
         .expect("Error during the websocket handshake occurred");
     println!("WebSocket connection established: {}", addr);
 
-    let (mut ws_sender, mut ws_receiver) = ws_stream.split();
+    let (mut _ws_sender, mut ws_receiver) = ws_stream.split();
 
     loop {
         tokio::select! {
@@ -66,7 +65,7 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db
                 println!("Message: {}", msg.to_text().unwrap());
 
                 if msg.is_text() || msg.is_binary() {
-                    let json = process_msg(&db, serde_json::from_str(msg.to_text().unwrap()).unwrap()).await;
+                    let _json = process_msg(&db, serde_json::from_str(msg.to_text().unwrap()).unwrap()).await;
                 //    ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(json)).await.unwrap();
                 }
             }

@@ -24,6 +24,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Spawn websockets task.
     let websockets_task = tokio::spawn(websockets_listen(db.clone()));
     // Wait to exit.
-    let _result = join!(substrate_task);
+    let _result = join!(substrate_task, websockets_task);
     Ok(())
 }

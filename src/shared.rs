@@ -13,12 +13,14 @@ pub struct Args {
    /// URL of Substrate node to connect to.
    #[arg(short, long)]
    pub url: String,
+   /// Block number to start indexing from.
+   #[arg(short, long)]
+   pub block_height: u32,
 }
 
 pub struct AccountIdKey {
     pub account_id: <SubstrateConfig as Config>::AccountId,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub idx: u32,
     pub i: u32,
 }
 
@@ -27,7 +29,6 @@ impl AccountIdKey {
         [
             self.account_id.0.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
-            self.idx.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
         ].concat()
     }
@@ -36,7 +37,6 @@ impl AccountIdKey {
         AccountIdKey {
             account_id: AccountId32(vector_as_u8_32_array(&vec[0..32].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
-            idx: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[40..44].to_vec())),
         }
     }
