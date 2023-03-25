@@ -2,12 +2,26 @@
 use subxt::{
     OnlineClient,
     PolkadotConfig,
+    utils::AccountId32,
 };
+
 
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
 pub mod polkadot {}
 
 use crate::shared::*;
+
+fn index_event_account_id(db: sled::Db, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("AccountId: {:}", account_id);
+    // Generate key
+    let key = AccountIdKey {
+        account_id: account_id,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    db.insert(key, bytes).unwrap();
+}
 
 fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
     let pallet_name = event.pallet_name();
@@ -17,31 +31,49 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
 
     match event.pallet_name() {
         "Balances" => match event.variant_name() {
+            "Endowed" => {
+                let endowed_event = event.as_event::<polkadot::balances::events::Endowed>().unwrap().unwrap();
+                index_event_account_id(db.clone(), endowed_event.account, block_number, event_index, event.bytes());
+            },
+            "DustLost" => {
+                let dustlost_event = event.as_event::<polkadot::balances::events::DustLost>().unwrap().unwrap();
+                index_event_account_id(db.clone(), dustlost_event.account, block_number, event_index, event.bytes());
+            },
             "Transfer" => {
-                let transfer_event = event.as_event::<polkadot::balances::events::Transfer>().unwrap();
-
-                if let Some(ev) = transfer_event {
-                    println!("From: {:}", ev.from);
-                    println!("To: {:}", ev.to);
-                    println!("Amount: {:}", ev.amount);
-
-                    let key_from = AccountIdKey {
-                        account_id: ev.from.clone(),
-                        block_number: block_number,
-                        i: event_index,
-                    }.serialize();
-
-                    let key_to = AccountIdKey {
-                        account_id: ev.to.clone(),
-                        block_number: block_number,
-                        i: event_index,
-                    }.serialize();
-
-                    let value = event.bytes();
-
-                    db.insert(key_from, value.clone()).unwrap();
-                    db.insert(key_to, value).unwrap();
-                }
+                let transfer_event = event.as_event::<polkadot::balances::events::Transfer>().unwrap().unwrap();
+                let value = event.bytes();
+                index_event_account_id(db.clone(), transfer_event.from, block_number, event_index, value);
+                index_event_account_id(db.clone(), transfer_event.to, block_number, event_index, value);
+            },
+            "BalanceSet" => {
+                let balance_set_event = event.as_event::<polkadot::balances::events::BalanceSet>().unwrap().unwrap();
+                index_event_account_id(db.clone(), balance_set_event.who, block_number, event_index, event.bytes());
+            },
+            "Reserved" => {
+                let unreserved_event = event.as_event::<polkadot::balances::events::Reserved>().unwrap().unwrap();
+                index_event_account_id(db.clone(), unreserved_event.who, block_number, event_index, event.bytes());
+            },
+            "Unreserved" => {
+                let reserved_event = event.as_event::<polkadot::balances::events::Unreserved>().unwrap().unwrap();
+                index_event_account_id(db.clone(), reserved_event.who, block_number, event_index, event.bytes());
+            },
+            "ReserveRepatriated" => {
+                let reserve_repatriated_event = event.as_event::<polkadot::balances::events::ReserveRepatriated>().unwrap().unwrap();
+                let value = event.bytes();
+                index_event_account_id(db.clone(), reserve_repatriated_event.from, block_number, event_index, value);
+                index_event_account_id(db.clone(), reserve_repatriated_event.to, block_number, event_index, value);
+            },
+            "Deposit" => {
+                let deposit_event = event.as_event::<polkadot::balances::events::Deposit>().unwrap().unwrap();
+                index_event_account_id(db.clone(), deposit_event.who, block_number, event_index, event.bytes());
+            },
+            "Withdraw" => {
+                let withdraw_event = event.as_event::<polkadot::balances::events::Withdraw>().unwrap().unwrap();
+                index_event_account_id(db.clone(), withdraw_event.who, block_number, event_index, event.bytes());
+            },
+            "Slashed" => {
+                let slashed_event = event.as_event::<polkadot::balances::events::Slashed>().unwrap().unwrap();
+                index_event_account_id(db.clone(), slashed_event.who, block_number, event_index, event.bytes());
             },
             _ => {},
         },
