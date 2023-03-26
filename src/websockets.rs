@@ -16,15 +16,6 @@ pub enum RequestMessage {
     },
 }
 
-#[derive(Serialize, Debug)]
-#[serde(tag = "type")]
-#[serde(rename_all = "camelCase")]
-enum JsonResponseMessage {
-    #[serde(rename_all = "camelCase")]
-    Transfers {
-    },
-}
-
 async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
     println!("msg: {:?}", msg);
 
@@ -35,15 +26,12 @@ async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
             for kv in db.scan_prefix(account_id) {
                 let kv = kv.unwrap();
                 let _key = AccountIdKey::unserialize(kv.0.to_vec());
-                let value = TransferEventValue::unserialize(kv.1.to_vec());
-                println!("From: {:}", value.from);
-                println!("To: {:}", value.to);
-                println!("Amount: {:}", value.value);
+//                let value = Event::unserialize(kv.1.to_vec());
             }
 
-            let response = JsonResponseMessage::Transfers {
-            };
-            serde_json::to_string(&response).unwrap()
+//            let response = Event::Transfer {};
+//            serde_json::to_string(&response).unwrap()
+            "ok".to_string()
         },
     }
 }

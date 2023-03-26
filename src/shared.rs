@@ -7,6 +7,11 @@ use subxt::{
     utils::AccountId32,
 };
 
+use serde::{Serialize, Deserialize};
+
+#[subxt::subxt(runtime_metadata_path = "metadata.scale")]
+pub mod polkadot {}
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
@@ -42,28 +47,82 @@ impl AccountIdKey {
     }
 }
 
-pub struct TransferEventValue {
-    pub from: AccountId32,
-    pub to: AccountId32,
-    pub value: u128,
+#[derive(Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum Status {
+    Free,
+    Reserved,
 }
 
-impl TransferEventValue {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.from.0.to_vec(),
-            self.to.0.to_vec(),
-            self.value.to_be_bytes().to_vec(),
-        ].concat()
-    }
+use crate::polkadot::runtime_types::frame_support::traits::tokens::misc::BalanceStatus;
 
-    pub fn unserialize(vec: Vec<u8>) -> TransferEventValue {
-        TransferEventValue {
-            from: AccountId32(vector_as_u8_32_array(&vec[0..32].to_vec())),
-            to: AccountId32(vector_as_u8_32_array(&vec[32..64].to_vec())),
-            value: u128::from_be_bytes(vector_as_u8_16_array(&vec[64..80].to_vec())),
+impl From<&BalanceStatus> for Status {
+    fn from(x: &BalanceStatus) -> Status {
+        match x {
+            BalanceStatus::Free => Status::Free,
+            BalanceStatus::Reserved => Status::Reserved,
         }
     }
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(tag = "type")]
+#[serde(rename_all = "camelCase")]
+pub enum Event {
+    #[serde(rename_all = "camelCase")]
+    Endowed {
+        account: AccountId32,
+        free_balance: u128,
+    },
+    #[serde(rename_all = "camelCase")]
+    DustLost {
+        account: AccountId32,
+        amount: u128,
+    },
+    #[serde(rename_all = "camelCase")]
+    Transfer {
+        from: AccountId32,
+        to: AccountId32,
+        value: u128,
+    },
+    #[serde(rename_all = "camelCase")]
+	BalanceSet {
+	    who: AccountId32,
+	    free: u128,
+	    reserved: u128,
+    },
+    #[serde(rename_all = "camelCase")]
+	Reserved {
+	    who: AccountId32,
+	    amount: u128,
+	},
+    #[serde(rename_all = "camelCase")]
+	Unreserved {
+	    who: AccountId32,
+	    amount: u128,
+    },
+    #[serde(rename_all = "camelCase")]
+	ReserveRepatriated {
+		from: AccountId32,
+		to: AccountId32,
+		amount: u128,
+		destination_status: Status,
+	},
+    #[serde(rename_all = "camelCase")]
+	Deposit {
+	    who: AccountId32,
+	    amount: u128,
+	},
+    #[serde(rename_all = "camelCase")]
+	Withdraw {
+	    who: AccountId32,
+	    amount: u128,
+	},
+    #[serde(rename_all = "camelCase")]
+	Slashed {
+	    who: AccountId32,
+	    amount: u128,
+	},
 }
 
 pub fn vector_as_u8_32_array(vector: &Vec<u8>) -> [u8; 32] {
