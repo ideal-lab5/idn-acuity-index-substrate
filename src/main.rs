@@ -18,11 +18,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Open database.
     let path = "db";
     let db = sled::open(path)?;
+    let trees = Trees {
+        account_id: db.open_tree("account_id")?,
+        registrar_index: db.open_tree("registrar_index")?,
+    };
     println!("Opened database.");
     // Start Substrate task.
-    let substrate_task = tokio::spawn(substrate_listen(db.clone(), args));
+    let substrate_task = tokio::spawn(substrate_listen(trees.clone(), args));
     // Spawn websockets task.
-    let websockets_task = tokio::spawn(websockets_listen(db.clone()));
+    let websockets_task = tokio::spawn(websockets_listen(trees.clone()));
     // Wait to exit.
     let _result = join!(substrate_task, websockets_task);
     Ok(())

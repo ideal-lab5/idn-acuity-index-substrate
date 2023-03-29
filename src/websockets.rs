@@ -29,7 +29,7 @@ struct ResponseMessage {
     events: Vec<EventFull>,
 }
 
-async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
+async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
     println!("msg: {:?}", msg);
 
     match msg {
@@ -38,7 +38,7 @@ async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
 
             let mut events = Vec::new();
 
-            for kv in db.scan_prefix(account_id) {
+            for kv in trees.account_id.scan_prefix(account_id) {
                 let kv = kv.unwrap();
                 let key = AccountIdKey::unserialize(kv.0.to_vec());
                 println!("value: {:?}", kv.1);
@@ -57,7 +57,7 @@ async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
     }
 }
 
-async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db) {
+async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees) {
     println!("Incoming TCP connection from: {}", addr);
 
     let ws_stream = tokio_tungstenite::accept_async(raw_stream)
@@ -74,7 +74,7 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db
                 println!("Message: {}", msg.to_text().unwrap());
 
                 if msg.is_text() || msg.is_binary() {
-                    let json = process_msg(&db, serde_json::from_str(msg.to_text().unwrap()).unwrap()).await;
+                    let json = process_msg(&trees, serde_json::from_str(msg.to_text().unwrap()).unwrap()).await;
                     ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(json)).await.unwrap();
                 }
             }
@@ -83,7 +83,7 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db
 }
 
 
-pub async fn websockets_listen(db: sled::Db) {
+pub async fn websockets_listen(trees: Trees) {
     let addr = "127.0.0.1:8080".to_string();
 
     // Create the event loop and TCP listener we'll accept connections on.
@@ -93,6 +93,6 @@ pub async fn websockets_listen(db: sled::Db) {
 
     // Let's spawn the handling of each connection in a separate task.
     while let Ok((stream, addr)) = listener.accept().await {
-        tokio::spawn(handle_connection(stream, addr, db.clone()));
+        tokio::spawn(handle_connection(stream, addr, trees.clone()));
     }
 }

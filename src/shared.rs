@@ -7,6 +7,8 @@ use subxt::{
     utils::AccountId32,
 };
 
+use sled::Tree;
+
 use bincode::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
@@ -22,6 +24,12 @@ pub struct Args {
    /// Block number to start indexing from.
    #[arg(short, long)]
    pub block_height: u32,
+}
+
+#[derive(Clone)]
+pub struct Trees {
+    pub account_id: Tree,
+    pub registrar_index: Tree,
 }
 
 pub struct AccountIdKey {

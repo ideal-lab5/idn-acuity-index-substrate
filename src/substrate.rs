@@ -8,7 +8,7 @@ use subxt::{
 
 use crate::shared::*;
 
-fn index_event_account_id(db: sled::Db, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
+fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
     println!("AccountId: {:}", account_id);
     // Generate key
     let key = AccountIdKey {
@@ -17,10 +17,10 @@ fn index_event_account_id(db: sled::Db, account_id: AccountId32, block_number: u
         i: i,
     }.serialize();
     // Insert record.
-    db.insert(key, bytes).unwrap();
+    trees.account_id.insert(key, bytes).unwrap();
 }
 
-fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
 
     match event.pallet_name() {
         "Balances" => match event.variant_name() {
@@ -33,7 +33,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), endowed_event.account, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), endowed_event.account, block_number, event_index, &value);
             },
             "DustLost" => {
                 let dustlost_event = event.as_event::<polkadot::balances::events::DustLost>().unwrap().unwrap();
@@ -44,7 +44,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), dustlost_event.account, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), dustlost_event.account, block_number, event_index, &value);
             },
             "Transfer" => {
                 let transfer_event = event.as_event::<polkadot::balances::events::Transfer>().unwrap().unwrap();
@@ -56,8 +56,8 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), transfer_event.from, block_number, event_index, &value);
-                index_event_account_id(db.clone(), transfer_event.to, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), transfer_event.from, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), transfer_event.to, block_number, event_index, &value);
             },
             "BalanceSet" => {
                 let balance_set_event = event.as_event::<polkadot::balances::events::BalanceSet>().unwrap().unwrap();
@@ -69,7 +69,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), balance_set_event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), balance_set_event.who, block_number, event_index, &value);
             },
             "Reserved" => {
                 let reserved_event = event.as_event::<polkadot::balances::events::Reserved>().unwrap().unwrap();
@@ -80,7 +80,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), reserved_event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), reserved_event.who, block_number, event_index, &value);
             },
             "Unreserved" => {
                 let unreserved_event = event.as_event::<polkadot::balances::events::Unreserved>().unwrap().unwrap();
@@ -91,7 +91,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), unreserved_event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), unreserved_event.who, block_number, event_index, &value);
             },
             "ReserveRepatriated" => {
                 let reserve_repatriated_event = event.as_event::<polkadot::balances::events::ReserveRepatriated>().unwrap().unwrap();
@@ -104,8 +104,8 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
 	                }
 	            );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), reserve_repatriated_event.from, block_number, event_index, &value);
-                index_event_account_id(db.clone(), reserve_repatriated_event.to, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), reserve_repatriated_event.from, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), reserve_repatriated_event.to, block_number, event_index, &value);
             },
             "Deposit" => {
                 let deposit_event = event.as_event::<polkadot::balances::events::Deposit>().unwrap().unwrap();
@@ -116,7 +116,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), deposit_event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), deposit_event.who, block_number, event_index, &value);
             },
             "Withdraw" => {
                 let withdraw_event = event.as_event::<polkadot::balances::events::Withdraw>().unwrap().unwrap();
@@ -127,7 +127,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), withdraw_event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), withdraw_event.who, block_number, event_index, &value);
             },
             "Slashed" => {
                 let slashed_event = event.as_event::<polkadot::balances::events::Slashed>().unwrap().unwrap();
@@ -138,7 +138,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), slashed_event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), slashed_event.who, block_number, event_index, &value);
             },
             _ => {},
         },
@@ -151,7 +151,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), event.who.clone(), block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.who.clone(), block_number, event_index, &value);
             },
             "IdentityCleared" => {
                 let event = event.as_event::<polkadot::identity::events::IdentityCleared>().unwrap().unwrap();
@@ -162,7 +162,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             },
             "IdentityKilled" => {
                 let event = event.as_event::<polkadot::identity::events::IdentityKilled>().unwrap().unwrap();
@@ -173,7 +173,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             },
             "JudgementRequested" => {
                 let event = event.as_event::<polkadot::identity::events::JudgementRequested>().unwrap().unwrap();
@@ -184,7 +184,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             },
             "JudgementUnrequested" => {
                 let event = event.as_event::<polkadot::identity::events::JudgementUnrequested>().unwrap().unwrap();
@@ -195,7 +195,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), event.who, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             },
             "JudgementGiven" => {
                 let event = event.as_event::<polkadot::identity::events::JudgementGiven>().unwrap().unwrap();
@@ -206,7 +206,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), event.target, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.target, block_number, event_index, &value);
             },
             "RegistrarAdded" => {
                 let event = event.as_event::<polkadot::identity::events::RegistrarAdded>().unwrap().unwrap();
@@ -216,7 +216,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-//                index_event_account_id(db.clone(), event.who, block_number, event_index, &value);
+//                index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             },
             "SubIdentityAdded" => {
                 let event = event.as_event::<polkadot::identity::events::SubIdentityAdded>().unwrap().unwrap();
@@ -228,8 +228,8 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), event.sub, block_number, event_index, &value);
-                index_event_account_id(db.clone(), event.main, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
             },
             "SubIdentityRemoved" => {
                 let event = event.as_event::<polkadot::identity::events::SubIdentityRemoved>().unwrap().unwrap();
@@ -241,8 +241,8 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), event.sub, block_number, event_index, &value);
-                index_event_account_id(db.clone(), event.main, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
             },
             "SubIdentityRevoked" => {
                 let event = event.as_event::<polkadot::identity::events::SubIdentityRevoked>().unwrap().unwrap();
@@ -254,8 +254,8 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-                index_event_account_id(db.clone(), event.sub, block_number, event_index, &value);
-                index_event_account_id(db.clone(), event.main, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
+                index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
             },
             &_ => {},
         },
@@ -263,7 +263,7 @@ fn index_event(db: sled::Db, block_number: u32, event_index: u32, event: subxt::
     }
 }
 
-pub async fn substrate_listen(db: sled::Db, args: Args) {
+pub async fn substrate_listen(trees: Trees, args: Args) {
     let api = OnlineClient::<PolkadotConfig>::from_url(args.url).await.unwrap();
     println!("Connected to Substrate node.");
 
@@ -293,7 +293,7 @@ pub async fn substrate_listen(db: sled::Db, args: Args) {
 
             match evt {
                 Ok(evt) => {
-                    index_event(db.clone(), block_number, i, evt);
+                    index_event(trees.clone(), block_number, i, evt);
                 },
                 _ => {},
             }
