@@ -3,7 +3,7 @@ use std::{
 };
 use serde::{Serialize, Deserialize};
 use tokio::net::{TcpListener, TcpStream};
-use futures::StreamExt;
+use futures::{StreamExt, SinkExt};
 use subxt::utils::AccountId32;
 
 use crate::shared::*;
@@ -63,7 +63,7 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db
         .expect("Error during the websocket handshake occurred");
     println!("WebSocket connection established: {}", addr);
 
-    let (mut _ws_sender, mut ws_receiver) = ws_stream.split();
+    let (mut ws_sender, mut ws_receiver) = ws_stream.split();
 
     loop {
         tokio::select! {
@@ -72,8 +72,8 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, db: sled::Db
                 println!("Message: {}", msg.to_text().unwrap());
 
                 if msg.is_text() || msg.is_binary() {
-                    let _json = process_msg(&db, serde_json::from_str(msg.to_text().unwrap()).unwrap()).await;
-                //    ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(json)).await.unwrap();
+                    let json = process_msg(&db, serde_json::from_str(msg.to_text().unwrap()).unwrap()).await;
+                    ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(json)).await.unwrap();
                 }
             }
         }
