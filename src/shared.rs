@@ -56,6 +56,30 @@ impl AccountIdKey {
     }
 }
 
+pub struct RegistrarIndexKey {
+    pub registrar_index: u32,
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl RegistrarIndexKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.registrar_index.to_be_bytes().to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> RegistrarIndexKey {
+        RegistrarIndexKey {
+            registrar_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+        }
+    }
+}
+
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "pallet")]
@@ -228,14 +252,6 @@ pub enum Identity {
 pub fn vector_as_u8_32_array(vector: &Vec<u8>) -> [u8; 32] {
     let mut arr = [0u8; 32];
     for i in 0..32 {
-        arr[i] = vector[i];
-    }
-    arr
-}
-
-pub fn vector_as_u8_16_array(vector: &Vec<u8>) -> [u8; 16] {
-    let mut arr = [0u8; 16];
-    for i in 0..16 {
         arr[i] = vector[i];
     }
     arr

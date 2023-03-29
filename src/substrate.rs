@@ -20,6 +20,18 @@ fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u
     trees.account_id.insert(key, bytes).unwrap();
 }
 
+fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("RegistrarIndex: {:}", registrar_index);
+    // Generate key
+    let key = RegistrarIndexKey {
+        registrar_index: registrar_index,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    trees.registrar_index.insert(key, bytes).unwrap();
+}
+
 fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
 
     match event.pallet_name() {
@@ -185,6 +197,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
                 index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+                index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
             },
             "JudgementUnrequested" => {
                 let event = event.as_event::<polkadot::identity::events::JudgementUnrequested>().unwrap().unwrap();
@@ -196,6 +209,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
                 index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+                index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
             },
             "JudgementGiven" => {
                 let event = event.as_event::<polkadot::identity::events::JudgementGiven>().unwrap().unwrap();
@@ -207,6 +221,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
                 index_event_account_id(trees.clone(), event.target, block_number, event_index, &value);
+                index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
             },
             "RegistrarAdded" => {
                 let event = event.as_event::<polkadot::identity::events::RegistrarAdded>().unwrap().unwrap();
@@ -216,7 +231,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
                     }
                 );
                 let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
-//                index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+                index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
             },
             "SubIdentityAdded" => {
                 let event = event.as_event::<polkadot::identity::events::SubIdentityAdded>().unwrap().unwrap();
