@@ -184,7 +184,7 @@ pub enum Identity {
     #[serde(rename_all = "camelCase")]
     JudgementGiven {
         #[bincode(with_serde)]
-        who: AccountId32,
+        target: AccountId32,
         registrar_index: u32,
     },
     #[serde(rename_all = "camelCase")]
