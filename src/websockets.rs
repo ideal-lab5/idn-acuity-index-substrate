@@ -17,12 +17,14 @@ pub enum RequestMessage {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct EventFull {
     block_number: u32,
     event: Event,
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ResponseMessage {
     events: Vec<EventFull>,
 }
