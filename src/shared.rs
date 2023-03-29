@@ -7,6 +7,7 @@ use subxt::{
     utils::AccountId32,
 };
 
+use bincode::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
@@ -42,12 +43,12 @@ impl AccountIdKey {
         AccountIdKey {
             account_id: AccountId32(vector_as_u8_32_array(&vec[0..32].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[40..44].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
         }
     }
 }
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum Status {
     Free,
@@ -65,61 +66,72 @@ impl From<&BalanceStatus> for Status {
     }
 }
 
-#[derive(Serialize, Debug, Clone)]
-#[serde(tag = "type")]
+#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum Event {
     #[serde(rename_all = "camelCase")]
     Endowed {
+        #[bincode(with_serde)]
         account: AccountId32,
         free_balance: u128,
     },
     #[serde(rename_all = "camelCase")]
     DustLost {
+        #[bincode(with_serde)]
         account: AccountId32,
         amount: u128,
     },
     #[serde(rename_all = "camelCase")]
     Transfer {
+        #[bincode(with_serde)]
         from: AccountId32,
+        #[bincode(with_serde)]
         to: AccountId32,
         value: u128,
     },
     #[serde(rename_all = "camelCase")]
 	BalanceSet {
+        #[bincode(with_serde)]
 	    who: AccountId32,
 	    free: u128,
 	    reserved: u128,
     },
     #[serde(rename_all = "camelCase")]
 	Reserved {
+        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
 	},
     #[serde(rename_all = "camelCase")]
 	Unreserved {
+        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
     },
     #[serde(rename_all = "camelCase")]
 	ReserveRepatriated {
+        #[bincode(with_serde)]
 		from: AccountId32,
+        #[bincode(with_serde)]
 		to: AccountId32,
 		amount: u128,
 		destination_status: Status,
 	},
     #[serde(rename_all = "camelCase")]
 	Deposit {
+        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
 	},
     #[serde(rename_all = "camelCase")]
 	Withdraw {
+        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
 	},
     #[serde(rename_all = "camelCase")]
 	Slashed {
+        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
 	},
@@ -148,5 +160,6 @@ pub fn vector_as_u8_4_array(vector: &Vec<u8>) -> [u8; 4] {
     }
     arr
 }
+
 
 

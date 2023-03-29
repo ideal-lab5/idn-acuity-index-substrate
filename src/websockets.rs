@@ -16,6 +16,17 @@ pub enum RequestMessage {
     },
 }
 
+#[derive(Serialize)]
+struct EventFull {
+    block_number: u32,
+    event: Event,
+}
+
+#[derive(Serialize)]
+struct ResponseMessage {
+    events: Vec<EventFull>,
+}
+
 async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
     println!("msg: {:?}", msg);
 
@@ -23,15 +34,23 @@ async fn process_msg(db: &sled::Db, msg: RequestMessage) -> String {
         RequestMessage::GetEventsAccountId { account_id } => {
             println!("getEventsAccountId: {}", account_id);
 
+            let mut events = Vec::new();
+
             for kv in db.scan_prefix(account_id) {
                 let kv = kv.unwrap();
-                let _key = AccountIdKey::unserialize(kv.0.to_vec());
-//                let value = Event::unserialize(kv.1.to_vec());
+                let key = AccountIdKey::unserialize(kv.0.to_vec());
+                println!("value: {:?}", kv.1);
+                let event: Event = bincode::decode_from_slice(&kv.1.to_vec(), bincode::config::standard()).unwrap().0;
+
+                events.push(EventFull {
+                    block_number: key.block_number,
+                    event: event,
+                });
             }
 
-//            let response = Event::Transfer {};
-//            serde_json::to_string(&response).unwrap()
-            "ok".to_string()
+            let response_message = ResponseMessage {events: events};
+
+            serde_json::to_string(&response_message).unwrap()
         },
     }
 }
