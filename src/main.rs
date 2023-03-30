@@ -21,6 +21,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = sled::open(path)?;
     let trees = Trees {
         account_id: db.open_tree("account_id")?,
+        account_index: db.open_tree("account_index")?,
         registrar_index: db.open_tree("registrar_index")?,
     };
     println!("Opened database.");

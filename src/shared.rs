@@ -17,6 +17,7 @@ pub mod polkadot {}
 
 use crate::pallets::balances::Balances;
 use crate::pallets::identity::Identity;
+use crate::pallets::indices::Indices;
 use crate::pallets::system::System;
 
 #[derive(Parser, Debug)]
@@ -33,6 +34,7 @@ pub struct Args {
 #[derive(Clone)]
 pub struct Trees {
     pub account_id: Tree,
+    pub account_index: Tree,
     pub registrar_index: Tree,
 }
 
@@ -56,6 +58,30 @@ impl AccountIdKey {
             account_id: AccountId32(vector_as_u8_32_array(&vec[0..32].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+        }
+    }
+}
+
+pub struct AccountIndexKey {
+    pub account_index: u32,
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl AccountIndexKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.account_index.to_be_bytes().to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> AccountIndexKey {
+        AccountIndexKey {
+            account_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
         }
     }
 }
@@ -92,6 +118,8 @@ pub enum Event {
     Balances(Balances),
     #[serde(rename_all = "camelCase")]
     Identity(Identity),
+    #[serde(rename_all = "camelCase")]
+    Indices(Indices),
     #[serde(rename_all = "camelCase")]
     System(System),
 }

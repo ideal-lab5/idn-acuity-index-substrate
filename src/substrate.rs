@@ -9,6 +9,7 @@ use subxt::{
 use crate::shared::*;
 use crate::pallets::balances::*;
 use crate::pallets::identity::*;
+use crate::pallets::indices::*;
 use crate::pallets::system::*;
 
 pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
@@ -21,6 +22,18 @@ pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_numbe
     }.serialize();
     // Insert record.
     trees.account_id.insert(key, bytes).unwrap();
+}
+
+pub fn index_event_account_index(trees: Trees, account_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("AccountIndex: {:}", account_index);
+    // Generate key
+    let key = AccountIndexKey {
+        account_index: account_index,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    trees.account_index.insert(key, bytes).unwrap();
 }
 
 pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
@@ -40,6 +53,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
     match event.pallet_name() {
         "Balances" => balance_index_event(trees, block_number, event_index, event),
         "Identity" => identity_index_event(trees, block_number, event_index, event),
+        "Indices" => indices_index_event(trees, block_number, event_index, event),
         "System" => system_index_event(trees, block_number, event_index, event),
         _ => {},
     }
