@@ -6,6 +6,7 @@ use tokio::join;
 mod shared;
 mod substrate;
 mod websockets;
+mod pallets;
 
 use crate::shared::*;
 use substrate::substrate_listen;

@@ -7,6 +7,8 @@ use subxt::{
 
 
 use crate::shared::*;
+use crate::pallets::balances::*;
+use crate::pallets::identity::*;
 
 fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
     println!("AccountId: {:}", account_id);
