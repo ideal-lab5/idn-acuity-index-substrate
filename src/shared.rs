@@ -19,6 +19,7 @@ use crate::pallets::balances::Balances;
 use crate::pallets::identity::Identity;
 use crate::pallets::indices::Indices;
 use crate::pallets::system::System;
+use crate::pallets::transaction_payment::TransactionPayment;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -122,6 +123,8 @@ pub enum Event {
     Indices(Indices),
     #[serde(rename_all = "camelCase")]
     System(System),
+    #[serde(rename_all = "camelCase")]
+    TransactionPayment(TransactionPayment),
 }
 
 pub fn vector_as_u8_32_array(vector: &Vec<u8>) -> [u8; 32] {
