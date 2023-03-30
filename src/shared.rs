@@ -17,6 +17,7 @@ pub mod polkadot {}
 
 use crate::pallets::balances::Balances;
 use crate::pallets::identity::Identity;
+use crate::pallets::system::System;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -91,6 +92,8 @@ pub enum Event {
     Balances(Balances),
     #[serde(rename_all = "camelCase")]
     Identity(Identity),
+    #[serde(rename_all = "camelCase")]
+    System(System),
 }
 
 pub fn vector_as_u8_32_array(vector: &Vec<u8>) -> [u8; 32] {
