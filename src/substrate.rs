@@ -7,6 +7,7 @@ use subxt::{
 
 
 use crate::shared::*;
+use crate::pallets::alliance::*;
 use crate::pallets::balances::*;
 use crate::pallets::identity::*;
 
