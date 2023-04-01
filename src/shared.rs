@@ -17,6 +17,7 @@ pub mod polkadot {}
 
 use crate::pallets::balances::Balances;
 use crate::pallets::bounties::Bounties;
+use crate::pallets::child_bounties::ChildBounties;
 use crate::pallets::claims::Claims;
 use crate::pallets::collective::Collective;
 use crate::pallets::democracy::Democracy;
@@ -228,6 +229,8 @@ pub enum Event {
     Balances(Balances),
     #[serde(rename_all = "camelCase")]
     Bounties(Bounties),
+    #[serde(rename_all = "camelCase")]
+    ChildBounties(ChildBounties),
     #[serde(rename_all = "camelCase")]
     Claims(Claims),
     #[serde(rename_all = "camelCase")]

@@ -9,6 +9,7 @@ use subxt::{
 use crate::shared::*;
 use crate::pallets::balances::*;
 use crate::pallets::bounties::*;
+use crate::pallets::child_bounties::*;
 use crate::pallets::claims::*;
 use crate::pallets::collective::*;
 use crate::pallets::democracy::*;
@@ -111,6 +112,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
     match event.pallet_name() {
         "Balances" => balance_index_event(trees, block_number, event_index, event),
         "Bounties" => bounties_index_event(trees, block_number, event_index, event),
+        "ChildBounties" => child_bounties_index_event(trees, block_number, event_index, event),
         "Claims" => claims_index_event(trees, block_number, event_index, event),
         "Collective" => collective_index_event(trees, block_number, event_index, event),
         "Democracy" => democracy_index_event(trees, block_number, event_index, event),

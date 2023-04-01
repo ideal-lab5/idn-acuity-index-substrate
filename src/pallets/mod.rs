@@ -1,8 +1,9 @@
 pub mod alliance;
 pub mod balances;
 pub mod bounties;
-pub mod collective;
+pub mod child_bounties;
 pub mod claims;
+pub mod collective;
 pub mod democracy;
 pub mod elections_phragmen;
 pub mod identity;
