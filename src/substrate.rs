@@ -19,6 +19,7 @@ use crate::pallets::indices::*;
 use crate::pallets::multisig::*;
 use crate::pallets::proxy::*;
 use crate::pallets::system::*;
+use crate::pallets::tips::*;
 use crate::pallets::transaction_payment::*;
 use crate::pallets::treasury::*;
 use crate::pallets::vesting::*;
@@ -107,6 +108,18 @@ pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_num
     trees.registrar_index.insert(key, bytes).unwrap();
 }
 
+pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+//    println!("TipHash: {:}", tip_hash);
+    // Generate key
+    let key = TipHashKey {
+        tip_hash: tip_hash,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    trees.tip_hash.insert(key, bytes).unwrap();
+}
+
 fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
 
     match event.pallet_name() {
@@ -122,6 +135,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "PhragmenElection" => elections_phragmen_index_event(trees, block_number, event_index, event),
         "Proxy" => proxy_index_event(trees, block_number, event_index, event),
         "System" => system_index_event(trees, block_number, event_index, event),
+        "Tips" => tips_index_event(trees, block_number, event_index, event),
         "TransactionPayment" => transaction_payment_index_event(trees, block_number, event_index, event),
         "Treasury" => treasury_index_event(trees, block_number, event_index, event),
         "Vesting" => vesting_index_event(trees, block_number, event_index, event),

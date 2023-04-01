@@ -27,6 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         proposal_index: db.open_tree("proposal_index")?,
         ref_index: db.open_tree("ref_index")?,
         registrar_index: db.open_tree("registrar_index")?,
+        tip_hash: db.open_tree("tip_hash")?,
     };
     println!("Opened database.");
     // Start Substrate task.

@@ -27,6 +27,7 @@ use crate::pallets::indices::Indices;
 use crate::pallets::multisig::Multisig;
 use crate::pallets::proxy::Proxy;
 use crate::pallets::system::System;
+use crate::pallets::tips::Tips;
 use crate::pallets::transaction_payment::TransactionPayment;
 use crate::pallets::treasury::Treasury;
 use crate::pallets::vesting::Vesting;
@@ -51,6 +52,7 @@ pub struct Trees {
     pub proposal_index: Tree,
     pub ref_index: Tree,
     pub registrar_index: Tree,
+    pub tip_hash: Tree,
 }
 
 pub struct AccountIdKey {
@@ -221,6 +223,30 @@ impl ProposalIndexKey {
     }
 }
 
+pub struct TipHashKey {
+    pub tip_hash: [u8; 32],
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl TipHashKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.tip_hash.to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> Self {
+        TipHashKey {
+            tip_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..40].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[40..44].to_vec())),
+        }
+    }
+}
+
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "pallet")]
@@ -249,6 +275,8 @@ pub enum Event {
     Proxy(Proxy),
     #[serde(rename_all = "camelCase")]
     System(System),
+    #[serde(rename_all = "camelCase")]
+    Tips(Tips),
     #[serde(rename_all = "camelCase")]
     TransactionPayment(TransactionPayment),
     #[serde(rename_all = "camelCase")]

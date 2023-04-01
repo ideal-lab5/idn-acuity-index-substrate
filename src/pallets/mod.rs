@@ -11,6 +11,7 @@ pub mod indices;
 pub mod multisig;
 pub mod proxy;
 pub mod system;
+pub mod tips;
 pub mod transaction_payment;
 pub mod treasury;
 pub mod vesting;
