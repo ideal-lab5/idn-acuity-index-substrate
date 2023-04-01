@@ -2,6 +2,7 @@ pub mod alliance;
 pub mod balances;
 pub mod collective;
 pub mod democracy;
+pub mod elections_phragmen;
 pub mod identity;
 pub mod indices;
 pub mod system;

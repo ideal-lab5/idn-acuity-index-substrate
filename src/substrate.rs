@@ -10,6 +10,7 @@ use crate::shared::*;
 use crate::pallets::balances::*;
 use crate::pallets::collective::*;
 use crate::pallets::democracy::*;
+use crate::pallets::elections_phragmen::*;
 use crate::pallets::identity::*;
 use crate::pallets::indices::*;
 use crate::pallets::system::*;
@@ -95,6 +96,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "Democracy" => democracy_index_event(trees, block_number, event_index, event),
         "Identity" => identity_index_event(trees, block_number, event_index, event),
         "Indices" => indices_index_event(trees, block_number, event_index, event),
+        "PhragmenElection" => elections_phragmen_index_event(trees, block_number, event_index, event),
         "System" => system_index_event(trees, block_number, event_index, event),
         "TransactionPayment" => transaction_payment_index_event(trees, block_number, event_index, event),
         _ => {},

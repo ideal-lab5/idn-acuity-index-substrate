@@ -18,6 +18,7 @@ pub mod polkadot {}
 use crate::pallets::balances::Balances;
 use crate::pallets::collective::Collective;
 use crate::pallets::democracy::Democracy;
+use crate::pallets::elections_phragmen::PhragmenElection;
 use crate::pallets::identity::Identity;
 use crate::pallets::indices::Indices;
 use crate::pallets::system::System;
@@ -198,6 +199,8 @@ pub enum Event {
     Collective(Collective),
     #[serde(rename_all = "camelCase")]
     Democracy(Democracy),
+    #[serde(rename_all = "camelCase")]
+    PhragmenElection(PhragmenElection),
     #[serde(rename_all = "camelCase")]
     Identity(Identity),
     #[serde(rename_all = "camelCase")]
