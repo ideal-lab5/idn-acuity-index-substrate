@@ -2,7 +2,7 @@ use subxt::{
     utils::AccountId32,
 };
 
-use bincode::{Encode, Decode};
+use parity_scale_codec::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
 use crate::shared::*;
@@ -14,36 +14,30 @@ use crate::substrate::*;
 pub enum Identity {
     #[serde(rename_all = "camelCase")]
     IdentitySet {
-        #[bincode(with_serde)]
         who: AccountId32,
     },
     #[serde(rename_all = "camelCase")]
     IdentityCleared {
-        #[bincode(with_serde)]
         who: AccountId32,
         deposit: u128,
     },
     #[serde(rename_all = "camelCase")]
     IdentityKilled {
-        #[bincode(with_serde)]
         who: AccountId32,
         deposit: u128,
     },
     #[serde(rename_all = "camelCase")]
     JudgementRequested {
-        #[bincode(with_serde)]
         who: AccountId32,
         registrar_index: u32,
     },
     #[serde(rename_all = "camelCase")]
     JudgementUnrequested {
-        #[bincode(with_serde)]
         who: AccountId32,
         registrar_index: u32,
     },
     #[serde(rename_all = "camelCase")]
     JudgementGiven {
-        #[bincode(with_serde)]
         target: AccountId32,
         registrar_index: u32,
     },
@@ -53,25 +47,19 @@ pub enum Identity {
 	},
     #[serde(rename_all = "camelCase")]
 	SubIdentityAdded {
-        #[bincode(with_serde)]
 	    sub: AccountId32,
-        #[bincode(with_serde)]
 	    main: AccountId32,
 	    deposit: u128,
 	},
     #[serde(rename_all = "camelCase")]
 	SubIdentityRemoved {
-        #[bincode(with_serde)]
 	    sub: AccountId32,
-        #[bincode(with_serde)]
 	    main: AccountId32,
 	    deposit: u128,
 	},
     #[serde(rename_all = "camelCase")]
 	SubIdentityRevoked {
-        #[bincode(with_serde)]
 	    sub: AccountId32,
-        #[bincode(with_serde)]
 	    main: AccountId32,
 	    deposit: u128,
 	},
@@ -86,7 +74,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     who: event.who.clone(),
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who.clone(), block_number, event_index, &value);
         },
         "IdentityCleared" => {
@@ -97,7 +85,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     deposit: event.deposit,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
         },
         "IdentityKilled" => {
@@ -108,7 +96,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     deposit: event.deposit,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
         },
         "JudgementRequested" => {
@@ -119,7 +107,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     registrar_index: event.registrar_index,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
         },
@@ -131,7 +119,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     registrar_index: event.registrar_index,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
         },
@@ -143,7 +131,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     registrar_index: event.registrar_index,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.target, block_number, event_index, &value);
             index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
         },
@@ -154,7 +142,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     registrar_index: event.registrar_index,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
         },
         "SubIdentityAdded" => {
@@ -166,7 +154,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     deposit: event.deposit,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
         },
@@ -179,7 +167,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     deposit: event.deposit,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
         },
@@ -192,7 +180,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                     deposit: event.deposit,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
         },

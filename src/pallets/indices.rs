@@ -2,7 +2,7 @@ use subxt::{
     utils::AccountId32,
 };
 
-use bincode::{Encode, Decode};
+use parity_scale_codec::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
 use crate::shared::*;
@@ -15,7 +15,6 @@ use crate::substrate::*;
 pub enum Indices {
     #[serde(rename_all = "camelCase")]
 	IndexAssigned {
-        #[bincode(with_serde)]
         who: AccountId32,
         index: u32,
 	},
@@ -26,7 +25,6 @@ pub enum Indices {
     #[serde(rename_all = "camelCase")]
 	IndexFrozen {
 	    index: u32,
-        #[bincode(with_serde)]
 	    who: AccountId32,
 	},
 }
@@ -41,7 +39,7 @@ pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     index: event.index,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             index_event_account_index(trees.clone(), event.index, block_number, event_index, &value);
         },
@@ -52,7 +50,7 @@ pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     index: event.index,
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_index(trees.clone(), event.index, block_number, event_index, &value);
         },
         "IndexFrozen" => {
@@ -63,7 +61,7 @@ pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     who: event.who.clone(),
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_index(trees.clone(), event.index, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
         },

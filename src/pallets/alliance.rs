@@ -2,7 +2,7 @@ use subxt::{
     utils::AccountId32,
 };
 
-use bincode::{Encode, Decode};
+use parity_scale_codec::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
 type Cid = Vec<u8>;
@@ -26,38 +26,30 @@ pub enum Alliance {
 	},
     #[serde(rename_all = "camelCase")]
 	MembersInitialized {
-	    #[bincode(with_serde)]
 	    fellows: Vec<AccountId32>,
-	    #[bincode(with_serde)]
 	    allies: Vec<AccountId32>,
 	},
     #[serde(rename_all = "camelCase")]
 	NewAllyJoined {
-	    #[bincode(with_serde)]
 		ally: AccountId32,
-		#[bincode(with_serde)]
 		nominator: Option<AccountId32>,
 		reserved: Option<u128>,
 	},
     #[serde(rename_all = "camelCase")]
 	AllyElevated {
-	    #[bincode(with_serde)]
 	    ally: AccountId32,
 	},
     #[serde(rename_all = "camelCase")]
 	MemberRetirementPeriodStarted {
-	    #[bincode(with_serde)]
 	    member: AccountId32,
 	},
     #[serde(rename_all = "camelCase")]
 	MemberRetired {
-	    #[bincode(with_serde)]
 	    member: AccountId32,
 	    unreserved: Option<u128>,
 	},
     #[serde(rename_all = "camelCase")]
 	MemberKicked {
-	    #[bincode(with_serde)]
 	    member: AccountId32,
 	    slashed: Option<u128>,
 	},
@@ -77,7 +69,6 @@ pub enum Alliance {
 	},
     #[serde(rename_all = "camelCase")]
 	FellowAbdicated {
-	    #[bincode(with_serde)]
 	    fellow: AccountId32,
 	},
 }

@@ -2,7 +2,7 @@ use subxt::{
     utils::AccountId32,
 };
 
-use bincode::{Encode, Decode};
+use parity_scale_codec::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
 use crate::shared::*;
@@ -16,17 +16,14 @@ type Hash = Vec<u8>;
 pub enum System {
     #[serde(rename_all = "camelCase")]
 	NewAccount {
-        #[bincode(with_serde)]
         account: AccountId32,
 	},
     #[serde(rename_all = "camelCase")]
 	KilledAccount {
-        #[bincode(with_serde)]
         account: AccountId32,
 	},
     #[serde(rename_all = "camelCase")]
 	Remarked {
-        #[bincode(with_serde)]
         sender: AccountId32,
 	    hash: Hash,
 	},
@@ -41,7 +38,7 @@ pub fn system_index_event(trees: Trees, block_number: u32, event_index: u32, eve
                     account: event.account.clone(),
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
         },
         "KilledAccount" => {
@@ -51,7 +48,7 @@ pub fn system_index_event(trees: Trees, block_number: u32, event_index: u32, eve
                     account: event.account.clone(),
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
         },
         "Remarked" => {
@@ -62,7 +59,7 @@ pub fn system_index_event(trees: Trees, block_number: u32, event_index: u32, eve
                     hash: event.hash.as_ref().to_vec(),
                 }
             );
-            let value = bincode::encode_to_vec(&event_db, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sender, block_number, event_index, &value);
         },
         _ => {},

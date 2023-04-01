@@ -9,13 +9,14 @@ use subxt::{
 
 use sled::Tree;
 
-use bincode::{Encode, Decode};
+use parity_scale_codec::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
 pub mod polkadot {}
 
 use crate::pallets::balances::Balances;
+use crate::pallets::democracy::Democracy;
 use crate::pallets::identity::Identity;
 use crate::pallets::indices::Indices;
 use crate::pallets::system::System;
@@ -36,6 +37,8 @@ pub struct Args {
 pub struct Trees {
     pub account_id: Tree,
     pub account_index: Tree,
+    pub proposal_index: Tree,
+    pub ref_index: Tree,
     pub registrar_index: Tree,
 }
 
@@ -87,6 +90,30 @@ impl AccountIndexKey {
     }
 }
 
+pub struct RefIndexKey {
+    pub ref_index: u32,
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl RefIndexKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.ref_index.to_be_bytes().to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> RefIndexKey {
+        RefIndexKey {
+            ref_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+        }
+    }
+}
+
 pub struct RegistrarIndexKey {
     pub registrar_index: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -111,12 +138,38 @@ impl RegistrarIndexKey {
     }
 }
 
+pub struct ProposalIndexKey {
+    pub proposal_index: u32,
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl ProposalIndexKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.proposal_index.to_be_bytes().to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> ProposalIndexKey {
+        ProposalIndexKey {
+            proposal_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+        }
+    }
+}
+
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "pallet")]
 pub enum Event {
     #[serde(rename_all = "camelCase")]
     Balances(Balances),
+    #[serde(rename_all = "camelCase")]
+    Democracy(Democracy),
     #[serde(rename_all = "camelCase")]
     Identity(Identity),
     #[serde(rename_all = "camelCase")]

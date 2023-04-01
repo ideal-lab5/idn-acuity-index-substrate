@@ -2,7 +2,7 @@ use subxt::{
     utils::AccountId32,
 };
 
-use bincode::{Encode, Decode};
+use parity_scale_codec::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
 use crate::shared::*;
@@ -32,67 +32,55 @@ impl From<&BalanceStatus> for Status {
 pub enum Balances {
     #[serde(rename_all = "camelCase")]
     Endowed {
-        #[bincode(with_serde)]
         account: AccountId32,
         free_balance: u128,
     },
     #[serde(rename_all = "camelCase")]
     DustLost {
-        #[bincode(with_serde)]
         account: AccountId32,
         amount: u128,
     },
     #[serde(rename_all = "camelCase")]
     Transfer {
-        #[bincode(with_serde)]
         from: AccountId32,
-        #[bincode(with_serde)]
         to: AccountId32,
         value: u128,
     },
     #[serde(rename_all = "camelCase")]
 	BalanceSet {
-        #[bincode(with_serde)]
 	    who: AccountId32,
 	    free: u128,
 	    reserved: u128,
     },
     #[serde(rename_all = "camelCase")]
 	Reserved {
-        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
 	},
     #[serde(rename_all = "camelCase")]
 	Unreserved {
-        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
     },
     #[serde(rename_all = "camelCase")]
 	ReserveRepatriated {
-        #[bincode(with_serde)]
 		from: AccountId32,
-        #[bincode(with_serde)]
 		to: AccountId32,
 		amount: u128,
 		destination_status: Status,
 	},
     #[serde(rename_all = "camelCase")]
 	Deposit {
-        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
 	},
     #[serde(rename_all = "camelCase")]
 	Withdraw {
-        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
 	},
     #[serde(rename_all = "camelCase")]
 	Slashed {
-        #[bincode(with_serde)]
 	    who: AccountId32,
 	    amount: u128,
 	},
@@ -108,7 +96,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     free_balance: endowed_event.free_balance.clone(),
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), endowed_event.account, block_number, event_index, &value);
         },
         "DustLost" => {
@@ -119,7 +107,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     amount: dustlost_event.amount,
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), dustlost_event.account, block_number, event_index, &value);
         },
         "Transfer" => {
@@ -131,7 +119,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     value: transfer_event.amount,
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), transfer_event.from, block_number, event_index, &value);
             index_event_account_id(trees.clone(), transfer_event.to, block_number, event_index, &value);
         },
@@ -144,7 +132,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     reserved: balance_set_event.reserved,
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), balance_set_event.who, block_number, event_index, &value);
         },
         "Reserved" => {
@@ -155,7 +143,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     amount: reserved_event.amount,
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), reserved_event.who, block_number, event_index, &value);
         },
         "Unreserved" => {
@@ -166,7 +154,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     amount: unreserved_event.amount,
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), unreserved_event.who, block_number, event_index, &value);
         },
         "ReserveRepatriated" => {
@@ -179,7 +167,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     destination_status: Status::from(&reserve_repatriated_event.destination_status),
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), reserve_repatriated_event.from, block_number, event_index, &value);
             index_event_account_id(trees.clone(), reserve_repatriated_event.to, block_number, event_index, &value);
         },
@@ -191,7 +179,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     amount: deposit_event.amount,
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), deposit_event.who, block_number, event_index, &value);
         },
         "Withdraw" => {
@@ -202,7 +190,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     amount: withdraw_event.amount,
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), withdraw_event.who, block_number, event_index, &value);
         },
         "Slashed" => {
@@ -213,7 +201,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                     amount: slashed_event.amount,
                 }
             );
-            let value = bincode::encode_to_vec(&event, bincode::config::standard()).unwrap();
+            let value = Event::encode(&event);
             index_event_account_id(trees.clone(), slashed_event.who, block_number, event_index, &value);
         },
         _ => {},

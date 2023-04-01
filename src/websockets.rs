@@ -1,6 +1,7 @@
 use std::{
     net::SocketAddr,
 };
+use parity_scale_codec::Decode;
 use serde::{Serialize, Deserialize};
 use tokio::net::{TcpListener, TcpStream};
 use futures::{StreamExt, SinkExt};
@@ -42,7 +43,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 let kv = kv.unwrap();
                 let key = AccountIdKey::unserialize(kv.0.to_vec());
                 println!("value: {:?}", kv.1);
-                let event: Event = bincode::decode_from_slice(&kv.1.to_vec(), bincode::config::standard()).unwrap().0;
+                let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
                     block_number: key.block_number,
