@@ -9,3 +9,4 @@ pub mod indices;
 pub mod system;
 pub mod transaction_payment;
 pub mod treasury;
+pub mod vesting;
