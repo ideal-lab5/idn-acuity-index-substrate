@@ -22,6 +22,7 @@ use crate::pallets::democracy::Democracy;
 use crate::pallets::elections_phragmen::PhragmenElection;
 use crate::pallets::identity::Identity;
 use crate::pallets::indices::Indices;
+use crate::pallets::proxy::Proxy;
 use crate::pallets::system::System;
 use crate::pallets::transaction_payment::TransactionPayment;
 use crate::pallets::treasury::Treasury;
@@ -210,6 +211,8 @@ pub enum Event {
     Identity(Identity),
     #[serde(rename_all = "camelCase")]
     Indices(Indices),
+    #[serde(rename_all = "camelCase")]
+    Proxy(Proxy),
     #[serde(rename_all = "camelCase")]
     System(System),
     #[serde(rename_all = "camelCase")]
