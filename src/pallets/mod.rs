@@ -1,5 +1,6 @@
 pub mod alliance;
 pub mod balances;
+pub mod bounties;
 pub mod collective;
 pub mod claims;
 pub mod democracy;

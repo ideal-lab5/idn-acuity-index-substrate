@@ -16,6 +16,7 @@ use serde::{Serialize, Deserialize};
 pub mod polkadot {}
 
 use crate::pallets::balances::Balances;
+use crate::pallets::bounties::Bounties;
 use crate::pallets::claims::Claims;
 use crate::pallets::collective::Collective;
 use crate::pallets::democracy::Democracy;
@@ -44,6 +45,7 @@ pub struct Args {
 pub struct Trees {
     pub account_id: Tree,
     pub account_index: Tree,
+    pub bounty_index: Tree,
     pub proposal_hash: Tree,
     pub proposal_index: Tree,
     pub ref_index: Tree,
@@ -65,7 +67,7 @@ impl AccountIdKey {
         ].concat()
     }
 
-    pub fn unserialize(vec: Vec<u8>) -> AccountIdKey {
+    pub fn unserialize(vec: Vec<u8>) -> Self {
         AccountIdKey {
             account_id: AccountId32(vector_as_u8_32_array(&vec[0..32].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
@@ -89,9 +91,33 @@ impl AccountIndexKey {
         ].concat()
     }
 
-    pub fn unserialize(vec: Vec<u8>) -> AccountIndexKey {
+    pub fn unserialize(vec: Vec<u8>) -> Self {
         AccountIndexKey {
             account_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+        }
+    }
+}
+
+pub struct BountyIndexKey {
+    pub bounty_index: u32,
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl BountyIndexKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.bounty_index.to_be_bytes().to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> Self {
+        BountyIndexKey {
+            bounty_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
         }
@@ -113,7 +139,7 @@ impl RefIndexKey {
         ].concat()
     }
 
-    pub fn unserialize(vec: Vec<u8>) -> RefIndexKey {
+    pub fn unserialize(vec: Vec<u8>) -> Self {
         RefIndexKey {
             ref_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
@@ -137,7 +163,7 @@ impl RegistrarIndexKey {
         ].concat()
     }
 
-    pub fn unserialize(vec: Vec<u8>) -> RegistrarIndexKey {
+    pub fn unserialize(vec: Vec<u8>) -> Self {
         RegistrarIndexKey {
             registrar_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
@@ -161,7 +187,7 @@ impl ProposalHashKey {
         ].concat()
     }
 
-    pub fn unserialize(vec: Vec<u8>) -> ProposalHashKey {
+    pub fn unserialize(vec: Vec<u8>) -> Self {
         ProposalHashKey {
             proposal_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..40].to_vec())),
@@ -185,7 +211,7 @@ impl ProposalIndexKey {
         ].concat()
     }
 
-    pub fn unserialize(vec: Vec<u8>) -> ProposalIndexKey {
+    pub fn unserialize(vec: Vec<u8>) -> Self {
         ProposalIndexKey {
             proposal_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
@@ -200,6 +226,8 @@ impl ProposalIndexKey {
 pub enum Event {
     #[serde(rename_all = "camelCase")]
     Balances(Balances),
+    #[serde(rename_all = "camelCase")]
+    Bounties(Bounties),
     #[serde(rename_all = "camelCase")]
     Claims(Claims),
     #[serde(rename_all = "camelCase")]
