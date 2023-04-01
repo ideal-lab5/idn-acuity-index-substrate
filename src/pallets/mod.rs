@@ -1,6 +1,7 @@
 pub mod alliance;
 pub mod balances;
 pub mod collective;
+pub mod claims;
 pub mod democracy;
 pub mod elections_phragmen;
 pub mod identity;

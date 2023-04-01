@@ -16,6 +16,7 @@ use serde::{Serialize, Deserialize};
 pub mod polkadot {}
 
 use crate::pallets::balances::Balances;
+use crate::pallets::claims::Claims;
 use crate::pallets::collective::Collective;
 use crate::pallets::democracy::Democracy;
 use crate::pallets::elections_phragmen::PhragmenElection;
@@ -196,6 +197,8 @@ impl ProposalIndexKey {
 pub enum Event {
     #[serde(rename_all = "camelCase")]
     Balances(Balances),
+    #[serde(rename_all = "camelCase")]
+    Claims(Claims),
     #[serde(rename_all = "camelCase")]
     Collective(Collective),
     #[serde(rename_all = "camelCase")]
