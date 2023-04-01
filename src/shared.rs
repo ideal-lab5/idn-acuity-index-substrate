@@ -16,6 +16,7 @@ use serde::{Serialize, Deserialize};
 pub mod polkadot {}
 
 use crate::pallets::balances::Balances;
+use crate::pallets::collective::Collective;
 use crate::pallets::democracy::Democracy;
 use crate::pallets::identity::Identity;
 use crate::pallets::indices::Indices;
@@ -37,6 +38,7 @@ pub struct Args {
 pub struct Trees {
     pub account_id: Tree,
     pub account_index: Tree,
+    pub proposal_hash: Tree,
     pub proposal_index: Tree,
     pub ref_index: Tree,
     pub registrar_index: Tree,
@@ -138,6 +140,30 @@ impl RegistrarIndexKey {
     }
 }
 
+pub struct ProposalHashKey {
+    pub proposal_hash: [u8; 32],
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl ProposalHashKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.proposal_hash.to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> ProposalHashKey {
+        ProposalHashKey {
+            proposal_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..40].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[40..44].to_vec())),
+        }
+    }
+}
+
 pub struct ProposalIndexKey {
     pub proposal_index: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -168,6 +194,8 @@ impl ProposalIndexKey {
 pub enum Event {
     #[serde(rename_all = "camelCase")]
     Balances(Balances),
+    #[serde(rename_all = "camelCase")]
+    Collective(Collective),
     #[serde(rename_all = "camelCase")]
     Democracy(Democracy),
     #[serde(rename_all = "camelCase")]

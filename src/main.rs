@@ -22,6 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let trees = Trees {
         account_id: db.open_tree("account_id")?,
         account_index: db.open_tree("account_index")?,
+        proposal_hash: db.open_tree("proposal_hash")?,
         proposal_index: db.open_tree("proposal_index")?,
         ref_index: db.open_tree("ref_index")?,
         registrar_index: db.open_tree("registrar_index")?,

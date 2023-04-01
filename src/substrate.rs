@@ -8,6 +8,7 @@ use subxt::{
 
 use crate::shared::*;
 use crate::pallets::balances::*;
+use crate::pallets::collective::*;
 use crate::pallets::democracy::*;
 use crate::pallets::identity::*;
 use crate::pallets::indices::*;
@@ -36,6 +37,18 @@ pub fn index_event_account_index(trees: Trees, account_index: u32, block_number:
     }.serialize();
     // Insert record.
     trees.account_index.insert(key, bytes).unwrap();
+}
+
+pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+//    println!("ProposalHash: {:}", proposal_hash);
+    // Generate key
+    let key = ProposalHashKey {
+        proposal_hash: proposal_hash,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    trees.proposal_hash.insert(key, bytes).unwrap();
 }
 
 pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
@@ -78,6 +91,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
 
     match event.pallet_name() {
         "Balances" => balance_index_event(trees, block_number, event_index, event),
+        "Collective" => collective_index_event(trees, block_number, event_index, event),
         "Democracy" => democracy_index_event(trees, block_number, event_index, event),
         "Identity" => identity_index_event(trees, block_number, event_index, event),
         "Indices" => indices_index_event(trees, block_number, event_index, event),
