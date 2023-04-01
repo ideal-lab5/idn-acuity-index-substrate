@@ -15,6 +15,7 @@ use crate::pallets::identity::*;
 use crate::pallets::indices::*;
 use crate::pallets::system::*;
 use crate::pallets::transaction_payment::*;
+use crate::pallets::treasury::*;
 
 pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
     println!("AccountId: {:}", account_id);
@@ -99,6 +100,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "PhragmenElection" => elections_phragmen_index_event(trees, block_number, event_index, event),
         "System" => system_index_event(trees, block_number, event_index, event),
         "TransactionPayment" => transaction_payment_index_event(trees, block_number, event_index, event),
+        "Treasury" => treasury_index_event(trees, block_number, event_index, event),
         _ => {},
     }
 }
