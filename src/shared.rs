@@ -15,6 +15,7 @@ use serde::{Serialize, Deserialize};
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
 pub mod polkadot {}
 
+use crate::pallets::bags_list::BagsList;
 use crate::pallets::balances::Balances;
 use crate::pallets::bounties::Bounties;
 use crate::pallets::child_bounties::ChildBounties;
@@ -252,6 +253,8 @@ impl TipHashKey {
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "pallet")]
 pub enum Event {
+    #[serde(rename_all = "camelCase")]
+    BagsList(BagsList),
     #[serde(rename_all = "camelCase")]
     Balances(Balances),
     #[serde(rename_all = "camelCase")]

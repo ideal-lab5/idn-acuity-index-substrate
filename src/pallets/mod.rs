@@ -1,4 +1,5 @@
 pub mod alliance;
+pub mod bags_list;
 pub mod balances;
 pub mod bounties;
 pub mod child_bounties;
