@@ -11,6 +11,7 @@ pub mod elections_phragmen;
 pub mod identity;
 pub mod indices;
 pub mod multisig;
+pub mod nomination_pools;
 pub mod proxy;
 pub mod system;
 pub mod tips;

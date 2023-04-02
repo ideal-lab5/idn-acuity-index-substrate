@@ -27,6 +27,7 @@ use crate::pallets::elections_phragmen::PhragmenElection;
 use crate::pallets::identity::Identity;
 use crate::pallets::indices::Indices;
 use crate::pallets::multisig::Multisig;
+use crate::pallets::nomination_pools::NominationPools;
 use crate::pallets::proxy::Proxy;
 use crate::pallets::system::System;
 use crate::pallets::tips::Tips;
@@ -50,6 +51,7 @@ pub struct Trees {
     pub account_id: Tree,
     pub account_index: Tree,
     pub bounty_index: Tree,
+    pub pool_id: Tree,
     pub proposal_hash: Tree,
     pub proposal_index: Tree,
     pub ref_index: Tree,
@@ -125,6 +127,30 @@ impl BountyIndexKey {
             bounty_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+        }
+    }
+}
+
+pub struct PoolIdKey {
+    pub pool_id: u32,
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl PoolIdKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.pool_id.to_be_bytes().to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> Self {
+        PoolIdKey {
+            pool_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
         }
     }
 }
@@ -277,6 +303,8 @@ pub enum Event {
     Indices(Indices),
     #[serde(rename_all = "camelCase")]
     Multisig(Multisig),
+    #[serde(rename_all = "camelCase")]
+    NominationPools(NominationPools),
     #[serde(rename_all = "camelCase")]
     Proxy(Proxy),
     #[serde(rename_all = "camelCase")]

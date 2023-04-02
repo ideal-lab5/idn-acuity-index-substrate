@@ -19,6 +19,7 @@ use crate::pallets::elections_phragmen::*;
 use crate::pallets::identity::*;
 use crate::pallets::indices::*;
 use crate::pallets::multisig::*;
+use crate::pallets::nomination_pools::*;
 use crate::pallets::proxy::*;
 use crate::pallets::system::*;
 use crate::pallets::tips::*;
@@ -86,6 +87,18 @@ pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_numbe
     trees.proposal_index.insert(key, bytes).unwrap();
 }
 
+pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("PoolId: {:}", pool_id);
+    // Generate key
+    let key = PoolIdKey {
+        pool_id: pool_id,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    trees.pool_id.insert(key, bytes).unwrap();
+}
+
 pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
     println!("RefIndex: {:}", ref_index);
     // Generate key
@@ -136,6 +149,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "Identity" => identity_index_event(trees, block_number, event_index, event),
         "Indices" => indices_index_event(trees, block_number, event_index, event),
         "Multisig" => multisig_index_event(trees, block_number, event_index, event),
+        "NominationPools" => nomination_pools_index_event(trees, block_number, event_index, event),
         "PhragmenElection" => elections_phragmen_index_event(trees, block_number, event_index, event),
         "Proxy" => proxy_index_event(trees, block_number, event_index, event),
         "System" => system_index_event(trees, block_number, event_index, event),
