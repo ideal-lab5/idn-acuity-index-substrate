@@ -21,6 +21,7 @@ use crate::pallets::child_bounties::ChildBounties;
 use crate::pallets::claims::Claims;
 use crate::pallets::collective::Collective;
 use crate::pallets::democracy::Democracy;
+use crate::pallets::election_provider_multi_phase::ElectionProviderMultiPhase;
 use crate::pallets::elections_phragmen::PhragmenElection;
 use crate::pallets::identity::Identity;
 use crate::pallets::indices::Indices;
@@ -263,6 +264,8 @@ pub enum Event {
     Collective(Collective),
     #[serde(rename_all = "camelCase")]
     Democracy(Democracy),
+    #[serde(rename_all = "camelCase")]
+    ElectionProviderMultiPhase(ElectionProviderMultiPhase),
     #[serde(rename_all = "camelCase")]
     PhragmenElection(PhragmenElection),
     #[serde(rename_all = "camelCase")]

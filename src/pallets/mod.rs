@@ -5,6 +5,7 @@ pub mod child_bounties;
 pub mod claims;
 pub mod collective;
 pub mod democracy;
+pub mod election_provider_multi_phase;
 pub mod elections_phragmen;
 pub mod identity;
 pub mod indices;
