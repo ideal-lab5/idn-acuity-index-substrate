@@ -16,6 +16,7 @@ use crate::pallets::collective::*;
 use crate::pallets::democracy::*;
 use crate::pallets::election_provider_multi_phase::*;
 use crate::pallets::elections_phragmen::*;
+use crate::pallets::fast_unstake::*;
 use crate::pallets::identity::*;
 use crate::pallets::indices::*;
 use crate::pallets::multisig::*;
@@ -146,6 +147,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "Collective" => collective_index_event(trees, block_number, event_index, event),
         "Democracy" => democracy_index_event(trees, block_number, event_index, event),
         "ElectionProviderMultiPhase" => election_provider_multi_phase_index_event(trees, block_number, event_index, event),
+        "FastUnstake" => fast_unstake_index_event(trees, block_number, event_index, event),
         "Identity" => identity_index_event(trees, block_number, event_index, event),
         "Indices" => indices_index_event(trees, block_number, event_index, event),
         "Multisig" => multisig_index_event(trees, block_number, event_index, event),

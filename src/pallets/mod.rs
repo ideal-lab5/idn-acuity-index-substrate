@@ -8,6 +8,7 @@ pub mod collective;
 pub mod democracy;
 pub mod election_provider_multi_phase;
 pub mod elections_phragmen;
+pub mod fast_unstake;
 pub mod identity;
 pub mod indices;
 pub mod multisig;

@@ -24,6 +24,7 @@ use crate::pallets::collective::Collective;
 use crate::pallets::democracy::Democracy;
 use crate::pallets::election_provider_multi_phase::ElectionProviderMultiPhase;
 use crate::pallets::elections_phragmen::PhragmenElection;
+use crate::pallets::fast_unstake::FastUnstake;
 use crate::pallets::identity::Identity;
 use crate::pallets::indices::Indices;
 use crate::pallets::multisig::Multisig;
@@ -295,6 +296,8 @@ pub enum Event {
     Democracy(Democracy),
     #[serde(rename_all = "camelCase")]
     ElectionProviderMultiPhase(ElectionProviderMultiPhase),
+    #[serde(rename_all = "camelCase")]
+    FastUnstake(FastUnstake),
     #[serde(rename_all = "camelCase")]
     PhragmenElection(PhragmenElection),
     #[serde(rename_all = "camelCase")]
