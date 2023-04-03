@@ -12,6 +12,9 @@ use sled::Tree;
 use parity_scale_codec::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
+#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+pub struct ParaId(pub u32);
+
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
 pub mod polkadot {}
 
@@ -39,6 +42,7 @@ use crate::pallets::vesting::Vesting;
 use crate::pallets::polkadot::auctions::Auctions;
 use crate::pallets::polkadot::crowdloan::Crowdloan;
 use crate::pallets::polkadot::parachains_disputes::ParasDisputes;
+use crate::pallets::polkadot::paras_registrar::Registrar;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -395,6 +399,8 @@ pub enum Event {
     NominationPools(NominationPools),
     #[serde(rename_all = "camelCase")]
     Proxy(Proxy),
+    #[serde(rename_all = "camelCase")]
+    Registrar(Registrar),
     #[serde(rename_all = "camelCase")]
     System(System),
     #[serde(rename_all = "camelCase")]
