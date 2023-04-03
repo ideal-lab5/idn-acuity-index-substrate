@@ -38,6 +38,7 @@ use crate::pallets::vesting::Vesting;
 
 use crate::pallets::polkadot::auctions::Auctions;
 use crate::pallets::polkadot::crowdloan::Crowdloan;
+use crate::pallets::polkadot::parachains_disputes::ParasDisputes;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -56,6 +57,7 @@ pub struct Trees {
     pub account_index: Tree,
     pub auction_index: Tree,
     pub bounty_index: Tree,
+    pub candidate_hash: Tree,
     pub para_id: Tree,
     pub pool_id: Tree,
     pub proposal_hash: Tree,
@@ -157,6 +159,30 @@ impl BountyIndexKey {
             bounty_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+        }
+    }
+}
+
+pub struct CandidateHashKey {
+    pub candidate_hash: [u8; 32],
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl CandidateHashKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.candidate_hash.to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> Self {
+        CandidateHashKey {
+            candidate_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
         }
     }
 }
@@ -355,6 +381,8 @@ pub enum Event {
     ElectionProviderMultiPhase(ElectionProviderMultiPhase),
     #[serde(rename_all = "camelCase")]
     FastUnstake(FastUnstake),
+    #[serde(rename_all = "camelCase")]
+    ParasDisputes(ParasDisputes),
     #[serde(rename_all = "camelCase")]
     PhragmenElection(PhragmenElection),
     #[serde(rename_all = "camelCase")]
