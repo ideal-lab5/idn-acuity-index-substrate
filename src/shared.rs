@@ -43,6 +43,7 @@ use crate::pallets::polkadot::auctions::Auctions;
 use crate::pallets::polkadot::crowdloan::Crowdloan;
 use crate::pallets::polkadot::parachains_disputes::ParasDisputes;
 use crate::pallets::polkadot::parachains_hrmp::Hrmp;
+use crate::pallets::polkadot::parachains_paras::Paras;
 use crate::pallets::polkadot::paras_registrar::Registrar;
 use crate::pallets::polkadot::slots::Slots;
 
@@ -389,6 +390,8 @@ pub enum Event {
     FastUnstake(FastUnstake),
     #[serde(rename_all = "camelCase")]
     Hrmp(Hrmp),
+    #[serde(rename_all = "camelCase")]
+    Paras(Paras),
     #[serde(rename_all = "camelCase")]
     ParasDisputes(ParasDisputes),
     #[serde(rename_all = "camelCase")]

@@ -32,6 +32,7 @@ use crate::pallets::polkadot::auctions::*;
 use crate::pallets::polkadot::crowdloan::*;
 use crate::pallets::polkadot::parachains_disputes::*;
 use crate::pallets::polkadot::parachains_hrmp::*;
+use crate::pallets::polkadot::parachains_paras::*;
 use crate::pallets::polkadot::paras_registrar::*;
 use crate::pallets::polkadot::slots::*;
 
@@ -198,6 +199,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "Indices" => indices_index_event(trees, block_number, event_index, event),
         "Multisig" => multisig_index_event(trees, block_number, event_index, event),
         "NominationPools" => nomination_pools_index_event(trees, block_number, event_index, event),
+        "Paras" => parachains_paras_index_event(trees, block_number, event_index, event),
         "ParasDisputes" => parachains_disputes_index_event(trees, block_number, event_index, event),
         "PhragmenElection" => elections_phragmen_index_event(trees, block_number, event_index, event),
         "Proxy" => proxy_index_event(trees, block_number, event_index, event),
