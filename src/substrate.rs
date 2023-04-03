@@ -32,6 +32,7 @@ use crate::pallets::polkadot::auctions::*;
 use crate::pallets::polkadot::crowdloan::*;
 use crate::pallets::polkadot::parachains_disputes::*;
 use crate::pallets::polkadot::paras_registrar::*;
+use crate::pallets::polkadot::slots::*;
 
 pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
     println!("AccountId: {:}", account_id);
@@ -199,6 +200,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "PhragmenElection" => elections_phragmen_index_event(trees, block_number, event_index, event),
         "Proxy" => proxy_index_event(trees, block_number, event_index, event),
         "Registrar" => paras_registrar_index_event(trees, block_number, event_index, event),
+        "Slots" => slots_index_event(trees, block_number, event_index, event),
         "System" => system_index_event(trees, block_number, event_index, event),
         "Tips" => tips_index_event(trees, block_number, event_index, event),
         "TransactionPayment" => transaction_payment_index_event(trees, block_number, event_index, event),

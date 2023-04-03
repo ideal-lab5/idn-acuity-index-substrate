@@ -43,6 +43,7 @@ use crate::pallets::polkadot::auctions::Auctions;
 use crate::pallets::polkadot::crowdloan::Crowdloan;
 use crate::pallets::polkadot::parachains_disputes::ParasDisputes;
 use crate::pallets::polkadot::paras_registrar::Registrar;
+use crate::pallets::polkadot::slots::Slots;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -401,6 +402,8 @@ pub enum Event {
     Proxy(Proxy),
     #[serde(rename_all = "camelCase")]
     Registrar(Registrar),
+    #[serde(rename_all = "camelCase")]
+    Slots(Slots),
     #[serde(rename_all = "camelCase")]
     System(System),
     #[serde(rename_all = "camelCase")]
