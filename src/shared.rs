@@ -44,6 +44,7 @@ use crate::pallets::polkadot::crowdloan::Crowdloan;
 use crate::pallets::polkadot::parachains_disputes::ParasDisputes;
 use crate::pallets::polkadot::parachains_hrmp::Hrmp;
 use crate::pallets::polkadot::parachains_paras::Paras;
+use crate::pallets::polkadot::parachains_ump::Ump;
 use crate::pallets::polkadot::paras_registrar::Registrar;
 use crate::pallets::polkadot::slots::Slots;
 
@@ -65,6 +66,7 @@ pub struct Trees {
     pub auction_index: Tree,
     pub bounty_index: Tree,
     pub candidate_hash: Tree,
+    pub message_id: Tree,
     pub para_id: Tree,
     pub pool_id: Tree,
     pub proposal_hash: Tree,
@@ -188,6 +190,30 @@ impl CandidateHashKey {
     pub fn unserialize(vec: Vec<u8>) -> Self {
         CandidateHashKey {
             candidate_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+        }
+    }
+}
+
+pub struct MessageIdKey {
+    pub message_id: [u8; 32],
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl MessageIdKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.message_id.to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> Self {
+        MessageIdKey {
+            message_id: vector_as_u8_32_array(&vec[0..32].to_vec()),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
         }
@@ -418,6 +444,8 @@ pub enum Event {
     TransactionPayment(TransactionPayment),
     #[serde(rename_all = "camelCase")]
     Treasury(Treasury),
+    #[serde(rename_all = "camelCase")]
+    Ump(Ump),
     #[serde(rename_all = "camelCase")]
     Vesting(Vesting),
 }

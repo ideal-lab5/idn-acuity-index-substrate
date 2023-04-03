@@ -33,6 +33,7 @@ use crate::pallets::polkadot::crowdloan::*;
 use crate::pallets::polkadot::parachains_disputes::*;
 use crate::pallets::polkadot::parachains_hrmp::*;
 use crate::pallets::polkadot::parachains_paras::*;
+use crate::pallets::polkadot::parachains_ump::*;
 use crate::pallets::polkadot::paras_registrar::*;
 use crate::pallets::polkadot::slots::*;
 
@@ -94,6 +95,18 @@ pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_
     }.serialize();
     // Insert record.
     trees.candidate_hash.insert(key, bytes).unwrap();
+}
+
+pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+//  println!("MessageId: {:}", message_id);
+    // Generate key
+    let key = MessageIdKey {
+        message_id: message_id,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    trees.message_id.insert(key, bytes).unwrap();
 }
 
 pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32, bytes: &[u8]) {
@@ -200,6 +213,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "Multisig" => multisig_index_event(trees, block_number, event_index, event),
         "NominationPools" => nomination_pools_index_event(trees, block_number, event_index, event),
         "Paras" => parachains_paras_index_event(trees, block_number, event_index, event),
+        "Ump" => parachains_ump_index_event(trees, block_number, event_index, event),
         "ParasDisputes" => parachains_disputes_index_event(trees, block_number, event_index, event),
         "PhragmenElection" => elections_phragmen_index_event(trees, block_number, event_index, event),
         "Proxy" => proxy_index_event(trees, block_number, event_index, event),
