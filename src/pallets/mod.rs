@@ -19,3 +19,5 @@ pub mod tips;
 pub mod transaction_payment;
 pub mod treasury;
 pub mod vesting;
+
+pub mod polkadot;

@@ -36,6 +36,8 @@ use crate::pallets::transaction_payment::TransactionPayment;
 use crate::pallets::treasury::Treasury;
 use crate::pallets::vesting::Vesting;
 
+use crate::pallets::polkadot::auctions::Auctions;
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
@@ -51,7 +53,9 @@ pub struct Args {
 pub struct Trees {
     pub account_id: Tree,
     pub account_index: Tree,
+    pub auction_index: Tree,
     pub bounty_index: Tree,
+    pub para_id: Tree,
     pub pool_id: Tree,
     pub proposal_hash: Tree,
     pub proposal_index: Tree,
@@ -108,6 +112,30 @@ impl AccountIndexKey {
     }
 }
 
+pub struct AuctionIndexKey {
+    pub auction_index: u32,
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl AuctionIndexKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.auction_index.to_be_bytes().to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> Self {
+        AuctionIndexKey {
+            auction_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+        }
+    }
+}
+
 pub struct BountyIndexKey {
     pub bounty_index: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -128,6 +156,30 @@ impl BountyIndexKey {
             bounty_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+        }
+    }
+}
+
+pub struct ParaIdKey {
+    pub para_id: u32,
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl ParaIdKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.para_id.to_be_bytes().to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> Self {
+        ParaIdKey {
+            para_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
         }
     }
 }
@@ -280,6 +332,8 @@ impl TipHashKey {
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "pallet")]
 pub enum Event {
+    #[serde(rename_all = "camelCase")]
+    Auctions(Auctions),
     #[serde(rename_all = "camelCase")]
     BagsList(BagsList),
     #[serde(rename_all = "camelCase")]

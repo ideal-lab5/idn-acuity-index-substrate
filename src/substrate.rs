@@ -28,6 +28,8 @@ use crate::pallets::transaction_payment::*;
 use crate::pallets::treasury::*;
 use crate::pallets::vesting::*;
 
+use crate::pallets::polkadot::auctions::*;
+
 pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
     println!("AccountId: {:}", account_id);
     // Generate key
@@ -52,6 +54,18 @@ pub fn index_event_account_index(trees: Trees, account_index: u32, block_number:
     trees.account_index.insert(key, bytes).unwrap();
 }
 
+pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("AuctionIndex: {:}", auction_index);
+    // Generate key
+    let key = AuctionIndexKey {
+        auction_index: auction_index,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    trees.auction_index.insert(key, bytes).unwrap();
+}
+
 pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
     println!("BountyIndex: {:}", bounty_index);
     // Generate key
@@ -62,6 +76,30 @@ pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u
     }.serialize();
     // Insert record.
     trees.bounty_index.insert(key, bytes).unwrap();
+}
+
+pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("ParaId: {:}", para_id);
+    // Generate key
+    let key = ParaIdKey {
+        para_id: para_id,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    trees.para_id.insert(key, bytes).unwrap();
+}
+
+pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("PoolId: {:}", pool_id);
+    // Generate key
+    let key = PoolIdKey {
+        pool_id: pool_id,
+        block_number: block_number,
+        i: i,
+    }.serialize();
+    // Insert record.
+    trees.pool_id.insert(key, bytes).unwrap();
 }
 
 pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
@@ -86,18 +124,6 @@ pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_numbe
     }.serialize();
     // Insert record.
     trees.proposal_index.insert(key, bytes).unwrap();
-}
-
-pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32, bytes: &[u8]) {
-    println!("PoolId: {:}", pool_id);
-    // Generate key
-    let key = PoolIdKey {
-        pool_id: pool_id,
-        block_number: block_number,
-        i: i,
-    }.serialize();
-    // Insert record.
-    trees.pool_id.insert(key, bytes).unwrap();
 }
 
 pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
@@ -139,6 +165,7 @@ pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32,
 fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
 
     match event.pallet_name() {
+        "Auctions" => auctions_index_event(trees, block_number, event_index, event),
         "BagsList" => bags_list_index_event(trees, block_number, event_index, event),
         "Balances" => balance_index_event(trees, block_number, event_index, event),
         "Bounties" => bounties_index_event(trees, block_number, event_index, event),
