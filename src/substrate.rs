@@ -31,6 +31,7 @@ use crate::pallets::vesting::*;
 use crate::pallets::polkadot::auctions::*;
 use crate::pallets::polkadot::crowdloan::*;
 use crate::pallets::polkadot::parachains_disputes::*;
+use crate::pallets::polkadot::parachains_hrmp::*;
 use crate::pallets::polkadot::paras_registrar::*;
 use crate::pallets::polkadot::slots::*;
 
@@ -192,6 +193,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "Democracy" => democracy_index_event(trees, block_number, event_index, event),
         "ElectionProviderMultiPhase" => election_provider_multi_phase_index_event(trees, block_number, event_index, event),
         "FastUnstake" => fast_unstake_index_event(trees, block_number, event_index, event),
+        "Hrmp" => parachains_hrmp_index_event(trees, block_number, event_index, event),
         "Identity" => identity_index_event(trees, block_number, event_index, event),
         "Indices" => indices_index_event(trees, block_number, event_index, event),
         "Multisig" => multisig_index_event(trees, block_number, event_index, event),
