@@ -37,6 +37,7 @@ use crate::pallets::treasury::Treasury;
 use crate::pallets::vesting::Vesting;
 
 use crate::pallets::polkadot::auctions::Auctions;
+use crate::pallets::polkadot::crowdloan::Crowdloan;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -346,6 +347,8 @@ pub enum Event {
     Claims(Claims),
     #[serde(rename_all = "camelCase")]
     Collective(Collective),
+    #[serde(rename_all = "camelCase")]
+    Crowdloan(Crowdloan),
     #[serde(rename_all = "camelCase")]
     Democracy(Democracy),
     #[serde(rename_all = "camelCase")]

@@ -29,6 +29,7 @@ use crate::pallets::treasury::*;
 use crate::pallets::vesting::*;
 
 use crate::pallets::polkadot::auctions::*;
+use crate::pallets::polkadot::crowdloan::*;
 
 pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
     println!("AccountId: {:}", account_id);
@@ -172,6 +173,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "ChildBounties" => child_bounties_index_event(trees, block_number, event_index, event),
         "Claims" => claims_index_event(trees, block_number, event_index, event),
         "Collective" => collective_index_event(trees, block_number, event_index, event),
+        "Crowdloan" => crowdloan_index_event(trees, block_number, event_index, event),
         "Democracy" => democracy_index_event(trees, block_number, event_index, event),
         "ElectionProviderMultiPhase" => election_provider_multi_phase_index_event(trees, block_number, event_index, event),
         "FastUnstake" => fast_unstake_index_event(trees, block_number, event_index, event),
