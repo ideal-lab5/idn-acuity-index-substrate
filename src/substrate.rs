@@ -229,11 +229,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
     }
 }
 
-/*
-pub async fn substrate_listen(trees: Trees, args: Args) {
-    let api = OnlineClient::<PolkadotConfig>::from_url(args.url).await.unwrap();
-    println!("Connected to Substrate node.");
-
+pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
 
@@ -276,12 +272,8 @@ pub async fn substrate_listen(trees: Trees, args: Args) {
         }
     }
 }
-*/
 
-pub async fn substrate_listen(trees: Trees, args: Args) {
-    let api = OnlineClient::<PolkadotConfig>::from_url(args.url).await.unwrap();
-    println!("Connected to Substrate node.");
-
+pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, args: Args) {
     let mut block_number: u32 = match args.block_height {
         Some(block_height) => block_height,
         None => {

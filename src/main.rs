@@ -9,8 +9,14 @@ mod websockets;
 mod pallets;
 
 use crate::shared::*;
-use substrate::substrate_listen;
+use substrate::*;
 use websockets::websockets_listen;
+
+use subxt::{
+    OnlineClient,
+    PolkadotConfig,
+    utils::AccountId32,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -36,11 +42,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tip_hash: db.open_tree("tip_hash")?,
     };
     println!("Opened database.");
-    // Start Substrate task.
-    let substrate_task = tokio::spawn(substrate_listen(trees.clone(), args));
+    let api = OnlineClient::<PolkadotConfig>::from_url(args.url.clone()).await.unwrap();
+    println!("Connected to Substrate node.");
+
+    // Start Substrate tasks.
+    let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone()));
+    let substrate_batch = tokio::spawn(substrate_batch(api, trees.clone(), args));
     // Spawn websockets task.
     let websockets_task = tokio::spawn(websockets_listen(trees.clone()));
     // Wait to exit.
-    let _result = join!(substrate_task, websockets_task);
+    let _result = join!(substrate_head, substrate_batch, websockets_task);
     Ok(())
 }
