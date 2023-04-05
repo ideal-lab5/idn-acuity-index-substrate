@@ -3,6 +3,8 @@ use subxt::{
     OnlineClient,
     PolkadotConfig,
     utils::AccountId32,
+    Error::Metadata,
+    metadata::MetadataError::EventNotFound,
 };
 
 use futures::StreamExt;
@@ -284,33 +286,31 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         }
     };
 
-    loop {
-        let block_hash = api
-            .rpc()
-            .block_hash(Some(block_number.into()))
-            .await.unwrap()
-            .expect("didn't pass a block number; qed");
+    // Get the hash of the starting block.
+    let mut block_hash = api.rpc().block_hash(Some(block_number.into())).await.unwrap().unwrap();
+    // Download the metadata of the starting block.
+    let mut metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
 
+    'blocks: loop {
         println!("Block #{block_number}:");
         println!("  Hash: {}", hex::encode(block_hash.0));
 
-        // Fetch the metadata of the given block.
-//        let metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
-//        let events = Events::new_from_client(metadata, block_hash, api.clone()).await.unwrap();
-
-
-        let events = api.events().at(Some(block_hash)).await.unwrap();
-
+        let events = subxt::events::Events::new_from_client(metadata.clone(), block_hash, api.clone()).await.unwrap();
         let mut i = 0;
 
         for evt in events.iter() {
-//            println!("Event: {:#?}", evt.unwrap().field_values().unwrap());
-
             match evt {
                 Ok(evt) => {
                     index_event(trees.clone(), block_number, i, evt);
                 },
-                _ => {},
+                Err(error) => match error {
+                    Metadata(EventNotFound(_, _)) => {
+                        println!("Downloading new metadata.");
+                        metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
+                        continue 'blocks;
+                    },
+                    _ => {},
+                }
             }
 
             i += 1;
@@ -318,7 +318,10 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
 
         trees.root.insert("last_block", &block_number.to_be_bytes()).unwrap();
 
+        // Increment the block number.
         block_number += 1;
+        // Get the new block hash.
+        block_hash = api.rpc().block_hash(Some(block_number.into())).await.unwrap().unwrap();
     }
 }
 

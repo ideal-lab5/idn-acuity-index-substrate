@@ -15,7 +15,6 @@ use websockets::websockets_listen;
 use subxt::{
     OnlineClient,
     PolkadotConfig,
-    utils::AccountId32,
 };
 
 #[tokio::main]
