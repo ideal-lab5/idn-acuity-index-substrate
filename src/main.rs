@@ -20,6 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let path = "db";
     let db = sled::open(path)?;
     let trees = Trees {
+        root: db.clone(),
         account_id: db.open_tree("account_id")?,
         account_index: db.open_tree("account_index")?,
         auction_index: db.open_tree("auction_index")?,

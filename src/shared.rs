@@ -56,11 +56,12 @@ pub struct Args {
    pub url: String,
    /// Block number to start indexing from.
    #[arg(short, long)]
-   pub block_height: u32,
+   pub block_height: Option<u32>,
 }
 
 #[derive(Clone)]
 pub struct Trees {
+    pub root: sled::Db,
     pub account_id: Tree,
     pub account_index: Tree,
     pub auction_index: Tree,
