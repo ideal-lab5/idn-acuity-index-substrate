@@ -238,9 +238,9 @@ impl ParaIdKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         ParaIdKey {
-            para_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            para_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
         }
     }
 }
@@ -262,9 +262,9 @@ impl PoolIdKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         PoolIdKey {
-            pool_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            pool_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
         }
     }
 }
