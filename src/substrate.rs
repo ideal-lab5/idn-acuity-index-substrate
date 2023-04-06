@@ -52,6 +52,7 @@ pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_numbe
 }
 
 pub fn index_event_account_index(trees: Trees, account_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("AccountIndex: {}", account_index);
     // Generate key
     let key = AccountIndexKey {
         account_index: account_index,
@@ -63,6 +64,7 @@ pub fn index_event_account_index(trees: Trees, account_index: u32, block_number:
 }
 
 pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("AuctionIndex: {}", auction_index);
     // Generate key
     let key = AuctionIndexKey {
         auction_index: auction_index,
@@ -74,6 +76,7 @@ pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number:
 }
 
 pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("BountyIndex: {}", bounty_index);
     // Generate key
     let key = BountyIndexKey {
         bounty_index: bounty_index,
@@ -85,6 +88,7 @@ pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u
 }
 
 pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+    println!("CandidateHash: {}", hex::encode(candidate_hash));
     // Generate key
     let key = CandidateHashKey {
         candidate_hash: candidate_hash,
@@ -96,6 +100,7 @@ pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_
 }
 
 pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+    println!("MessageId: {}", hex::encode(message_id));
     // Generate key
     let key = MessageIdKey {
         message_id: message_id,
@@ -107,6 +112,7 @@ pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: 
 }
 
 pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("ParaId: {}", para_id);
     // Generate key
     let key = ParaIdKey {
         para_id: para_id,
@@ -118,6 +124,7 @@ pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32
 }
 
 pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("PoolId: {}", pool_id);
     // Generate key
     let key = PoolIdKey {
         pool_id: pool_id,
@@ -129,6 +136,7 @@ pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32
 }
 
 pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+    println!("ProposalHash: {}", hex::encode(proposal_hash));
     // Generate key
     let key = ProposalHashKey {
         proposal_hash: proposal_hash,
@@ -140,6 +148,7 @@ pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_nu
 }
 
 pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("ProposalIndex: {}", proposal_index);
     // Generate key
     let key = ProposalIndexKey {
         proposal_index: proposal_index,
@@ -151,6 +160,7 @@ pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_numbe
 }
 
 pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("RefIndex: {}", ref_index);
     // Generate key
     let key = RefIndexKey {
         ref_index: ref_index,
@@ -162,6 +172,7 @@ pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i:
 }
 
 pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+    println!("RegistrarIndex: {}", registrar_index);
     // Generate key
     let key = RegistrarIndexKey {
         registrar_index: registrar_index,
@@ -173,6 +184,7 @@ pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_num
 }
 
 pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+    println!("TipHash: {}", hex::encode(tip_hash));
     // Generate key
     let key = TipHashKey {
         tip_hash: tip_hash,
