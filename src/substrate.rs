@@ -235,43 +235,40 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
 
-    while let Some(block) = blocks_sub.next().await {
-        let block = block.unwrap();
+    let block = blocks_sub.next().await.unwrap().unwrap();
+    let mut block_number = block.header().number;
+    let mut block_hash = block.hash();
+    // Download the metadata of the starting block.
+    let mut metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
 
-        let block_number = block.header().number;
-        let block_hash = block.hash();
-
-        // Fetch the metadata of the given block.
-//        let metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
-//        let events = Events::new_from_client(metadata, block_hash, api.clone()).await.unwrap();
-
+    'blocks: loop {
         println!("Block #{block_number}:");
-        println!("  Hash: {block_hash}");
-        println!("  Extrinsics:");
+        println!("  Hash: {}", hex::encode(block_hash.0));
 
-        let body = block.body().await.unwrap();
-        for ext in body.extrinsics() {
-            let idx = ext.index();
-            let events = ext.events().await.unwrap();
+        let events = subxt::events::Events::new_from_client(metadata.clone(), block_hash, api.clone()).await.unwrap();
+        let mut i = 0;
 
-            println!("    Extrinsic #{idx}:");
-            println!("      Events:");
-
-            let mut i = 0;
-
-            for evt in events.iter() {
-    //            println!("Event: {:#?}", evt.unwrap().field_values().unwrap());
-
-                match evt {
-                    Ok(evt) => {
-                        index_event(trees.clone(), block_number, i, evt);
+        for evt in events.iter() {
+            match evt {
+                Ok(evt) => {
+                    index_event(trees.clone(), block_number, i, evt);
+                },
+                Err(error) => match error {
+                    Metadata(EventNotFound(_, _)) => {
+                        println!("Downloading new metadata.");
+                        metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
+                        continue 'blocks;
                     },
                     _ => {},
                 }
-
-                i += 1;
             }
+
+            i += 1;
         }
+
+        let block = blocks_sub.next().await.unwrap().unwrap();
+        block_number = block.header().number;
+        block_hash = block.hash();
     }
 }
 
