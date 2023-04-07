@@ -78,7 +78,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.account_id.scan_prefix(account_id) {
                 let kv = kv.unwrap();
                 let key = AccountIdKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -97,7 +96,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.account_index.scan_prefix(account_index.to_be_bytes().to_vec()) {
                 let kv = kv.unwrap();
                 let key = AccountIndexKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -116,7 +114,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.auction_index.scan_prefix(auction_index.to_be_bytes().to_vec()) {
                 let kv = kv.unwrap();
                 let key = AuctionIndexKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -135,7 +132,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.bounty_index.scan_prefix(bounty_index.to_be_bytes().to_vec()) {
                 let kv = kv.unwrap();
                 let key = BountyIndexKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -154,7 +150,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.candidate_hash.scan_prefix(candidate_hash.to_vec()) {
                 let kv = kv.unwrap();
                 let key = CandidateHashKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -173,7 +168,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.message_id.scan_prefix(message_id.to_vec()) {
                 let kv = kv.unwrap();
                 let key = MessageIdKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -192,7 +186,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.para_id.scan_prefix(para_id.to_be_bytes().to_vec()) {
                 let kv = kv.unwrap();
                 let key = ParaIdKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -211,7 +204,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.pool_id.scan_prefix(pool_id.to_be_bytes().to_vec()) {
                 let kv = kv.unwrap();
                 let key = PoolIdKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -230,7 +222,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.proposal_hash.scan_prefix(proposal_hash.to_vec()) {
                 let kv = kv.unwrap();
                 let key = ProposalHashKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -249,7 +240,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.proposal_index.scan_prefix(proposal_index.to_be_bytes().to_vec()) {
                 let kv = kv.unwrap();
                 let key = ProposalIndexKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -268,7 +258,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.ref_index.scan_prefix(ref_index.to_be_bytes().to_vec()) {
                 let kv = kv.unwrap();
                 let key = RefIndexKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -287,7 +276,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.registrar_index.scan_prefix(registrar_index.to_be_bytes().to_vec()) {
                 let kv = kv.unwrap();
                 let key = RegistrarIndexKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {
@@ -306,7 +294,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
             for kv in trees.tip_hash.scan_prefix(tip_hash.to_vec()) {
                 let kv = kv.unwrap();
                 let key = TipHashKey::unserialize(kv.0.to_vec());
-                println!("value: {:?}", kv.1);
                 let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
                 events.push(EventFull {

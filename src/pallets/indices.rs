@@ -11,7 +11,7 @@ use crate::substrate::*;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-#[serde(tag = "variant")]
+#[serde(tag = "variant", content = "details")]
 pub enum Indices {
     #[serde(rename_all = "camelCase")]
 	IndexAssigned {

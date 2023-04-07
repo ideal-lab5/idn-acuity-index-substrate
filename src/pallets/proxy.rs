@@ -39,7 +39,7 @@ impl From<SubProxyType> for ProxyType {
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-#[serde(tag = "variant")]
+#[serde(tag = "variant", content = "details")]
 pub enum Proxy {
     #[serde(rename_all = "camelCase")]
 	PureCreated {

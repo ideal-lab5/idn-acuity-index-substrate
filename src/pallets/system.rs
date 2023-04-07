@@ -12,7 +12,7 @@ type Hash = Vec<u8>;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-#[serde(tag = "variant")]
+#[serde(tag = "variant", content = "details")]
 pub enum System {
     #[serde(rename_all = "camelCase")]
 	NewAccount {

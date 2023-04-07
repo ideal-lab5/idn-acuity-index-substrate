@@ -32,7 +32,7 @@ pub struct H256([u8; 32]);
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-#[serde(tag = "variant")]
+#[serde(tag = "variant", content = "details")]
 pub enum Democracy {
     #[serde(rename_all = "camelCase")]
 	Proposed {
@@ -106,7 +106,13 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
             index_event_proposal_index(trees.clone(), event.proposal_index, block_number, event_index, &value);
         },
         "Tabled" => {
-            let event = event.as_event::<polkadot::democracy::events::Tabled>().unwrap().unwrap();
+            let event = match event.as_event::<polkadot::democracy::events::Tabled>() {
+                Ok(event) => event.unwrap(),
+                Err(error) => {
+                    println!("{}", error);
+                    return;
+                }
+            };
             let event_db = Event::Democracy(
                 Democracy::Tabled {
 	                proposal_index: event.proposal_index,

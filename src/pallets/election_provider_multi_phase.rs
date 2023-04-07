@@ -33,7 +33,7 @@ impl From<SubElectionCompute> for ElectionCompute {
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-#[serde(tag = "variant")]
+#[serde(tag = "variant", content = "details")]
 pub enum ElectionProviderMultiPhase {
     #[serde(rename_all = "camelCase")]
 	SolutionStored {

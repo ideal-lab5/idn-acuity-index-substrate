@@ -18,7 +18,7 @@ pub struct Timepoint {
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-#[serde(tag = "variant")]
+#[serde(tag = "variant", content = "details")]
 pub enum Multisig {
     #[serde(rename_all = "camelCase")]
 	NewMultisig {
@@ -80,7 +80,13 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             index_event_account_id(trees.clone(), event.multisig, block_number, event_index, &value);
         },
         "MultisigExecuted" => {
-            let event = event.as_event::<polkadot::multisig::events::MultisigExecuted>().unwrap().unwrap();
+            let event = match event.as_event::<polkadot::multisig::events::MultisigExecuted>() {
+                Ok(event) => event.unwrap(),
+                Err(error) => {
+                    println!("{}", error);
+                    return;
+                }
+            };
             let event_db = Event::Multisig(
                 Multisig::MultisigExecuted {
                     approving: event.approving.clone(),

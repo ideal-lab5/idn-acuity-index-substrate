@@ -46,7 +46,7 @@ impl From<SubCommissionChangeRate> for CommissionChangeRate {
 */
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-#[serde(tag = "variant")]
+#[serde(tag = "variant", content = "details")]
 pub enum NominationPools {
     #[serde(rename_all = "camelCase")]
 	Created {
