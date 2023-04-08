@@ -11,7 +11,6 @@ pub struct CoreIndex(pub u32);
 pub struct GroupIndex(pub u32);
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 #[serde(tag = "variant", content = "details")]
 pub enum ParaInclusion {
     #[serde(rename_all = "camelCase")]

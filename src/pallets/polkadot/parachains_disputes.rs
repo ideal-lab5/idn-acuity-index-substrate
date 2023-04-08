@@ -45,7 +45,6 @@ impl From<SubDisputeResult> for DisputeResult {
 }
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub enum ParasDisputes {
 	DisputeInitiated(CandidateHash, DisputeLocation),
 	DisputeConcluded(CandidateHash, DisputeResult),

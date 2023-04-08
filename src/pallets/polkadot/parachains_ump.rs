@@ -25,7 +25,6 @@ impl From<SubWeight> for Weight {
 }
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub enum Ump {
 	InvalidFormat(MessageId),
 	UnsupportedVersion(MessageId),

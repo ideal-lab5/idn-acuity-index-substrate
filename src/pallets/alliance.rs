@@ -9,7 +9,6 @@ type Cid = Vec<u8>;
 type UnscrupulousItemOf = Vec<u8>;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 #[serde(tag = "variant", content = "details")]
 pub enum Alliance {
     #[serde(rename_all = "camelCase")]

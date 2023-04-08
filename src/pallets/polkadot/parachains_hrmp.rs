@@ -24,7 +24,6 @@ impl From<SubHrmpChannelId> for HrmpChannelId {
 }
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub enum Hrmp {
     OpenChannelRequested(ParaId, ParaId, u32, u32),
 	OpenChannelCanceled(ParaId, HrmpChannelId),

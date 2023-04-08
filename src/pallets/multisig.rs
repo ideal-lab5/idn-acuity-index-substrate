@@ -17,7 +17,6 @@ pub struct Timepoint {
 }
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 #[serde(tag = "variant", content = "details")]
 pub enum Multisig {
     #[serde(rename_all = "camelCase")]

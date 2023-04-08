@@ -27,7 +27,6 @@ impl From<&BalanceStatus> for Status {
 }
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 #[serde(tag = "variant", content = "details")]
 pub enum Balances {
     #[serde(rename_all = "camelCase")]
@@ -74,7 +73,6 @@ pub enum Balances {
 	    who: AccountId32,
 	    amount: u128,
 	},
-    #[serde(rename_all = "camelCase")]
 	Withdraw {
 	    who: AccountId32,
 	    amount: u128,

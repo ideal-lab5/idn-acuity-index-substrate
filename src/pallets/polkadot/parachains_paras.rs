@@ -11,7 +11,6 @@ pub struct ValidationCodeHash([u8; 32]);
 pub type SessionIndex = u32;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub enum Paras {
     CurrentCodeUpdated(ParaId),
 	CurrentHeadUpdated(ParaId),
