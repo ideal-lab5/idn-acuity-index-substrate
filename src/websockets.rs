@@ -12,6 +12,7 @@ use crate::shared::*;
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum RequestMessage {
+    GetStatus,
     GetEventsByAccountId {
         account_id: AccountId32,
     },
@@ -61,15 +62,29 @@ struct EventFull {
 }
 
 #[derive(Serialize)]
+#[serde(tag = "type", content = "data")]
 #[serde(rename_all = "camelCase")]
-struct ResponseMessage {
-    events: Vec<EventFull>,
+enum ResponseMessage {
+    Status {
+        last_block: u32,
+    },
+    Events {
+        events: Vec<EventFull>,
+    },
 }
 
-async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
+async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
     println!("msg: {:?}", msg);
 
-    let events = match msg {
+    match msg {
+        RequestMessage::GetStatus => {
+            ResponseMessage::Status {
+                last_block: match trees.root.get("last_block").unwrap() {
+                    Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value.to_vec())),
+                    None => 0,
+                }
+            }
+        },
         RequestMessage::GetEventsByAccountId { account_id } => {
             println!("GetEventsByAccountId: {}", account_id);
 
@@ -86,7 +101,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByAccountIndex { account_index } => {
             println!("GetEventsByAccountIndex: {}", account_index);
@@ -104,7 +119,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByAuctionIndex { auction_index } => {
             println!("GetEventsByAuctionIndex: {}", auction_index);
@@ -122,7 +137,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByBountyIndex { bounty_index } => {
             println!("GetEventsByBountyIndex: {}", bounty_index);
@@ -140,7 +155,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByCandidateHash { candidate_hash } => {
 //            println!("GetEventsByCandidateHash: {}", candidate_hash);
@@ -158,7 +173,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByMessageId { message_id } => {
 //            println!("GetEventsByMessageId: {}", message_id);
@@ -176,7 +191,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByParaId { para_id } => {
             println!("GetEventsByParaId: {}", para_id);
@@ -194,7 +209,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByPoolId { pool_id } => {
             println!("GetEventsByPoolId: {}", pool_id);
@@ -212,7 +227,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByProposalHash { proposal_hash } => {
 //            println!("GetEventsByProposalHash: {}", proposal_hash);
@@ -230,7 +245,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByProposalIndex { proposal_index } => {
             println!("GetEventsByProposalIndex: {}", proposal_index);
@@ -248,7 +263,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByRefIndex { ref_index } => {
             println!("GetEventsByRefIndex: {}", ref_index);
@@ -266,7 +281,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByRegistrarIndex { registrar_index } => {
             println!("GetEventsByRegistrarIndex: {}", registrar_index);
@@ -284,7 +299,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByTipHash { tip_hash } => {
 //            println!("GetEventsByTipHash: {}", tip_hash);
@@ -302,12 +317,9 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> String {
                 });
             }
 
-            events
+            ResponseMessage::Events { events: events }
         },
-    };
-
-    let response_message = ResponseMessage {events: events};
-    serde_json::to_string(&response_message).unwrap()
+    }
 }
 
 async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees) {
@@ -329,7 +341,8 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees
                 if msg.is_text() || msg.is_binary() {
                     match serde_json::from_str(msg.to_text().unwrap()) {
                         Ok(request_json) => {
-                            let response_json = process_msg(&trees, request_json).await;
+                            let response_msg = process_msg(&trees, request_json).await;
+                            let response_json = serde_json::to_string(&response_msg).unwrap();
                             ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(response_json)).await.unwrap();
                         },
                         Err(_) => {},
