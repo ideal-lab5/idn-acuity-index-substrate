@@ -20,10 +20,10 @@ pub enum Claims {
 	},
 }
 
-pub fn claims_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn claims_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Claimed" => {
-            let event = event.as_event::<polkadot::claims::events::Claimed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::claims::events::Claimed>()?.unwrap();
             let event_db = Event::Claims(
                 Claims::Claimed {
 	                who: event.who.clone(),
@@ -33,7 +33,8 @@ pub fn claims_index_event(trees: Trees, block_number: u32, event_index: u32, eve
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

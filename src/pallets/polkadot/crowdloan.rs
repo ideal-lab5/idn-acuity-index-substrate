@@ -61,10 +61,10 @@ pub enum Crowdloan {
 	},
 }
 
-pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Created" => {
-            let event = event.as_event::<polkadot::crowdloan::events::Created>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::Created>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::Created {
             	    para_id: event.para_id.0,
@@ -72,9 +72,10 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
         "Contributed" => {
-            let event = event.as_event::<polkadot::crowdloan::events::Contributed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::Contributed>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::Contributed {
 	                who: event.who.clone(),
@@ -85,9 +86,10 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             index_event_para_id(trees.clone(), event.fund_index.0, block_number, event_index, &value);
+            Ok(())
         },
         "Withdrew" => {
-            let event = event.as_event::<polkadot::crowdloan::events::Withdrew>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::Withdrew>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::Withdrew {
 	                who: event.who.clone(),
@@ -98,9 +100,10 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             index_event_para_id(trees.clone(), event.fund_index.0, block_number, event_index, &value);
+            Ok(())
         },
         "PartiallyRefunded" => {
-            let event = event.as_event::<polkadot::crowdloan::events::PartiallyRefunded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::PartiallyRefunded>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::PartiallyRefunded {
 	                para_id: event.para_id.0,
@@ -108,9 +111,10 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
         "AllRefunded" => {
-            let event = event.as_event::<polkadot::crowdloan::events::AllRefunded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::AllRefunded>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::AllRefunded {
 	                para_id: event.para_id.0,
@@ -118,9 +122,10 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
         "Dissolved" => {
-            let event = event.as_event::<polkadot::crowdloan::events::Dissolved>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::Dissolved>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::Dissolved {
 	                para_id: event.para_id.0,
@@ -128,9 +133,10 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
         "HandleBidResult" => {
-            let event = event.as_event::<polkadot::crowdloan::events::HandleBidResult>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::HandleBidResult>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::HandleBidResult {
 	                para_id: event.para_id.0,
@@ -138,9 +144,10 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
         "Edited" => {
-            let event = event.as_event::<polkadot::crowdloan::events::Edited>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::Edited>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::Edited {
 	                para_id: event.para_id.0,
@@ -148,9 +155,10 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
         "MemoUpdated" => {
-            let event = event.as_event::<polkadot::crowdloan::events::MemoUpdated>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::MemoUpdated>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::MemoUpdated {
 	                who: event.who.clone(),
@@ -161,9 +169,10 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
         "AddedToNewRaise" => {
-            let event = event.as_event::<polkadot::crowdloan::events::AddedToNewRaise>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::crowdloan::events::AddedToNewRaise>()?.unwrap();
             let event_db = Event::Crowdloan(
                 Crowdloan::AddedToNewRaise {
 	                para_id: event.para_id.0,
@@ -171,7 +180,8 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

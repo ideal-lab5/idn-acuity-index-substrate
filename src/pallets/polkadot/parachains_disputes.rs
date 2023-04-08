@@ -52,32 +52,35 @@ pub enum ParasDisputes {
 	DisputeTimedOut(CandidateHash),
 }
 
-pub fn parachains_disputes_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn parachains_disputes_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "DisputeInitiated" => {
-            let event = event.as_event::<polkadot::paras_disputes::events::DisputeInitiated>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::paras_disputes::events::DisputeInitiated>()?.unwrap();
             let event_db = Event::ParasDisputes(
                 ParasDisputes::DisputeInitiated(CandidateHash(event.0.0.0), event.1.into())
             );
             let value = Event::encode(&event_db);
             index_event_candidate_hash(trees.clone(), event.0.0.0, block_number, event_index, &value);
+            Ok(())
         },
         "DisputeConcluded" => {
-            let event = event.as_event::<polkadot::paras_disputes::events::DisputeConcluded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::paras_disputes::events::DisputeConcluded>()?.unwrap();
             let event_db = Event::ParasDisputes(
                 ParasDisputes::DisputeConcluded(CandidateHash(event.0.0.0), event.1.into())
             );
             let value = Event::encode(&event_db);
             index_event_candidate_hash(trees.clone(), event.0.0.0, block_number, event_index, &value);
+            Ok(())
         },
         "DisputeTimedOut" => {
-            let event = event.as_event::<polkadot::paras_disputes::events::DisputeTimedOut>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::paras_disputes::events::DisputeTimedOut>()?.unwrap();
             let event_db = Event::ParasDisputes(
                 ParasDisputes::DisputeTimedOut(CandidateHash(event.0.0.0))
             );
             let value = Event::encode(&event_db);
             index_event_candidate_hash(trees.clone(), event.0.0.0, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

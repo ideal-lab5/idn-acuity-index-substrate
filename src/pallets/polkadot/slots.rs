@@ -23,10 +23,10 @@ pub enum Slots {
 	},
 }
 
-pub fn slots_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn slots_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Leased" => {
-            let event = event.as_event::<polkadot::slots::events::Leased>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::slots::events::Leased>()?.unwrap();
             let event_db = Event::Slots(
                 Slots::Leased {
 		            para_id: ParaId(event.para_id.0),
@@ -40,7 +40,8 @@ pub fn slots_index_event(trees: Trees, block_number: u32, event_index: u32, even
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.leaser, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

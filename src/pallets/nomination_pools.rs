@@ -134,10 +134,10 @@ pub enum NominationPools {
 	},
 }
 
-pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Created" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::Created>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::Created>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::Created {
 	                depositor: event.depositor.clone(),
@@ -147,9 +147,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.depositor, block_number, event_index, &value);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            Ok(())
         },
         "Bonded" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::Bonded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::Bonded>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::Bonded {
 	                member: event.member.clone(),
@@ -161,9 +162,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            Ok(())
         },
         "PaidOut" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::PaidOut>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::PaidOut>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::PaidOut {
 	                member: event.member.clone(),
@@ -174,9 +176,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            Ok(())
         },
         "Unbonded" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::Unbonded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::Unbonded>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::Unbonded {
 	                member: event.member.clone(),
@@ -189,9 +192,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            Ok(())
         },
         "Withdrawn" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::Withdrawn>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::Withdrawn>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::Withdrawn {
 	                member: event.member.clone(),
@@ -203,9 +207,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            Ok(())
         },
         "Destroyed" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::Destroyed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::Destroyed>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::Destroyed {
 	                pool_id: event.pool_id,
@@ -213,9 +218,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            Ok(())
         },
         "StateChanged" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::StateChanged>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::StateChanged>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::StateChanged {
 	                pool_id: event.pool_id,
@@ -224,9 +230,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            Ok(())
         },
         "MemberRemoved" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::MemberRemoved>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::MemberRemoved>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::MemberRemoved {
 	                pool_id: event.pool_id,
@@ -236,9 +243,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             let value = Event::encode(&event_db);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
+            Ok(())
         },
         "RolesUpdated" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::RolesUpdated>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::RolesUpdated>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::RolesUpdated {
 		            root: event.root.clone(),
@@ -259,9 +267,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
                 Some(account) => index_event_account_id(trees.clone(), account, block_number, event_index, &value),
                 None => {},
             }
+            Ok(())
         },
         "PoolSlashed" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::PoolSlashed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::PoolSlashed>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::PoolSlashed {
 	                pool_id: event.pool_id,
@@ -270,9 +279,10 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            Ok(())
         },
         "UnbondingPoolSlashed" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::UnbondingPoolSlashed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::UnbondingPoolSlashed>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::UnbondingPoolSlashed {
 	                pool_id: event.pool_id,
@@ -282,10 +292,11 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            Ok(())
         },
 /*
         "PoolCommissionUpdated" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::PoolCommissionUpdated>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::PoolCommissionUpdated>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::PoolCommissionUpdated {
 	                pool_id: event.pool_id,
@@ -300,7 +311,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             }
         },
         "PoolCommissionChangeRateUpdated" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::PoolCommissionChangeRateUpdated>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::PoolCommissionChangeRateUpdated>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::PoolCommissionChangeRateUpdated {
 	                pool_id: event.pool_id,
@@ -311,7 +322,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
         },
         "PoolCommissionClaimed" => {
-            let event = event.as_event::<polkadot::nomination_pools::events::PoolCommissionClaimed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::nomination_pools::events::PoolCommissionClaimed>()?.unwrap();
             let event_db = Event::NominationPools(
                 NominationPools::PoolCommissionClaimed {
 	                pool_id: event.pool_id,
@@ -322,6 +333,6 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
         },
 */
-        _ => {},
+        _ => Ok(()),
     }
 }

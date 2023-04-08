@@ -70,10 +70,10 @@ pub enum Proxy {
 	},
 }
 
-pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "PureCreated" => {
-            let event = event.as_event::<polkadot::proxy::events::PureCreated>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::proxy::events::PureCreated>()?.unwrap();
             let event_db = Event::Proxy(
                 Proxy::PureCreated {
 		            pure: event.pure.clone(),
@@ -85,9 +85,10 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.pure, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            Ok(())
         },
         "Announced" => {
-            let event = event.as_event::<polkadot::proxy::events::Announced>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::proxy::events::Announced>()?.unwrap();
             let event_db = Event::Proxy(
                 Proxy::Announced {
 	                real: event.real.clone(),
@@ -98,9 +99,10 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.real, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.proxy, block_number, event_index, &value);
+            Ok(())
         },
         "ProxyAdded" => {
-            let event = event.as_event::<polkadot::proxy::events::ProxyAdded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::proxy::events::ProxyAdded>()?.unwrap();
             let event_db = Event::Proxy(
                 Proxy::ProxyAdded {
 		            delegator: event.delegator.clone(),
@@ -112,9 +114,10 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.delegator, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.delegatee, block_number, event_index, &value);
+            Ok(())
         },
         "ProxyRemoved" => {
-            let event = event.as_event::<polkadot::proxy::events::ProxyRemoved>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::proxy::events::ProxyRemoved>()?.unwrap();
             let event_db = Event::Proxy(
                 Proxy::ProxyRemoved {
 		            delegator: event.delegator.clone(),
@@ -126,7 +129,8 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.delegator, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.delegatee, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

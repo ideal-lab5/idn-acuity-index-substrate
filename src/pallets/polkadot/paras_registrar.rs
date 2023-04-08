@@ -28,10 +28,10 @@ pub enum Registrar {
 	},
 }
 
-pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Registered" => {
-            let event = event.as_event::<polkadot::registrar::events::Registered>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::registrar::events::Registered>()?.unwrap();
             let event_db = Event::Registrar(
                 Registrar::Registered {
 	                para_id: ParaId(event.para_id.0),
@@ -41,9 +41,10 @@ pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index:
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.manager, block_number, event_index, &value);
+            Ok(())
         },
         "Deregistered" => {
-            let event = event.as_event::<polkadot::registrar::events::Deregistered>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::registrar::events::Deregistered>()?.unwrap();
             let event_db = Event::Registrar(
                 Registrar::Deregistered {
 	                para_id: ParaId(event.para_id.0),
@@ -51,9 +52,10 @@ pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index:
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
         "Reserved" => {
-            let event = event.as_event::<polkadot::registrar::events::Reserved>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::registrar::events::Reserved>()?.unwrap();
             let event_db = Event::Registrar(
                 Registrar::Reserved {
 	                para_id: ParaId(event.para_id.0),
@@ -63,7 +65,8 @@ pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index:
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

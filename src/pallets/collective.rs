@@ -51,10 +51,10 @@ pub enum Collective {
 	},
 }
 
-pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Proposed" => {
-            let event = event.as_event::<polkadot::council::events::Proposed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::council::events::Proposed>()?.unwrap();
             let event_db = Event::Collective(
                 Collective::Proposed {
 		            account: event.account.clone(),
@@ -67,9 +67,10 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
             index_event_proposal_index(trees.clone(), event.proposal_index, block_number, event_index, &value);
             index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            Ok(())
         },
         "Voted" => {
-            let event = event.as_event::<polkadot::council::events::Voted>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::council::events::Voted>()?.unwrap();
             let event_db = Event::Collective(
                 Collective::Voted {
 		            account: event.account.clone(),
@@ -82,9 +83,10 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
             index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            Ok(())
         },
         "Approved" => {
-            let event = event.as_event::<polkadot::council::events::Approved>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::council::events::Approved>()?.unwrap();
             let event_db = Event::Collective(
                 Collective::Approved {
             	    proposal_hash: event.proposal_hash.into(),
@@ -92,9 +94,10 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             );
             let value = Event::encode(&event_db);
             index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            Ok(())
         },
         "Disapproved" => {
-            let event = event.as_event::<polkadot::council::events::Disapproved>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::council::events::Disapproved>()?.unwrap();
             let event_db = Event::Collective(
                 Collective::Disapproved {
             	    proposal_hash: event.proposal_hash.into(),
@@ -102,9 +105,10 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             );
             let value = Event::encode(&event_db);
             index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            Ok(())
         },
         "Executed" => {
-            let event = event.as_event::<polkadot::council::events::Executed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::council::events::Executed>()?.unwrap();
             let event_db = Event::Collective(
                 Collective::Executed {
             	    proposal_hash: event.proposal_hash.into(),
@@ -112,9 +116,10 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             );
             let value = Event::encode(&event_db);
             index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            Ok(())
         },
         "MemberExecuted" => {
-            let event = event.as_event::<polkadot::council::events::MemberExecuted>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::council::events::MemberExecuted>()?.unwrap();
             let event_db = Event::Collective(
                 Collective::MemberExecuted {
             	    proposal_hash: event.proposal_hash.into(),
@@ -122,9 +127,10 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             );
             let value = Event::encode(&event_db);
             index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            Ok(())
         },
         "Closed" => {
-            let event = event.as_event::<polkadot::council::events::Closed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::council::events::Closed>()?.unwrap();
             let event_db = Event::Collective(
                 Collective::Closed {
             	    proposal_hash: event.proposal_hash.into(),
@@ -134,7 +140,8 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             );
             let value = Event::encode(&event_db);
             index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

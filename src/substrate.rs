@@ -197,7 +197,7 @@ pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32,
 
 fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
 
-    match event.pallet_name() {
+    let result = match event.pallet_name() {
         "Auctions" => auctions_index_event(trees, block_number, event_index, event),
         "BagsList" => bags_list_index_event(trees, block_number, event_index, event),
         "Balances" => balance_index_event(trees, block_number, event_index, event),
@@ -226,8 +226,15 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "TransactionPayment" => transaction_payment_index_event(trees, block_number, event_index, event),
         "Treasury" => treasury_index_event(trees, block_number, event_index, event),
         "Vesting" => vesting_index_event(trees, block_number, event_index, event),
-        _ => {},
-    }
+        _ => Ok({}),
+    };
+
+    match result  {
+        Ok(()) => (),
+        Err(error) => {
+            println!("{}", error);
+        }
+    };
 }
 
 pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {

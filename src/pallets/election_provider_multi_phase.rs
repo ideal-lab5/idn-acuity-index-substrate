@@ -53,16 +53,10 @@ pub enum ElectionProviderMultiPhase {
 	},
 }
 
-pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "SolutionStored" => {
-            let event = match event.as_event::<polkadot::election_provider_multi_phase::events::SolutionStored>() {
-                Ok(event) => event.unwrap(),
-                Err(error) => {
-                    println!("{}", error);
-                    return;
-                }
-            };
+            let event = event.as_event::<polkadot::election_provider_multi_phase::events::SolutionStored>()?.unwrap();
             let event_db = Event::ElectionProviderMultiPhase(
                 ElectionProviderMultiPhase::SolutionStored {
 		            compute: event.compute.into(),
@@ -75,9 +69,10 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
                 Some(account) => index_event_account_id(trees.clone(), account, block_number, event_index, &value),
                 None => {},
             }
+            Ok(())
         },
         "Rewarded" => {
-            let event = event.as_event::<polkadot::election_provider_multi_phase::events::Rewarded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::election_provider_multi_phase::events::Rewarded>()?.unwrap();
             let event_db = Event::ElectionProviderMultiPhase(
                 ElectionProviderMultiPhase::Rewarded {
 	                account: event.account.clone(),
@@ -86,9 +81,10 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            Ok(())
         },
         "Slashed" => {
-            let event = event.as_event::<polkadot::election_provider_multi_phase::events::Slashed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::election_provider_multi_phase::events::Slashed>()?.unwrap();
             let event_db = Event::ElectionProviderMultiPhase(
                 ElectionProviderMultiPhase::Slashed {
 	                account: event.account.clone(),
@@ -97,7 +93,8 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

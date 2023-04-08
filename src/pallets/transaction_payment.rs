@@ -20,10 +20,10 @@ pub enum TransactionPayment {
 	},
 }
 
-pub fn transaction_payment_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn transaction_payment_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "TransactionFeePaid" => {
-            let event = event.as_event::<polkadot::transaction_payment::events::TransactionFeePaid>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::transaction_payment::events::TransactionFeePaid>()?.unwrap();
             let event_db = Event::TransactionPayment(
                 TransactionPayment::TransactionFeePaid {
                     who: event.who.clone(),
@@ -33,7 +33,8 @@ pub fn transaction_payment_index_event(trees: Trees, block_number: u32, event_in
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

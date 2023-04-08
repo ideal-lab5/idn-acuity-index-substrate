@@ -22,10 +22,10 @@ pub enum ParaInclusion {
 	CandidateTimedOut(CandidateReceipt, HeadData, CoreIndex),
 }
 
-pub fn parachains_inclusion_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn parachains_inclusion_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "CandidateBacked" => {
-            let event = event.as_event::<polkadot::parachains_inclusion::events::CandidateBacked>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::parachains_inclusion::events::CandidateBacked>()?.unwrap();
             let event_db = Event::ParaInclusion(
                 ParaInclusion::CandidateBacked (
 	                who: event.who.clone(),
@@ -35,8 +35,9 @@ pub fn parachains_inclusion_index_event(trees: Trees, block_number: u32, event_i
             );
             let value = Event::encode(&event_db);
 //            index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }
 

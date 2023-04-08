@@ -36,57 +36,63 @@ pub enum Ump {
 	OverweightServiced(OverweightIndex, Weight),
 }
 
-pub fn parachains_ump_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn parachains_ump_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "InvalidFormat" => {
-            let event = event.as_event::<polkadot::ump::events::InvalidFormat>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::ump::events::InvalidFormat>()?.unwrap();
             let event_db = Event::Ump(
                 Ump::InvalidFormat(event.0)
             );
             let value = Event::encode(&event_db);
             index_event_message_id(trees.clone(), event.0, block_number, event_index, &value);
+            Ok(())
         },
         "UnsupportedVersion" => {
-            let event = event.as_event::<polkadot::ump::events::UnsupportedVersion>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::ump::events::UnsupportedVersion>()?.unwrap();
             let event_db = Event::Ump(
                 Ump::UnsupportedVersion(event.0)
             );
             let value = Event::encode(&event_db);
             index_event_message_id(trees.clone(), event.0, block_number, event_index, &value);
+            Ok(())
         },
         "ExecutedUpward" => {
-            let event = event.as_event::<polkadot::ump::events::ExecutedUpward>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::ump::events::ExecutedUpward>()?.unwrap();
             let event_db = Event::Ump(
                 Ump::ExecutedUpward(event.0)
             );
             let value = Event::encode(&event_db);
             index_event_message_id(trees.clone(), event.0, block_number, event_index, &value);
+            Ok(())
         },
         "WeightExhausted" => {
-            let event = event.as_event::<polkadot::ump::events::WeightExhausted>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::ump::events::WeightExhausted>()?.unwrap();
             let event_db = Event::Ump(
                 Ump::WeightExhausted(event.0, event.1.into(), event.2.into())
             );
             let value = Event::encode(&event_db);
             index_event_message_id(trees.clone(), event.0, block_number, event_index, &value);
+            Ok(())
         },
         "UpwardMessagesReceived" => {
-            let event = event.as_event::<polkadot::ump::events::UpwardMessagesReceived>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::ump::events::UpwardMessagesReceived>()?.unwrap();
             let event_db = Event::Ump(
                 Ump::UpwardMessagesReceived(ParaId(event.0.0), event.1, event.2)
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
+            Ok(())
         },
         "OverweightEnqueued" => {
-            let event = event.as_event::<polkadot::ump::events::OverweightEnqueued>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::ump::events::OverweightEnqueued>()?.unwrap();
             let event_db = Event::Ump(
                 Ump::OverweightEnqueued(ParaId(event.0.0), event.1, event.2, event.3.into())
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
             index_event_message_id(trees.clone(), event.1, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

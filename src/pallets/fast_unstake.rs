@@ -24,10 +24,10 @@ pub enum FastUnstake {
 	},
 }
 
-pub fn fast_unstake_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn fast_unstake_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Unstaked" => {
-            let event = event.as_event::<polkadot::fast_unstake::events::Unstaked>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::fast_unstake::events::Unstaked>()?.unwrap();
             let event_db = Event::FastUnstake(
                 FastUnstake::Unstaked {
 	                stash: event.stash.clone(),
@@ -35,9 +35,10 @@ pub fn fast_unstake_index_event(trees: Trees, block_number: u32, event_index: u3
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.stash, block_number, event_index, &value);
+            Ok(())
         },
         "Slashed" => {
-            let event = event.as_event::<polkadot::fast_unstake::events::Slashed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::fast_unstake::events::Slashed>()?.unwrap();
             let event_db = Event::FastUnstake(
                 FastUnstake::Slashed {
 	                stash: event.stash.clone(),
@@ -46,7 +47,8 @@ pub fn fast_unstake_index_event(trees: Trees, block_number: u32, event_index: u3
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.stash, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

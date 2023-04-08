@@ -157,10 +157,10 @@ pub enum XcmPallet {
 	AssetsClaimed(H256, MultiLocation, VersionedMultiAssets),
 }
 
-pub fn pallet_xcm_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn pallet_xcm_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Claimed" => {
-            let event = event.as_event::<polkadot::pallet_xcm::events::Claimed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::pallet_xcm::events::Claimed>()?.unwrap();
             let event_db = Event::XcmPallet(
                 XcmPallet::Claimed {
 	                who: event.who.clone(),
@@ -170,7 +170,8 @@ pub fn pallet_xcm_index_event(trees: Trees, block_number: u32, event_index: u32,
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

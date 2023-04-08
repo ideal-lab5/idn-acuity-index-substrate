@@ -50,10 +50,10 @@ pub enum Multisig {
 	},
 }
 
-pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "NewMultisig" => {
-            let event = event.as_event::<polkadot::multisig::events::NewMultisig>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::multisig::events::NewMultisig>()?.unwrap();
             let event_db = Event::Multisig(
                 Multisig::NewMultisig {
                     approving: event.approving.clone(),
@@ -64,9 +64,10 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.approving, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.multisig, block_number, event_index, &value);
+            Ok(())
         },
         "MultisigApproval" => {
-            let event = event.as_event::<polkadot::multisig::events::MultisigApproval>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::multisig::events::MultisigApproval>()?.unwrap();
             let event_db = Event::Multisig(
                 Multisig::MultisigApproval {
                     approving: event.approving.clone(),
@@ -78,15 +79,10 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.approving, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.multisig, block_number, event_index, &value);
+            Ok(())
         },
         "MultisigExecuted" => {
-            let event = match event.as_event::<polkadot::multisig::events::MultisigExecuted>() {
-                Ok(event) => event.unwrap(),
-                Err(error) => {
-                    println!("{}", error);
-                    return;
-                }
-            };
+            let event = event.as_event::<polkadot::multisig::events::MultisigExecuted>()?.unwrap();
             let event_db = Event::Multisig(
                 Multisig::MultisigExecuted {
                     approving: event.approving.clone(),
@@ -98,9 +94,10 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.approving, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.multisig, block_number, event_index, &value);
+            Ok(())
         },
         "MultisigCancelled" => {
-            let event = event.as_event::<polkadot::multisig::events::MultisigCancelled>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::multisig::events::MultisigCancelled>()?.unwrap();
             let event_db = Event::Multisig(
                 Multisig::MultisigCancelled {
                     cancelling: event.cancelling.clone(),
@@ -112,7 +109,8 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.cancelling, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.multisig, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

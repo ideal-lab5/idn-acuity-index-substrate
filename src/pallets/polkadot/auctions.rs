@@ -54,10 +54,10 @@ pub enum Auctions {
 	},
 }
 
-pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "AuctionStarted" => {
-            let event = event.as_event::<polkadot::auctions::events::AuctionStarted>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::auctions::events::AuctionStarted>()?.unwrap();
             let event_db = Event::Auctions(
                 Auctions::AuctionStarted {
 		            auction_index: event.auction_index,
@@ -67,9 +67,10 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_auction_index(trees.clone(), event.auction_index, block_number, event_index, &value);
+            Ok(())
         },
         "AuctionClosed" => {
-            let event = event.as_event::<polkadot::auctions::events::AuctionClosed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::auctions::events::AuctionClosed>()?.unwrap();
             let event_db = Event::Auctions(
                 Auctions::AuctionClosed {
 		            auction_index: event.auction_index,
@@ -77,9 +78,10 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_auction_index(trees.clone(), event.auction_index, block_number, event_index, &value);
+            Ok(())
         },
         "Reserved" => {
-            let event = event.as_event::<polkadot::auctions::events::Reserved>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::auctions::events::Reserved>()?.unwrap();
             let event_db = Event::Auctions(
                 Auctions::Reserved {
 	                bidder: event.bidder.clone(),
@@ -89,9 +91,10 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.bidder, block_number, event_index, &value);
+            Ok(())
         },
         "Unreserved" => {
-            let event = event.as_event::<polkadot::auctions::events::Unreserved>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::auctions::events::Unreserved>()?.unwrap();
             let event_db = Event::Auctions(
                 Auctions::Unreserved {
 	                bidder: event.bidder.clone(),
@@ -100,9 +103,10 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.bidder, block_number, event_index, &value);
+            Ok(())
         },
         "ReserveConfiscated" => {
-            let event = event.as_event::<polkadot::auctions::events::ReserveConfiscated>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::auctions::events::ReserveConfiscated>()?.unwrap();
             let event_db = Event::Auctions(
                 Auctions::ReserveConfiscated {
 	                para_id: event.para_id.0,
@@ -113,9 +117,10 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.leaser, block_number, event_index, &value);
+            Ok(())
         },
         "BidAccepted" => {
-            let event = event.as_event::<polkadot::auctions::events::BidAccepted>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::auctions::events::BidAccepted>()?.unwrap();
             let event_db = Event::Auctions(
                 Auctions::BidAccepted {
 		            bidder: event.bidder.clone(),
@@ -128,9 +133,10 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.bidder, block_number, event_index, &value);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            Ok(())
         },
         "WinningOffset" => {
-            let event = event.as_event::<polkadot::auctions::events::WinningOffset>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::auctions::events::WinningOffset>()?.unwrap();
             let event_db = Event::Auctions(
                 Auctions::WinningOffset {
 	                auction_index: event.auction_index,
@@ -139,7 +145,8 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_auction_index(trees.clone(), event.auction_index, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

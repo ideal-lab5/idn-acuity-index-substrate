@@ -29,10 +29,10 @@ pub enum Indices {
 	},
 }
 
-pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "IndexAssigned" => {
-            let event = event.as_event::<polkadot::indices::events::IndexAssigned>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::indices::events::IndexAssigned>()?.unwrap();
             let event_db = Event::Indices(
                 Indices::IndexAssigned {
                     who: event.who.clone(),
@@ -42,9 +42,10 @@ pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             index_event_account_index(trees.clone(), event.index, block_number, event_index, &value);
+            Ok(())
         },
         "IndexFreed" => {
-            let event = event.as_event::<polkadot::indices::events::IndexFreed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::indices::events::IndexFreed>()?.unwrap();
             let event_db = Event::Indices(
                 Indices::IndexFreed {
                     index: event.index,
@@ -52,9 +53,10 @@ pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event_db);
             index_event_account_index(trees.clone(), event.index, block_number, event_index, &value);
+            Ok(())
         },
         "IndexFrozen" => {
-            let event = event.as_event::<polkadot::indices::events::IndexFrozen>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::indices::events::IndexFrozen>()?.unwrap();
             let event_db = Event::Indices(
                 Indices::IndexFrozen {
                     index: event.index,
@@ -64,7 +66,8 @@ pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             let value = Event::encode(&event_db);
             index_event_account_index(trees.clone(), event.index, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

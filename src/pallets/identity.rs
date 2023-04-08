@@ -65,10 +65,10 @@ pub enum Identity {
 	},
 }
 
-pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "IdentitySet" => {
-            let event = event.as_event::<polkadot::identity::events::IdentitySet>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::IdentitySet>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::IdentitySet {
                     who: event.who.clone(),
@@ -76,9 +76,10 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who.clone(), block_number, event_index, &value);
+            Ok(())
         },
         "IdentityCleared" => {
-            let event = event.as_event::<polkadot::identity::events::IdentityCleared>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::IdentityCleared>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::IdentityCleared {
                     who: event.who.clone(),
@@ -87,9 +88,10 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            Ok(())
         },
         "IdentityKilled" => {
-            let event = event.as_event::<polkadot::identity::events::IdentityKilled>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::IdentityKilled>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::IdentityKilled {
                     who: event.who.clone(),
@@ -98,9 +100,10 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            Ok(())
         },
         "JudgementRequested" => {
-            let event = event.as_event::<polkadot::identity::events::JudgementRequested>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::JudgementRequested>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::JudgementRequested {
                     who: event.who.clone(),
@@ -110,9 +113,10 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
+            Ok(())
         },
         "JudgementUnrequested" => {
-            let event = event.as_event::<polkadot::identity::events::JudgementUnrequested>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::JudgementUnrequested>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::JudgementUnrequested {
                     who: event.who.clone(),
@@ -122,9 +126,10 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
             index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
+            Ok(())
         },
         "JudgementGiven" => {
-            let event = event.as_event::<polkadot::identity::events::JudgementGiven>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::JudgementGiven>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::JudgementGiven {
                     target: event.target.clone(),
@@ -134,9 +139,10 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.target, block_number, event_index, &value);
             index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
+            Ok(())
         },
         "RegistrarAdded" => {
-            let event = event.as_event::<polkadot::identity::events::RegistrarAdded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::RegistrarAdded>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::RegistrarAdded {
                     registrar_index: event.registrar_index,
@@ -144,9 +150,10 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
+            Ok(())
         },
         "SubIdentityAdded" => {
-            let event = event.as_event::<polkadot::identity::events::SubIdentityAdded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::SubIdentityAdded>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::SubIdentityAdded {
                     sub: event.sub.clone(),
@@ -157,9 +164,10 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
+            Ok(())
         },
         "SubIdentityRemoved" => {
-            let event = event.as_event::<polkadot::identity::events::SubIdentityRemoved>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::SubIdentityRemoved>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::SubIdentityRemoved {
                     sub: event.sub.clone(),
@@ -170,9 +178,10 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
+            Ok(())
         },
         "SubIdentityRevoked" => {
-            let event = event.as_event::<polkadot::identity::events::SubIdentityRevoked>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::identity::events::SubIdentityRevoked>()?.unwrap();
             let event_db = Event::Identity(
                 Identity::SubIdentityRevoked {
                     sub: event.sub.clone(),
@@ -183,7 +192,8 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
+            Ok(())
         },
-        &_ => {},
-    };
+        _ => Ok(()),
+    }
 }

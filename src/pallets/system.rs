@@ -29,10 +29,10 @@ pub enum System {
 	},
 }
 
-pub fn system_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn system_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "NewAccount" => {
-            let event = event.as_event::<polkadot::system::events::NewAccount>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::system::events::NewAccount>()?.unwrap();
             let event_db = Event::System(
                 System::NewAccount {
                     account: event.account.clone(),
@@ -40,9 +40,10 @@ pub fn system_index_event(trees: Trees, block_number: u32, event_index: u32, eve
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            Ok(())
         },
         "KilledAccount" => {
-            let event = event.as_event::<polkadot::system::events::KilledAccount>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::system::events::KilledAccount>()?.unwrap();
             let event_db = Event::System(
                 System::KilledAccount {
                     account: event.account.clone(),
@@ -50,9 +51,10 @@ pub fn system_index_event(trees: Trees, block_number: u32, event_index: u32, eve
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            Ok(())
         },
         "Remarked" => {
-            let event = event.as_event::<polkadot::system::events::Remarked>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::system::events::Remarked>()?.unwrap();
             let event_db = Event::System(
                 System::Remarked {
                     sender: event.sender.clone(),
@@ -61,7 +63,8 @@ pub fn system_index_event(trees: Trees, block_number: u32, event_index: u32, eve
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sender, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

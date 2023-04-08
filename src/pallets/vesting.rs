@@ -23,7 +23,7 @@ pub enum Vesting {
 	},
 }
 
-pub fn vesting_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn vesting_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "VestingUpdated" => {
             let event = event.as_event::<polkadot::vesting::events::VestingUpdated>().unwrap().unwrap();
@@ -35,6 +35,7 @@ pub fn vesting_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            Ok(())
         },
         "VestingCompleted" => {
             let event = event.as_event::<polkadot::vesting::events::VestingCompleted>().unwrap().unwrap();
@@ -45,7 +46,8 @@ pub fn vesting_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

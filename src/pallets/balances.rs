@@ -86,10 +86,10 @@ pub enum Balances {
 	},
 }
 
-pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Endowed" => {
-            let endowed_event = event.as_event::<polkadot::balances::events::Endowed>().unwrap().unwrap();
+            let endowed_event = event.as_event::<polkadot::balances::events::Endowed>()?.unwrap();
             let event = Event::Balances(
                 Balances::Endowed {
                     account: endowed_event.account.clone(),
@@ -98,9 +98,10 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), endowed_event.account, block_number, event_index, &value);
+            Ok(())
         },
         "DustLost" => {
-            let dustlost_event = event.as_event::<polkadot::balances::events::DustLost>().unwrap().unwrap();
+            let dustlost_event = event.as_event::<polkadot::balances::events::DustLost>()?.unwrap();
             let event = Event::Balances(
                 Balances::DustLost {
                     account: dustlost_event.account.clone(),
@@ -109,9 +110,10 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), dustlost_event.account, block_number, event_index, &value);
+            Ok(())
         },
         "Transfer" => {
-            let transfer_event = event.as_event::<polkadot::balances::events::Transfer>().unwrap().unwrap();
+            let transfer_event = event.as_event::<polkadot::balances::events::Transfer>()?.unwrap();
             let event = Event::Balances(
                 Balances::Transfer {
                     from: transfer_event.from.clone(),
@@ -122,9 +124,10 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), transfer_event.from, block_number, event_index, &value);
             index_event_account_id(trees.clone(), transfer_event.to, block_number, event_index, &value);
+            Ok(())
         },
         "BalanceSet" => {
-            let balance_set_event = event.as_event::<polkadot::balances::events::BalanceSet>().unwrap().unwrap();
+            let balance_set_event = event.as_event::<polkadot::balances::events::BalanceSet>()?.unwrap();
             let event = Event::Balances(
                 Balances::BalanceSet {
                     who: balance_set_event.who.clone(),
@@ -134,9 +137,10 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), balance_set_event.who, block_number, event_index, &value);
+            Ok(())
         },
         "Reserved" => {
-            let reserved_event = event.as_event::<polkadot::balances::events::Reserved>().unwrap().unwrap();
+            let reserved_event = event.as_event::<polkadot::balances::events::Reserved>()?.unwrap();
             let event = Event::Balances(
                 Balances::Reserved {
                     who: reserved_event.who.clone(),
@@ -145,9 +149,10 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), reserved_event.who, block_number, event_index, &value);
+            Ok(())
         },
         "Unreserved" => {
-            let unreserved_event = event.as_event::<polkadot::balances::events::Unreserved>().unwrap().unwrap();
+            let unreserved_event = event.as_event::<polkadot::balances::events::Unreserved>()?.unwrap();
             let event = Event::Balances(
                 Balances::Unreserved {
                     who: unreserved_event.who.clone(),
@@ -156,9 +161,10 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), unreserved_event.who, block_number, event_index, &value);
+            Ok(())
         },
         "ReserveRepatriated" => {
-            let reserve_repatriated_event = event.as_event::<polkadot::balances::events::ReserveRepatriated>().unwrap().unwrap();
+            let reserve_repatriated_event = event.as_event::<polkadot::balances::events::ReserveRepatriated>()?.unwrap();
             let event = Event::Balances(
                 Balances::ReserveRepatriated {
                     from: reserve_repatriated_event.from.clone(),
@@ -170,9 +176,10 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), reserve_repatriated_event.from, block_number, event_index, &value);
             index_event_account_id(trees.clone(), reserve_repatriated_event.to, block_number, event_index, &value);
+            Ok(())
         },
         "Deposit" => {
-            let deposit_event = event.as_event::<polkadot::balances::events::Deposit>().unwrap().unwrap();
+            let deposit_event = event.as_event::<polkadot::balances::events::Deposit>()?.unwrap();
             let event = Event::Balances(
                 Balances::Deposit {
                     who: deposit_event.who.clone(),
@@ -181,9 +188,10 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), deposit_event.who, block_number, event_index, &value);
+            Ok(())
         },
         "Withdraw" => {
-            let withdraw_event = event.as_event::<polkadot::balances::events::Withdraw>().unwrap().unwrap();
+            let withdraw_event = event.as_event::<polkadot::balances::events::Withdraw>()?.unwrap();
             let event = Event::Balances(
                 Balances::Withdraw {
                     who: withdraw_event.who.clone(),
@@ -192,9 +200,10 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), withdraw_event.who, block_number, event_index, &value);
+            Ok(())
         },
         "Slashed" => {
-            let slashed_event = event.as_event::<polkadot::balances::events::Slashed>().unwrap().unwrap();
+            let slashed_event = event.as_event::<polkadot::balances::events::Slashed>()?.unwrap();
             let event = Event::Balances(
                 Balances::Slashed {
                     who: slashed_event.who.clone(),
@@ -203,7 +212,8 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), slashed_event.who, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }

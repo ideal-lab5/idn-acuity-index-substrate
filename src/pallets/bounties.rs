@@ -46,10 +46,10 @@ pub enum Bounties {
 	},
 }
 
-pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "BountyProposed" => {
-            let event = event.as_event::<polkadot::bounties::events::BountyProposed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::bounties::events::BountyProposed>()?.unwrap();
             let event_db = Event::Bounties(
                 Bounties::BountyProposed {
 	                index: event.index,
@@ -57,9 +57,10 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            Ok(())
         },
         "BountyRejected" => {
-            let event = event.as_event::<polkadot::bounties::events::BountyRejected>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::bounties::events::BountyRejected>()?.unwrap();
             let event_db = Event::Bounties(
                 Bounties::BountyRejected {
 	                index: event.index,
@@ -68,9 +69,10 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            Ok(())
         },
         "BountyBecameActive" => {
-            let event = event.as_event::<polkadot::bounties::events::BountyBecameActive>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::bounties::events::BountyBecameActive>()?.unwrap();
             let event_db = Event::Bounties(
                 Bounties::BountyBecameActive {
 	                index: event.index,
@@ -78,9 +80,10 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            Ok(())
         },
         "BountyAwarded" => {
-            let event = event.as_event::<polkadot::bounties::events::BountyAwarded>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::bounties::events::BountyAwarded>()?.unwrap();
             let event_db = Event::Bounties(
                 Bounties::BountyAwarded {
 	                index: event.index,
@@ -90,9 +93,10 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.beneficiary, block_number, event_index, &value);
+            Ok(())
         },
         "BountyClaimed" => {
-            let event = event.as_event::<polkadot::bounties::events::BountyClaimed>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::bounties::events::BountyClaimed>()?.unwrap();
             let event_db = Event::Bounties(
                 Bounties::BountyClaimed {
 	                index: event.index,
@@ -103,9 +107,10 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
             index_event_account_id(trees.clone(), event.beneficiary, block_number, event_index, &value);
+            Ok(())
         },
         "BountyCanceled" => {
-            let event = event.as_event::<polkadot::bounties::events::BountyCanceled>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::bounties::events::BountyCanceled>()?.unwrap();
             let event_db = Event::Bounties(
                 Bounties::BountyCanceled {
 	                index: event.index,
@@ -113,9 +118,10 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            Ok(())
         },
         "BountyExtended" => {
-            let event = event.as_event::<polkadot::bounties::events::BountyExtended>().unwrap().unwrap();
+            let event = event.as_event::<polkadot::bounties::events::BountyExtended>()?.unwrap();
             let event_db = Event::Bounties(
                 Bounties::BountyExtended {
 	                index: event.index,
@@ -123,7 +129,8 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            Ok(())
         },
-        _ => {},
+        _ => Ok(()),
     }
 }
