@@ -327,8 +327,13 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees
                 println!("Message: {}", msg.to_text().unwrap());
 
                 if msg.is_text() || msg.is_binary() {
-                    let json = process_msg(&trees, serde_json::from_str(msg.to_text().unwrap()).unwrap()).await;
-                    ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(json)).await.unwrap();
+                    match serde_json::from_str(msg.to_text().unwrap()) {
+                        Ok(request_json) => {
+                            let response_json = process_msg(&trees, request_json).await;
+                            ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(response_json)).await.unwrap();
+                        },
+                        Err(_) => {},
+                    }
                 }
             }
         }
