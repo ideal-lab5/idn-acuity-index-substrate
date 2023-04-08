@@ -322,7 +322,13 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         // Increment the block number.
         block_number += 1;
         // Get the new block hash.
-        block_hash = api.rpc().block_hash(Some(block_number.into())).await.unwrap().unwrap();
+        match api.rpc().block_hash(Some(block_number.into())).await.unwrap() {
+            Some(new_hash) => block_hash = new_hash,
+            None => {
+                println!("Finished batch indexing.");
+                break;
+            }
+        }
     }
 }
 
