@@ -77,6 +77,7 @@ pub struct Trees {
     pub tip_hash: Tree,
 }
 
+#[derive(PartialEq, Debug)]
 pub struct AccountIdKey {
     pub account_id: <SubstrateConfig as Config>::AccountId,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -101,6 +102,7 @@ impl AccountIdKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct AccountIndexKey {
     pub account_index: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -125,6 +127,7 @@ impl AccountIndexKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct AuctionIndexKey {
     pub auction_index: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -149,6 +152,7 @@ impl AuctionIndexKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct BountyIndexKey {
     pub bounty_index: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -173,6 +177,7 @@ impl BountyIndexKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct CandidateHashKey {
     pub candidate_hash: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -197,6 +202,7 @@ impl CandidateHashKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct MessageIdKey {
     pub message_id: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -221,6 +227,7 @@ impl MessageIdKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct ParaIdKey {
     pub para_id: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -245,6 +252,7 @@ impl ParaIdKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct PoolIdKey {
     pub pool_id: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -269,6 +277,7 @@ impl PoolIdKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct RefIndexKey {
     pub ref_index: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -293,6 +302,7 @@ impl RefIndexKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct RegistrarIndexKey {
     pub registrar_index: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -317,6 +327,7 @@ impl RegistrarIndexKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct ProposalHashKey {
     pub proposal_hash: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -335,12 +346,13 @@ impl ProposalHashKey {
     pub fn unserialize(vec: Vec<u8>) -> Self {
         ProposalHashKey {
             proposal_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..40].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[40..44].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
         }
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct ProposalIndexKey {
     pub proposal_index: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -365,6 +377,7 @@ impl ProposalIndexKey {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct TipHashKey {
     pub tip_hash: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -383,8 +396,8 @@ impl TipHashKey {
     pub fn unserialize(vec: Vec<u8>) -> Self {
         TipHashKey {
             tip_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..40].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[40..44].to_vec())),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
         }
     }
 }
