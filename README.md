@@ -64,13 +64,13 @@ Database entries will be key-only. No value will be stored. The blocknumber and 
 
 Hybrid is still early in the development process. Currently it can index event parameters from many events in Polkadot: AccountId, AccountIndex, AuctionIndex, BountyIndex, CandidateHash, MessageId, ParaId, PoolId, ProposalHash, ProposalIndex, RefIndex, RegistrarIndex, TipHash.
 
-1. Build
+#### Build
 
 ```
 cargo build --release
 ```
 
-1. Run indexer
+#### Run indexer
 
 ```
 ./target/release/hybrid-indexer --url wss://rpc.polkadot.io:443 --block-height 13800000 
@@ -80,7 +80,7 @@ The earlist block that can be indexed on Polkadot is 7,229,126.
 
 If the --block-height parameter is not specified it will resume from where it left off in the previous run.
 
-1. Run the dapp
+#### Run the dapp
 
 Go to [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp) and follow the tutorial to run the frontend to query the indexer.
 
