@@ -26,10 +26,10 @@ pub enum RequestMessage {
         bounty_index: u32,
     },
     GetEventsByCandidateHash {
-        candidate_hash: [u8; 32],
+        candidate_hash: String,
     },
     GetEventsByMessageId {
-        message_id: [u8; 32],
+        message_id: String,
     },
     GetEventsByParaId {
         para_id: u32,
@@ -38,7 +38,7 @@ pub enum RequestMessage {
         pool_id: u32,
     },
     GetEventsByProposalHash {
-        proposal_hash: [u8; 32],
+        proposal_hash: String,
     },
     GetEventsByProposalIndex {
         proposal_index: u32,
@@ -50,7 +50,7 @@ pub enum RequestMessage {
         registrar_index: u32,
     },
     GetEventsByTipHash {
-        tip_hash: [u8; 32],
+        tip_hash: String,
     },
 }
 
@@ -86,8 +86,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             }
         },
         RequestMessage::GetEventsByAccountId { account_id } => {
-            println!("GetEventsByAccountId: {}", account_id);
-
             let mut events = Vec::new();
 
             for kv in trees.account_id.scan_prefix(account_id) {
@@ -104,8 +102,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByAccountIndex { account_index } => {
-            println!("GetEventsByAccountIndex: {}", account_index);
-
             let mut events = Vec::new();
 
             for kv in trees.account_index.scan_prefix(account_index.to_be_bytes().to_vec()) {
@@ -122,8 +118,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByAuctionIndex { auction_index } => {
-            println!("GetEventsByAuctionIndex: {}", auction_index);
-
             let mut events = Vec::new();
 
             for kv in trees.auction_index.scan_prefix(auction_index.to_be_bytes().to_vec()) {
@@ -140,8 +134,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByBountyIndex { bounty_index } => {
-            println!("GetEventsByBountyIndex: {}", bounty_index);
-
             let mut events = Vec::new();
 
             for kv in trees.bounty_index.scan_prefix(bounty_index.to_be_bytes().to_vec()) {
@@ -158,8 +150,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByCandidateHash { candidate_hash } => {
-//            println!("GetEventsByCandidateHash: {}", candidate_hash);
-
+            let candidate_hash = hex::decode(&candidate_hash[2..66]).unwrap();
             let mut events = Vec::new();
 
             for kv in trees.candidate_hash.scan_prefix(candidate_hash.to_vec()) {
@@ -176,8 +167,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByMessageId { message_id } => {
-//            println!("GetEventsByMessageId: {}", message_id);
-
+            let message_id = hex::decode(&message_id[2..66]).unwrap();
             let mut events = Vec::new();
 
             for kv in trees.message_id.scan_prefix(message_id.to_vec()) {
@@ -194,8 +184,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByParaId { para_id } => {
-            println!("GetEventsByParaId: {}", para_id);
-
             let mut events = Vec::new();
 
             for kv in trees.para_id.scan_prefix(para_id.to_be_bytes().to_vec()) {
@@ -212,8 +200,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByPoolId { pool_id } => {
-            println!("GetEventsByPoolId: {}", pool_id);
-
             let mut events = Vec::new();
 
             for kv in trees.pool_id.scan_prefix(pool_id.to_be_bytes().to_vec()) {
@@ -230,7 +216,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByProposalHash { proposal_hash } => {
-//            println!("GetEventsByProposalHash: {}", proposal_hash);
+            let proposal_hash = hex::decode(&proposal_hash[2..66]).unwrap();
 
             let mut events = Vec::new();
 
@@ -248,8 +234,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByProposalIndex { proposal_index } => {
-            println!("GetEventsByProposalIndex: {}", proposal_index);
-
             let mut events = Vec::new();
 
             for kv in trees.proposal_index.scan_prefix(proposal_index.to_be_bytes().to_vec()) {
@@ -266,8 +250,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByRefIndex { ref_index } => {
-            println!("GetEventsByRefIndex: {}", ref_index);
-
             let mut events = Vec::new();
 
             for kv in trees.ref_index.scan_prefix(ref_index.to_be_bytes().to_vec()) {
@@ -284,8 +266,6 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByRegistrarIndex { registrar_index } => {
-            println!("GetEventsByRegistrarIndex: {}", registrar_index);
-
             let mut events = Vec::new();
 
             for kv in trees.registrar_index.scan_prefix(registrar_index.to_be_bytes().to_vec()) {
@@ -302,8 +282,7 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByTipHash { tip_hash } => {
-//            println!("GetEventsByTipHash: {}", tip_hash);
-
+            let tip_hash = hex::decode(&tip_hash[2..66]).unwrap();
             let mut events = Vec::new();
 
             for kv in trees.tip_hash.scan_prefix(tip_hash.to_vec()) {

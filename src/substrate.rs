@@ -88,7 +88,7 @@ pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u
 }
 
 pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
-    println!("CandidateHash: {}", hex::encode(candidate_hash));
+    println!("CandidateHash: 0x{}", hex::encode(candidate_hash));
     // Generate key
     let key = CandidateHashKey {
         candidate_hash: candidate_hash,
@@ -100,7 +100,7 @@ pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_
 }
 
 pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
-    println!("MessageId: {}", hex::encode(message_id));
+    println!("MessageId: 0x{}", hex::encode(message_id));
     // Generate key
     let key = MessageIdKey {
         message_id: message_id,
@@ -136,7 +136,7 @@ pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32
 }
 
 pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
-    println!("ProposalHash: {}", hex::encode(proposal_hash));
+    println!("ProposalHash: 0x{}", hex::encode(proposal_hash));
     // Generate key
     let key = ProposalHashKey {
         proposal_hash: proposal_hash,
@@ -184,7 +184,7 @@ pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_num
 }
 
 pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
-    println!("TipHash: {}", hex::encode(tip_hash));
+    println!("TipHash: 0x{}", hex::encode(tip_hash));
     // Generate key
     let key = TipHashKey {
         tip_hash: tip_hash,
