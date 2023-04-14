@@ -29,6 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = sled::open(path)?;
     let trees = Trees {
         root: db.clone(),
+        // Each event parameter to be indexed has its own tree.
         account_id: db.open_tree("account_id")?,
         account_index: db.open_tree("account_index")?,
         auction_index: db.open_tree("auction_index")?,
@@ -44,6 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tip_hash: db.open_tree("tip_hash")?,
     };
     println!("Opened database.");
+    // Determine url of Substrate node to connect to.
     let url = args.url.clone().unwrap_or("wss://rpc.polkadot.io:443".to_string());
     let api = OnlineClient::<PolkadotConfig>::from_url(url).await.unwrap();
     println!("Connected to Substrate node.");

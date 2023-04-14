@@ -77,6 +77,10 @@ pub struct Trees {
     pub tip_hash: Tree,
 }
 
+/**
+ * Each tree has its own key format. Each key starts with the event parameter that is being indexed.
+ */
+
 #[derive(PartialEq, Debug)]
 pub struct AccountIdKey {
     pub account_id: <SubstrateConfig as Config>::AccountId,
