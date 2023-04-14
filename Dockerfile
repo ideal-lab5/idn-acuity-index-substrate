@@ -1,4 +1,4 @@
-FROM rust:1.68.2
+FROM rust:1.68.2-slim
 
 WORKDIR /usr/src/hybrid-indexer
 
