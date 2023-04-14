@@ -44,7 +44,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tip_hash: db.open_tree("tip_hash")?,
     };
     println!("Opened database.");
-    let api = OnlineClient::<PolkadotConfig>::from_url(args.url.clone()).await.unwrap();
+    let url = args.url.clone().unwrap_or("wss://rpc.polkadot.io:443".to_string());
+    let api = OnlineClient::<PolkadotConfig>::from_url(url).await.unwrap();
     println!("Connected to Substrate node.");
 
     // Start Substrate tasks.

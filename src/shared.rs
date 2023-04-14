@@ -53,7 +53,7 @@ use crate::pallets::polkadot::slots::Slots;
 pub struct Args {
    /// URL of Substrate node to connect to.
    #[arg(short, long)]
-   pub url: String,
+   pub url: Option<String>,
    /// Block number to start indexing from.
    #[arg(short, long)]
    pub block_height: Option<u32>,
