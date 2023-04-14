@@ -65,8 +65,10 @@ struct EventFull {
 #[serde(tag = "type", content = "data")]
 #[serde(rename_all = "camelCase")]
 enum ResponseMessage {
+    #[serde(rename_all = "camelCase")]
     Status {
-        last_block: u32,
+        last_batch_block: u32,
+        latest_block: u32,
     },
     Events {
         events: Vec<EventFull>,
@@ -80,10 +82,14 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
     match msg {
         RequestMessage::GetStatus => {
             ResponseMessage::Status {
-                last_block: match trees.root.get("last_block").unwrap() {
+                last_batch_block: match trees.root.get("last_batch_block").unwrap() {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value.to_vec())),
                     None => 0,
-                }
+                },
+                latest_block: match trees.root.get("latest_block").unwrap() {
+                    Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value.to_vec())),
+                    None => 0,
+                },
             }
         },
         RequestMessage::GetEventsByAccountId { account_id } => {

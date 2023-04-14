@@ -272,6 +272,8 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
             i += 1;
         }
 
+        trees.root.insert("latest_block", &block_number.to_be_bytes()).unwrap();
+
         let block = blocks_sub.next().await.unwrap().unwrap();
         block_number = block.header().number;
         block_hash = block.hash();
@@ -282,7 +284,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
     let mut block_number: u32 = match args.block_height {
         Some(block_height) => block_height,
         None => {
-            match trees.root.get("last_block").unwrap() {
+            match trees.root.get("last_batch_block").unwrap() {
                 Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value.to_vec())),
                 None => 0,
             }
@@ -318,7 +320,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
             i += 1;
         }
 
-        trees.root.insert("last_block", &block_number.to_be_bytes()).unwrap();
+        trees.root.insert("last_batch_block", &block_number.to_be_bytes()).unwrap();
 
         // Increment the block number.
         block_number += 1;
