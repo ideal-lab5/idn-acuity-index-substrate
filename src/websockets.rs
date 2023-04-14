@@ -71,6 +71,7 @@ enum ResponseMessage {
     Events {
         events: Vec<EventFull>,
     },
+    Error,
 }
 
 async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
@@ -150,38 +151,50 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByCandidateHash { candidate_hash } => {
-            let candidate_hash = hex::decode(&candidate_hash[2..66]).unwrap();
-            let mut events = Vec::new();
+            match candidate_hash.get(2..66) {
+                Some(candidate_hash) => match hex::decode(candidate_hash) {
+                    Ok(candidate_hash) => {
+                        let mut events = Vec::new();
 
-            for kv in trees.candidate_hash.scan_prefix(candidate_hash.to_vec()) {
-                let kv = kv.unwrap();
-                let key = CandidateHashKey::unserialize(kv.0.to_vec());
-                let event = Event::decode(&mut kv.1.as_ref()).unwrap();
+                        for kv in trees.candidate_hash.scan_prefix(candidate_hash.to_vec()) {
+                            let kv = kv.unwrap();
+                            let key = CandidateHashKey::unserialize(kv.0.to_vec());
+                            let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
-                events.push(EventFull {
-                    block_number: key.block_number,
-                    event: event,
-                });
+                            events.push(EventFull {
+                                block_number: key.block_number,
+                                event: event,
+                            });
+                        }
+                        ResponseMessage::Events { events: events }
+                    },
+                    Err(_) => ResponseMessage::Error,
+                },
+                None => ResponseMessage::Error,
             }
-
-            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByMessageId { message_id } => {
-            let message_id = hex::decode(&message_id[2..66]).unwrap();
-            let mut events = Vec::new();
+            match message_id.get(2..66) {
+                Some(message_id) => match hex::decode(message_id) {
+                    Ok(message_id) => {
+                        let mut events = Vec::new();
 
-            for kv in trees.message_id.scan_prefix(message_id.to_vec()) {
-                let kv = kv.unwrap();
-                let key = MessageIdKey::unserialize(kv.0.to_vec());
-                let event = Event::decode(&mut kv.1.as_ref()).unwrap();
+                        for kv in trees.message_id.scan_prefix(message_id.to_vec()) {
+                            let kv = kv.unwrap();
+                            let key = MessageIdKey::unserialize(kv.0.to_vec());
+                            let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
-                events.push(EventFull {
-                    block_number: key.block_number,
-                    event: event,
-                });
+                            events.push(EventFull {
+                                block_number: key.block_number,
+                                event: event,
+                            });
+                        }
+                        ResponseMessage::Events { events: events }
+                    },
+                    Err(_) => ResponseMessage::Error,
+                },
+                None => ResponseMessage::Error,
             }
-
-            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByParaId { para_id } => {
             let mut events = Vec::new();
@@ -216,22 +229,27 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByProposalHash { proposal_hash } => {
-            let proposal_hash = hex::decode(&proposal_hash[2..66]).unwrap();
+            match proposal_hash.get(2..66) {
+                Some(proposal_hash) => match hex::decode(proposal_hash) {
+                    Ok(proposal_hash) => {
+                        let mut events = Vec::new();
 
-            let mut events = Vec::new();
+                        for kv in trees.proposal_hash.scan_prefix(proposal_hash.to_vec()) {
+                            let kv = kv.unwrap();
+                            let key = ProposalHashKey::unserialize(kv.0.to_vec());
+                            let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
-            for kv in trees.proposal_hash.scan_prefix(proposal_hash.to_vec()) {
-                let kv = kv.unwrap();
-                let key = ProposalHashKey::unserialize(kv.0.to_vec());
-                let event = Event::decode(&mut kv.1.as_ref()).unwrap();
-
-                events.push(EventFull {
-                    block_number: key.block_number,
-                    event: event,
-                });
+                            events.push(EventFull {
+                                block_number: key.block_number,
+                                event: event,
+                            });
+                        }
+                        ResponseMessage::Events { events: events }
+                    },
+                    Err(_) => ResponseMessage::Error,
+                },
+                None => ResponseMessage::Error,
             }
-
-            ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByProposalIndex { proposal_index } => {
             let mut events = Vec::new();
@@ -282,21 +300,27 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
             ResponseMessage::Events { events: events }
         },
         RequestMessage::GetEventsByTipHash { tip_hash } => {
-            let tip_hash = hex::decode(&tip_hash[2..66]).unwrap();
-            let mut events = Vec::new();
+            match tip_hash.get(2..66) {
+                Some(tip_hash) => match hex::decode(tip_hash) {
+                    Ok(tip_hash) => {
+                        let mut events = Vec::new();
 
-            for kv in trees.tip_hash.scan_prefix(tip_hash.to_vec()) {
-                let kv = kv.unwrap();
-                let key = TipHashKey::unserialize(kv.0.to_vec());
-                let event = Event::decode(&mut kv.1.as_ref()).unwrap();
+                        for kv in trees.tip_hash.scan_prefix(tip_hash.to_vec()) {
+                            let kv = kv.unwrap();
+                            let key = TipHashKey::unserialize(kv.0.to_vec());
+                            let event = Event::decode(&mut kv.1.as_ref()).unwrap();
 
-                events.push(EventFull {
-                    block_number: key.block_number,
-                    event: event,
-                });
+                            events.push(EventFull {
+                                block_number: key.block_number,
+                                event: event,
+                            });
+                        }
+                        ResponseMessage::Events { events: events }
+                    },
+                    Err(_) => ResponseMessage::Error,
+                },
+                None => ResponseMessage::Error,
             }
-
-            ResponseMessage::Events { events: events }
         },
     }
 }
