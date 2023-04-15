@@ -7,6 +7,6 @@ COPY . .
 RUN rustup toolchain install nightly
 RUN cargo +nightly build --release
 
-EXPOSE 8080
+EXPOSE 8172
 
 CMD cargo +nightly run --release -- --url wss://rpc.polkadot.io:443 --block-height 13800000
