@@ -84,3 +84,18 @@ If the --block-height parameter is not specified it will resume from where it le
 
 Go to [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp) and follow the tutorial to run the frontend to query the indexer.
 
+### Docker
+
+After setting up Docker, run the following command to build the image:
+
+```
+docker build .
+```
+
+Then run the image with the correct port mapping:
+
+```
+docker run --rm -p 8172:8172 [image_hash]
+```
+
+Now run the dockerfile for [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp).
