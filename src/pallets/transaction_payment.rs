@@ -12,11 +12,11 @@ use crate::substrate::*;
 #[serde(tag = "variant", content = "details")]
 pub enum TransactionPayment {
     #[serde(rename_all = "camelCase")]
-	TransactionFeePaid {
+    TransactionFeePaid {
         who: AccountId32,
         actual_fee: u128,
         tip: u128,
-	},
+    },
 }
 
 pub fn transaction_payment_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {

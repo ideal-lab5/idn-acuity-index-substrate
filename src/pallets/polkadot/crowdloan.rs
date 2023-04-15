@@ -12,52 +12,52 @@ use crate::substrate::*;
 #[serde(tag = "variant", content = "details")]
 pub enum Crowdloan {
     #[serde(rename_all = "camelCase")]
-	Created {
-	    para_id: u32,
-	},
+    Created {
+        para_id: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	Contributed {
-	    who: AccountId32,
-	    fund_index: u32,
-	    amount: u128
-	},
+    Contributed {
+        who: AccountId32,
+        fund_index: u32,
+        amount: u128
+    },
     #[serde(rename_all = "camelCase")]
-	Withdrew {
-	    who: AccountId32,
-	    fund_index: u32,
-	    amount: u128,
-	},
+    Withdrew {
+        who: AccountId32,
+        fund_index: u32,
+        amount: u128,
+    },
     #[serde(rename_all = "camelCase")]
-	PartiallyRefunded {
-	    para_id: u32,
-	},
+    PartiallyRefunded {
+        para_id: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	AllRefunded {
-	    para_id: u32,
-	},
+    AllRefunded {
+        para_id: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	Dissolved {
-	    para_id: u32,
-	},
+    Dissolved {
+        para_id: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	HandleBidResult {
-	    para_id: u32,
-//	    result: DispatchResult,
-	},
+    HandleBidResult {
+        para_id: u32,
+//      result: DispatchResult,
+    },
     #[serde(rename_all = "camelCase")]
-	Edited {
-	    para_id: u32,
-	},
+    Edited {
+        para_id: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	MemoUpdated {
-	    who: AccountId32,
-	    para_id: u32,
-	    memo: Vec<u8>,
-	},
+    MemoUpdated {
+        who: AccountId32,
+        para_id: u32,
+        memo: Vec<u8>,
+    },
     #[serde(rename_all = "camelCase")]
-	AddedToNewRaise {
-	    para_id: u32,
-	},
+    AddedToNewRaise {
+        para_id: u32,
+    },
 }
 
 pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {

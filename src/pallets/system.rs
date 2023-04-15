@@ -14,18 +14,18 @@ type Hash = Vec<u8>;
 #[serde(tag = "variant", content = "details")]
 pub enum System {
     #[serde(rename_all = "camelCase")]
-	NewAccount {
+    NewAccount {
         account: AccountId32,
-	},
+    },
     #[serde(rename_all = "camelCase")]
-	KilledAccount {
+    KilledAccount {
         account: AccountId32,
-	},
+    },
     #[serde(rename_all = "camelCase")]
-	Remarked {
+    Remarked {
         sender: AccountId32,
-	    hash: Hash,
-	},
+        hash: Hash,
+    },
 }
 
 pub fn system_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {

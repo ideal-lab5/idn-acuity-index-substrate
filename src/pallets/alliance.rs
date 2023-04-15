@@ -16,59 +16,59 @@ pub enum Alliance {
         rule: Cid,
     },
     #[serde(rename_all = "camelCase")]
-	Announced {
-	    announcement: Cid,
-	},
+    Announced {
+        announcement: Cid,
+    },
     #[serde(rename_all = "camelCase")]
-	AnnouncementRemoved {
-	    announcement: Cid,
-	},
+    AnnouncementRemoved {
+        announcement: Cid,
+    },
     #[serde(rename_all = "camelCase")]
-	MembersInitialized {
-	    fellows: Vec<AccountId32>,
-	    allies: Vec<AccountId32>,
-	},
+    MembersInitialized {
+        fellows: Vec<AccountId32>,
+        allies: Vec<AccountId32>,
+    },
     #[serde(rename_all = "camelCase")]
-	NewAllyJoined {
-		ally: AccountId32,
-		nominator: Option<AccountId32>,
-		reserved: Option<u128>,
-	},
+    NewAllyJoined {
+        ally: AccountId32,
+        nominator: Option<AccountId32>,
+        reserved: Option<u128>,
+    },
     #[serde(rename_all = "camelCase")]
-	AllyElevated {
-	    ally: AccountId32,
-	},
+    AllyElevated {
+        ally: AccountId32,
+    },
     #[serde(rename_all = "camelCase")]
-	MemberRetirementPeriodStarted {
-	    member: AccountId32,
-	},
+    MemberRetirementPeriodStarted {
+        member: AccountId32,
+    },
     #[serde(rename_all = "camelCase")]
-	MemberRetired {
-	    member: AccountId32,
-	    unreserved: Option<u128>,
-	},
+    MemberRetired {
+        member: AccountId32,
+        unreserved: Option<u128>,
+    },
     #[serde(rename_all = "camelCase")]
-	MemberKicked {
-	    member: AccountId32,
-	    slashed: Option<u128>,
-	},
+    MemberKicked {
+        member: AccountId32,
+        slashed: Option<u128>,
+    },
     #[serde(rename_all = "camelCase")]
-	UnscrupulousItemAdded {
-	    items: Vec<UnscrupulousItemOf>,
-	},
+    UnscrupulousItemAdded {
+        items: Vec<UnscrupulousItemOf>,
+    },
     #[serde(rename_all = "camelCase")]
-	UnscrupulousItemRemoved {
-	    items: Vec<UnscrupulousItemOf>,
-	},
+    UnscrupulousItemRemoved {
+        items: Vec<UnscrupulousItemOf>,
+    },
     #[serde(rename_all = "camelCase")]
-	AllianceDisbanded {
-	    fellow_members: u32,
-	    ally_members: u32,
-	    unreserved: u32,
-	},
+    AllianceDisbanded {
+        fellow_members: u32,
+        ally_members: u32,
+        unreserved: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	FellowAbdicated {
-	    fellow: AccountId32,
-	},
+    FellowAbdicated {
+        fellow: AccountId32,
+    },
 }
 

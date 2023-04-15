@@ -11,8 +11,8 @@ pub struct CandidateHash([u8; 32]);
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum DisputeLocation {
-	Local,
-	Remote,
+    Local,
+    Remote,
 }
 
 use crate::shared::polkadot::runtime_types::polkadot_runtime_parachains::disputes::DisputeLocation as SubDisputeLocation;
@@ -29,8 +29,8 @@ impl From<SubDisputeLocation> for DisputeLocation {
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum DisputeResult {
-	Valid,
-	Invalid,
+    Valid,
+    Invalid,
 }
 
 use crate::shared::polkadot::runtime_types::polkadot_runtime_parachains::disputes::DisputeResult as SubDisputeResult;
@@ -46,9 +46,9 @@ impl From<SubDisputeResult> for DisputeResult {
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 pub enum ParasDisputes {
-	DisputeInitiated(CandidateHash, DisputeLocation),
-	DisputeConcluded(CandidateHash, DisputeResult),
-	DisputeTimedOut(CandidateHash),
+    DisputeInitiated(CandidateHash, DisputeLocation),
+    DisputeConcluded(CandidateHash, DisputeResult),
+    DisputeTimedOut(CandidateHash),
 }
 
 pub fn parachains_disputes_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {

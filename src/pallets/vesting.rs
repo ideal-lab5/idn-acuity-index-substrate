@@ -17,9 +17,9 @@ pub enum Vesting {
         unvested: u128,
     },
     #[serde(rename_all = "camelCase")]
-	VestingCompleted {
-	    account: AccountId32,
-	},
+    VestingCompleted {
+        account: AccountId32,
+    },
 }
 
 pub fn vesting_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {

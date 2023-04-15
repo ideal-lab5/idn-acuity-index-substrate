@@ -41,27 +41,27 @@ pub enum Identity {
         registrar_index: u32,
     },
     #[serde(rename_all = "camelCase")]
-	RegistrarAdded {
-	    registrar_index: u32,
-	},
+    RegistrarAdded {
+        registrar_index: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	SubIdentityAdded {
-	    sub: AccountId32,
-	    main: AccountId32,
-	    deposit: u128,
-	},
+    SubIdentityAdded {
+        sub: AccountId32,
+        main: AccountId32,
+        deposit: u128,
+    },
     #[serde(rename_all = "camelCase")]
-	SubIdentityRemoved {
-	    sub: AccountId32,
-	    main: AccountId32,
-	    deposit: u128,
-	},
+    SubIdentityRemoved {
+        sub: AccountId32,
+        main: AccountId32,
+        deposit: u128,
+    },
     #[serde(rename_all = "camelCase")]
-	SubIdentityRevoked {
-	    sub: AccountId32,
-	    main: AccountId32,
-	    deposit: u128,
-	},
+    SubIdentityRevoked {
+        sub: AccountId32,
+        main: AccountId32,
+        deposit: u128,
+    },
 }
 
 pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {

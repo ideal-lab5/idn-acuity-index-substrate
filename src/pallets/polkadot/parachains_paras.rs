@@ -13,13 +13,13 @@ pub type SessionIndex = u32;
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 pub enum Paras {
     CurrentCodeUpdated(ParaId),
-	CurrentHeadUpdated(ParaId),
-	CodeUpgradeScheduled(ParaId),
-	NewHeadNoted(ParaId),
-	ActionQueued(ParaId, SessionIndex),
-	PvfCheckStarted(ValidationCodeHash, ParaId),
-	PvfCheckAccepted(ValidationCodeHash, ParaId),
-	PvfCheckRejected(ValidationCodeHash, ParaId),
+    CurrentHeadUpdated(ParaId),
+    CodeUpgradeScheduled(ParaId),
+    NewHeadNoted(ParaId),
+    ActionQueued(ParaId, SessionIndex),
+    PvfCheckStarted(ValidationCodeHash, ParaId),
+    PvfCheckAccepted(ValidationCodeHash, ParaId),
+    PvfCheckRejected(ValidationCodeHash, ParaId),
 }
 
 pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {

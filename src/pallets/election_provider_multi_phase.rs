@@ -10,11 +10,11 @@ use crate::substrate::*;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 pub enum ElectionCompute {
-	OnChain,
-	Signed,
-	Unsigned,
-	Fallback,
-	Emergency,
+    OnChain,
+    Signed,
+    Unsigned,
+    Fallback,
+    Emergency,
 }
 
 use crate::shared::polkadot::runtime_types::pallet_election_provider_multi_phase::ElectionCompute as SubElectionCompute;
@@ -35,21 +35,21 @@ impl From<SubElectionCompute> for ElectionCompute {
 #[serde(tag = "variant", content = "details")]
 pub enum ElectionProviderMultiPhase {
     #[serde(rename_all = "camelCase")]
-	SolutionStored {
-		compute: ElectionCompute,
-		origin: Option<AccountId32>,
-		prev_ejected: bool,
-	},
+    SolutionStored {
+        compute: ElectionCompute,
+        origin: Option<AccountId32>,
+        prev_ejected: bool,
+    },
     #[serde(rename_all = "camelCase")]
-	Rewarded {
-	    account: AccountId32,
-	    value: u128,
-	},
+    Rewarded {
+        account: AccountId32,
+        value: u128,
+    },
     #[serde(rename_all = "camelCase")]
-	Slashed {
-	    account: AccountId32,
-	    value: u128,
-	},
+    Slashed {
+        account: AccountId32,
+        value: u128,
+    },
 }
 
 pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
@@ -58,9 +58,9 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
             let event = event.as_event::<polkadot::election_provider_multi_phase::events::SolutionStored>()?.unwrap();
             let event_db = Event::ElectionProviderMultiPhase(
                 ElectionProviderMultiPhase::SolutionStored {
-		            compute: event.compute.into(),
-		            origin: event.origin.clone(),
-		            prev_ejected: event.prev_ejected,
+                    compute: event.compute.into(),
+                    origin: event.origin.clone(),
+                    prev_ejected: event.prev_ejected,
                 }
             );
             let value = Event::encode(&event_db);
@@ -74,8 +74,8 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
             let event = event.as_event::<polkadot::election_provider_multi_phase::events::Rewarded>()?.unwrap();
             let event_db = Event::ElectionProviderMultiPhase(
                 ElectionProviderMultiPhase::Rewarded {
-	                account: event.account.clone(),
-	                value: event.value,
+                    account: event.account.clone(),
+                    value: event.value,
                 }
             );
             let value = Event::encode(&event_db);
@@ -86,8 +86,8 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
             let event = event.as_event::<polkadot::election_provider_multi_phase::events::Slashed>()?.unwrap();
             let event_db = Event::ElectionProviderMultiPhase(
                 ElectionProviderMultiPhase::Slashed {
-	                account: event.account.clone(),
-	                value: event.value,
+                    account: event.account.clone(),
+                    value: event.value,
                 }
             );
             let value = Event::encode(&event_db);

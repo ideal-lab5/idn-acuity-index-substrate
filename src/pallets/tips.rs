@@ -11,29 +11,29 @@ use crate::substrate::*;
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
 pub enum Tips {
-	NewTip {
-	    tip_hash: [u8; 32],
-	},
+    NewTip {
+        tip_hash: [u8; 32],
+    },
     #[serde(rename_all = "camelCase")]
-	TipClosing {
-	    tip_hash: [u8; 32],
-	},
+    TipClosing {
+        tip_hash: [u8; 32],
+    },
     #[serde(rename_all = "camelCase")]
-	TipClosed {
-	    tip_hash: [u8; 32],
-	    who: AccountId32,
-	    payout: u128,
-	},
+    TipClosed {
+        tip_hash: [u8; 32],
+        who: AccountId32,
+        payout: u128,
+    },
     #[serde(rename_all = "camelCase")]
-	TipRetracted {
-	    tip_hash: [u8; 32],
-	},
+    TipRetracted {
+        tip_hash: [u8; 32],
+    },
     #[serde(rename_all = "camelCase")]
-	TipSlashed {
-	    tip_hash: [u8; 32],
-	    finder: AccountId32,
-	    deposit: u128,
-	},
+    TipSlashed {
+        tip_hash: [u8; 32],
+        finder: AccountId32,
+        deposit: u128,
+    },
 }
 
 pub fn tips_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
@@ -65,8 +65,8 @@ pub fn tips_index_event(trees: Trees, block_number: u32, event_index: u32, event
             let event_db = Event::Tips(
                 Tips::TipClosed {
             	    tip_hash: event.tip_hash.into(),
-	                who: event.who.clone(),
-	                payout: event.payout,
+                    who: event.who.clone(),
+                    payout: event.payout,
                 }
             );
             let value = Event::encode(&event_db);
@@ -90,8 +90,8 @@ pub fn tips_index_event(trees: Trees, block_number: u32, event_index: u32, event
             let event_db = Event::Tips(
                 Tips::TipSlashed {
             	    tip_hash: event.tip_hash.into(),
-	                finder: event.finder.clone(),
-	                deposit: event.deposit,
+                    finder: event.finder.clone(),
+                    deposit: event.deposit,
                 }
             );
             let value = Event::encode(&event_db);

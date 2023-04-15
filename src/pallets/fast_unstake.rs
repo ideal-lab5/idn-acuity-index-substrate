@@ -12,15 +12,15 @@ use crate::substrate::*;
 #[serde(tag = "variant", content = "details")]
 pub enum FastUnstake {
     #[serde(rename_all = "camelCase")]
-	Unstaked {
-	    stash: AccountId32,
-//	    result: DispatchResult,
-	},
+    Unstaked {
+        stash: AccountId32,
+    //  result: DispatchResult,
+    },
     #[serde(rename_all = "camelCase")]
-	Slashed {
-	    stash: AccountId32,
-	    amount: u128,
-	},
+    Slashed {
+        stash: AccountId32,
+        amount: u128,
+    },
 }
 
 pub fn fast_unstake_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
@@ -29,7 +29,7 @@ pub fn fast_unstake_index_event(trees: Trees, block_number: u32, event_index: u3
             let event = event.as_event::<polkadot::fast_unstake::events::Unstaked>()?.unwrap();
             let event_db = Event::FastUnstake(
                 FastUnstake::Unstaked {
-	                stash: event.stash.clone(),
+                    stash: event.stash.clone(),
                 }
             );
             let value = Event::encode(&event_db);
@@ -40,8 +40,8 @@ pub fn fast_unstake_index_event(trees: Trees, block_number: u32, event_index: u3
             let event = event.as_event::<polkadot::fast_unstake::events::Slashed>()?.unwrap();
             let event_db = Event::FastUnstake(
                 FastUnstake::Slashed {
-	                stash: event.stash.clone(),
-	                amount: event.amount,
+                    stash: event.stash.clone(),
+                    amount: event.amount,
                 }
             );
             let value = Event::encode(&event_db);

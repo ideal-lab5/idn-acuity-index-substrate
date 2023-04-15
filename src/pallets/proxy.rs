@@ -11,14 +11,14 @@ use crate::substrate::*;
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum ProxyType {
-	Any = 0,
-	NonTransfer = 1,
-	Governance = 2,
-	Staking = 3,
-	// Skip 4 as it is now removed (was SudoBalances)
-	IdentityJudgement = 5,
-	CancelProxy = 6,
-	Auction = 7,
+    Any = 0,
+    NonTransfer = 1,
+    Governance = 2,
+    Staking = 3,
+    // Skip 4 as it is now removed (was SudoBalances)
+    IdentityJudgement = 5,
+    CancelProxy = 6,
+    Auction = 7,
 }
 
 use crate::shared::polkadot::runtime_types::polkadot_runtime::ProxyType as SubProxyType;
@@ -41,32 +41,32 @@ impl From<SubProxyType> for ProxyType {
 #[serde(tag = "variant", content = "details")]
 pub enum Proxy {
     #[serde(rename_all = "camelCase")]
-	PureCreated {
-		pure: AccountId32,
-		who: AccountId32,
-		proxy_type: ProxyType,
-		disambiguation_index: u16,
-	},
+    PureCreated {
+        pure: AccountId32,
+        who: AccountId32,
+        proxy_type: ProxyType,
+        disambiguation_index: u16,
+    },
     #[serde(rename_all = "camelCase")]
-	Announced {
-	    real: AccountId32,
-	    proxy: AccountId32,
-	    call_hash: [u8; 32],
-	},
+    Announced {
+        real: AccountId32,
+        proxy: AccountId32,
+        call_hash: [u8; 32],
+    },
     #[serde(rename_all = "camelCase")]
-	ProxyAdded {
-		delegator: AccountId32,
-		delegatee: AccountId32,
-		proxy_type: ProxyType,
-		delay: u32,
-	},
+    ProxyAdded {
+        delegator: AccountId32,
+        delegatee: AccountId32,
+        proxy_type: ProxyType,
+        delay: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	ProxyRemoved {
-		delegator: AccountId32,
-		delegatee: AccountId32,
-		proxy_type: ProxyType,
-		delay: u32,
-	},
+    ProxyRemoved {
+        delegator: AccountId32,
+        delegatee: AccountId32,
+        proxy_type: ProxyType,
+        delay: u32,
+    },
 }
 
 pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
@@ -75,10 +75,10 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             let event = event.as_event::<polkadot::proxy::events::PureCreated>()?.unwrap();
             let event_db = Event::Proxy(
                 Proxy::PureCreated {
-		            pure: event.pure.clone(),
-		            who: event.who.clone(),
-		            proxy_type: event.proxy_type.into(),
-		            disambiguation_index: event.disambiguation_index,
+                    pure: event.pure.clone(),
+                    who: event.who.clone(),
+                    proxy_type: event.proxy_type.into(),
+                    disambiguation_index: event.disambiguation_index,
                 }
             );
             let value = Event::encode(&event_db);
@@ -90,9 +90,9 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             let event = event.as_event::<polkadot::proxy::events::Announced>()?.unwrap();
             let event_db = Event::Proxy(
                 Proxy::Announced {
-	                real: event.real.clone(),
-	                proxy: event.proxy.clone(),
-	                call_hash: event.call_hash.into(),
+                    real: event.real.clone(),
+                    proxy: event.proxy.clone(),
+                    call_hash: event.call_hash.into(),
                 }
             );
             let value = Event::encode(&event_db);
@@ -104,10 +104,10 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             let event = event.as_event::<polkadot::proxy::events::ProxyAdded>()?.unwrap();
             let event_db = Event::Proxy(
                 Proxy::ProxyAdded {
-		            delegator: event.delegator.clone(),
-		            delegatee: event.delegatee.clone(),
-		            proxy_type: event.proxy_type.into(),
-		            delay: event.delay,
+                    delegator: event.delegator.clone(),
+                    delegatee: event.delegatee.clone(),
+                    proxy_type: event.proxy_type.into(),
+                    delay: event.delay,
                 }
             );
             let value = Event::encode(&event_db);
@@ -119,10 +119,10 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             let event = event.as_event::<polkadot::proxy::events::ProxyRemoved>()?.unwrap();
             let event_db = Event::Proxy(
                 Proxy::ProxyRemoved {
-		            delegator: event.delegator.clone(),
-		            delegatee: event.delegatee.clone(),
-		            proxy_type: event.proxy_type.into(),
-		            delay: event.delay,
+                    delegator: event.delegator.clone(),
+                    delegatee: event.delegatee.clone(),
+                    proxy_type: event.proxy_type.into(),
+                    delay: event.delay,
                 }
             );
             let value = Event::encode(&event_db);

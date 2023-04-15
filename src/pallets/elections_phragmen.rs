@@ -12,27 +12,27 @@ use crate::substrate::*;
 #[serde(tag = "variant", content = "details")]
 pub enum PhragmenElection {
     #[serde(rename_all = "camelCase")]
-	NewTerm {
-	    new_members: Vec<(AccountId32, u128)>,
-	},
+    NewTerm {
+        new_members: Vec<(AccountId32, u128)>,
+    },
     #[serde(rename_all = "camelCase")]
-	MemberKicked {
-	    member: AccountId32,
-	},
+    MemberKicked {
+        member: AccountId32,
+    },
     #[serde(rename_all = "camelCase")]
-	Renounced {
-	    candidate: AccountId32,
-	},
+    Renounced {
+        candidate: AccountId32,
+    },
     #[serde(rename_all = "camelCase")]
-	CandidateSlashed {
-	    candidate: AccountId32,
-	    amount: u128,
-	},
+    CandidateSlashed {
+        candidate: AccountId32,
+        amount: u128,
+    },
     #[serde(rename_all = "camelCase")]
-	SeatHolderSlashed {
-		seat_holder: AccountId32,
-		amount: u128,
-	},
+    SeatHolderSlashed {
+        seat_holder: AccountId32,
+        amount: u128,
+    },
 }
 
 pub fn elections_phragmen_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
@@ -77,7 +77,7 @@ pub fn elections_phragmen_index_event(trees: Trees, block_number: u32, event_ind
             let event_db = Event::PhragmenElection(
                 PhragmenElection::CandidateSlashed {
             	        candidate: event.candidate.clone(),
-       	    	        amount: event.amount,
+                    amount: event.amount,
                 }
             );
             let value = Event::encode(&event_db);
@@ -89,7 +89,7 @@ pub fn elections_phragmen_index_event(trees: Trees, block_number: u32, event_ind
             let event_db = Event::PhragmenElection(
                 PhragmenElection::SeatHolderSlashed {
             	        seat_holder: event.seat_holder.clone(),
-       	    	        amount: event.amount,
+                    amount: event.amount,
                 }
             );
             let value = Event::encode(&event_db);

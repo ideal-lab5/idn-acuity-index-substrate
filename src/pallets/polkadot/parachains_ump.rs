@@ -9,8 +9,8 @@ pub type OverweightIndex = u64;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 pub struct Weight {
-	ref_time: u64,
-	proof_size: u64,
+    ref_time: u64,
+    proof_size: u64,
 }
 
 use crate::shared::polkadot::runtime_types::sp_weights::weight_v2::Weight as SubWeight;
@@ -26,13 +26,13 @@ impl From<SubWeight> for Weight {
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 pub enum Ump {
-	InvalidFormat(MessageId),
-	UnsupportedVersion(MessageId),
-	ExecutedUpward(MessageId, /*Outcome*/),
-	WeightExhausted(MessageId, Weight, Weight),
-	UpwardMessagesReceived(ParaId, u32, u32),
-	OverweightEnqueued(ParaId, MessageId, OverweightIndex, Weight),
-	OverweightServiced(OverweightIndex, Weight),
+    InvalidFormat(MessageId),
+    UnsupportedVersion(MessageId),
+    ExecutedUpward(MessageId, /*Outcome*/),
+    WeightExhausted(MessageId, Weight, Weight),
+    UpwardMessagesReceived(ParaId, u32, u32),
+    OverweightEnqueued(ParaId, MessageId, OverweightIndex, Weight),
+    OverweightServiced(OverweightIndex, Weight),
 }
 
 pub fn parachains_ump_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {

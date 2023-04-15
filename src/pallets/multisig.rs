@@ -10,43 +10,43 @@ use crate::substrate::*;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 pub struct Timepoint {
-	/// The height of the chain at the point in time.
-	height: u32,
-	/// The index of the extrinsic at the point in time.
-	index: u32,
+    /// The height of the chain at the point in time.
+    height: u32,
+    /// The index of the extrinsic at the point in time.
+    index: u32,
 }
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
 pub enum Multisig {
     #[serde(rename_all = "camelCase")]
-	NewMultisig {
-	    approving: AccountId32,
-	    multisig: AccountId32,
-	    call_hash: [u8; 32],
-	},
+    NewMultisig {
+        approving: AccountId32,
+        multisig: AccountId32,
+        call_hash: [u8; 32],
+    },
     #[serde(rename_all = "camelCase")]
-	MultisigApproval {
-		approving: AccountId32,
-		timepoint: Timepoint,
-		multisig: AccountId32,
-		call_hash: [u8; 32],
-	},
+    MultisigApproval {
+        approving: AccountId32,
+        timepoint: Timepoint,
+        multisig: AccountId32,
+        call_hash: [u8; 32],
+    },
     #[serde(rename_all = "camelCase")]
-	MultisigExecuted {
-		approving: AccountId32,
-		timepoint: Timepoint,
-		multisig: AccountId32,
-		call_hash: [u8; 32],
-//		result: DispatchResult,
-	},
+    MultisigExecuted {
+        approving: AccountId32,
+        timepoint: Timepoint,
+        multisig: AccountId32,
+        call_hash: [u8; 32],
+//        result: DispatchResult,
+    },
     #[serde(rename_all = "camelCase")]
-	MultisigCancelled {
-		cancelling: AccountId32,
-		timepoint: Timepoint,
-		multisig: AccountId32,
-		call_hash: [u8; 32],
-	},
+    MultisigCancelled {
+        cancelling: AccountId32,
+        timepoint: Timepoint,
+        multisig: AccountId32,
+        call_hash: [u8; 32],
+    },
 }
 
 pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
@@ -70,9 +70,9 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let event_db = Event::Multisig(
                 Multisig::MultisigApproval {
                     approving: event.approving.clone(),
-		            timepoint: Timepoint { height: event.timepoint.height, index: event.timepoint.index },
+                    timepoint: Timepoint { height: event.timepoint.height, index: event.timepoint.index },
                     multisig: event.multisig.clone(),
-		            call_hash: event.call_hash,
+                    call_hash: event.call_hash,
                 }
             );
             let value = Event::encode(&event_db);
@@ -85,9 +85,9 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let event_db = Event::Multisig(
                 Multisig::MultisigExecuted {
                     approving: event.approving.clone(),
-		            timepoint: Timepoint { height: event.timepoint.height, index: event.timepoint.index },
+                    timepoint: Timepoint { height: event.timepoint.height, index: event.timepoint.index },
                     multisig: event.multisig.clone(),
-		            call_hash: event.call_hash,
+                    call_hash: event.call_hash,
                 }
             );
             let value = Event::encode(&event_db);
@@ -100,9 +100,9 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let event_db = Event::Multisig(
                 Multisig::MultisigCancelled {
                     cancelling: event.cancelling.clone(),
-		            timepoint: Timepoint { height: event.timepoint.height, index: event.timepoint.index },
+                    timepoint: Timepoint { height: event.timepoint.height, index: event.timepoint.index },
                     multisig: event.multisig.clone(),
-		            call_hash: event.call_hash,
+                    call_hash: event.call_hash,
                 }
             );
             let value = Event::encode(&event_db);

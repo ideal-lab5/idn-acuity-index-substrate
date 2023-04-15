@@ -12,28 +12,28 @@ use crate::substrate::*;
 #[serde(tag = "variant", content = "details")]
 pub enum ChildBounties {
     #[serde(rename_all = "camelCase")]
-	Added {
-	    index: u32,
-	    child_index: u32,
-	},
+    Added {
+        index: u32,
+        child_index: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	Awarded {
-	    index: u32,
-	    child_index: u32,
-	    beneficiary: AccountId32,
-	},
+    Awarded {
+        index: u32,
+        child_index: u32,
+        beneficiary: AccountId32,
+    },
     #[serde(rename_all = "camelCase")]
-	Claimed {
-		index: u32,
-		child_index: u32,
-		payout: u128,
-		beneficiary: AccountId32,
-	},
+    Claimed {
+        index: u32,
+        child_index: u32,
+        payout: u128,
+        beneficiary: AccountId32,
+    },
     #[serde(rename_all = "camelCase")]
-	Canceled {
-	    index: u32,
-	    child_index: u32,
-	},
+    Canceled {
+        index: u32,
+        child_index: u32,
+    },
 }
 
 pub fn child_bounties_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
@@ -42,8 +42,8 @@ pub fn child_bounties_index_event(trees: Trees, block_number: u32, event_index: 
             let event = event.as_event::<polkadot::child_bounties::events::Added>()?.unwrap();
             let event_db = Event::ChildBounties(
                 ChildBounties::Added {
-	                index: event.index,
-	                child_index: event.child_index,
+                    index: event.index,
+                    child_index: event.child_index,
                 }
             );
             let value = Event::encode(&event_db);
@@ -55,9 +55,9 @@ pub fn child_bounties_index_event(trees: Trees, block_number: u32, event_index: 
             let event = event.as_event::<polkadot::child_bounties::events::Awarded>()?.unwrap();
             let event_db = Event::ChildBounties(
                 ChildBounties::Awarded {
-	                index: event.index,
-	                child_index: event.child_index,
-	                beneficiary: event.beneficiary.clone(),
+                    index: event.index,
+                    child_index: event.child_index,
+                    beneficiary: event.beneficiary.clone(),
                 }
             );
             let value = Event::encode(&event_db);
@@ -70,10 +70,10 @@ pub fn child_bounties_index_event(trees: Trees, block_number: u32, event_index: 
             let event = event.as_event::<polkadot::child_bounties::events::Claimed>()?.unwrap();
             let event_db = Event::ChildBounties(
                 ChildBounties::Claimed {
-	                index: event.index,
-	                child_index: event.child_index,
-	                payout: event.payout,
-	                beneficiary: event.beneficiary.clone(),
+                    index: event.index,
+                    child_index: event.child_index,
+                    payout: event.payout,
+                    beneficiary: event.beneficiary.clone(),
                 }
             );
             let value = Event::encode(&event_db);
@@ -86,8 +86,8 @@ pub fn child_bounties_index_event(trees: Trees, block_number: u32, event_index: 
             let event = event.as_event::<polkadot::child_bounties::events::Canceled>()?.unwrap();
             let event_db = Event::ChildBounties(
                 ChildBounties::Canceled {
-	                index: event.index,
-	                child_index: event.child_index,
+                    index: event.index,
+                    child_index: event.child_index,
                 }
             );
             let value = Event::encode(&event_db);

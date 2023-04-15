@@ -12,26 +12,26 @@ use crate::substrate::*;
 #[serde(tag = "variant", content = "details")]
 pub enum Treasury {
     #[serde(rename_all = "camelCase")]
-	Proposed {
-	    proposal_index: u32,
-	},
+    Proposed {
+        proposal_index: u32,
+    },
     #[serde(rename_all = "camelCase")]
-	Awarded {
-	    proposal_index: u32,
-	    award: u128,
-	    account: AccountId32,
-	},
+    Awarded {
+        proposal_index: u32,
+        award: u128,
+        account: AccountId32,
+    },
     #[serde(rename_all = "camelCase")]
-	Rejected {
-	    proposal_index: u32,
-	    slashed: u128,
-	},
+    Rejected {
+        proposal_index: u32,
+        slashed: u128,
+    },
     #[serde(rename_all = "camelCase")]
-	SpendApproved {
-		proposal_index: u32,
-		amount: u128,
-		beneficiary: AccountId32,
-	},
+    SpendApproved {
+        proposal_index: u32,
+        amount: u128,
+        beneficiary: AccountId32,
+    },
 }
 
 pub fn treasury_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
@@ -40,7 +40,7 @@ pub fn treasury_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let event = event.as_event::<polkadot::treasury::events::Proposed>().unwrap().unwrap();
             let event_db = Event::Treasury(
                 Treasury::Proposed {
-		            proposal_index: event.proposal_index,
+                    proposal_index: event.proposal_index,
                 }
             );
             let value = Event::encode(&event_db);
@@ -51,9 +51,9 @@ pub fn treasury_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let event = event.as_event::<polkadot::treasury::events::Awarded>().unwrap().unwrap();
             let event_db = Event::Treasury(
                 Treasury::Awarded {
-		            proposal_index: event.proposal_index,
-	                award: event.award,
-	                account: event.account.clone(),
+                    proposal_index: event.proposal_index,
+                    award: event.award,
+                    account: event.account.clone(),
                 }
             );
             let value = Event::encode(&event_db);
@@ -65,8 +65,8 @@ pub fn treasury_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let event = event.as_event::<polkadot::treasury::events::Rejected>().unwrap().unwrap();
             let event_db = Event::Treasury(
                 Treasury::Rejected {
-		            proposal_index: event.proposal_index,
-	                slashed: event.slashed,
+                    proposal_index: event.proposal_index,
+                    slashed: event.slashed,
                 }
             );
             let value = Event::encode(&event_db);
@@ -77,9 +77,9 @@ pub fn treasury_index_event(trees: Trees, block_number: u32, event_index: u32, e
             let event = event.as_event::<polkadot::treasury::events::SpendApproved>().unwrap().unwrap();
             let event_db = Event::Treasury(
                 Treasury::SpendApproved {
-		            proposal_index: event.proposal_index,
-	                amount: event.amount,
-	                beneficiary: event.beneficiary.clone(),
+                    proposal_index: event.proposal_index,
+                    amount: event.amount,
+                    beneficiary: event.beneficiary.clone(),
                 }
             );
             let value = Event::encode(&event_db);

@@ -13,19 +13,19 @@ use crate::substrate::*;
 #[serde(tag = "variant", content = "details")]
 pub enum Indices {
     #[serde(rename_all = "camelCase")]
-	IndexAssigned {
+    IndexAssigned {
         who: AccountId32,
         index: u32,
-	},
+    },
     #[serde(rename_all = "camelCase")]
     IndexFreed {
         index: u32,
     },
     #[serde(rename_all = "camelCase")]
-	IndexFrozen {
-	    index: u32,
-	    who: AccountId32,
-	},
+    IndexFrozen {
+        index: u32,
+        who: AccountId32,
+    },
 }
 
 pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {

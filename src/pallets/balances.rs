@@ -46,42 +46,42 @@ pub enum Balances {
         value: u128,
     },
     #[serde(rename_all = "camelCase")]
-	BalanceSet {
-	    who: AccountId32,
-	    free: u128,
-	    reserved: u128,
+    BalanceSet {
+        who: AccountId32,
+        free: u128,
+        reserved: u128,
     },
     #[serde(rename_all = "camelCase")]
-	Reserved {
-	    who: AccountId32,
-	    amount: u128,
-	},
-    #[serde(rename_all = "camelCase")]
-	Unreserved {
-	    who: AccountId32,
-	    amount: u128,
+    Reserved {
+        who: AccountId32,
+        amount: u128,
     },
     #[serde(rename_all = "camelCase")]
-	ReserveRepatriated {
-		from: AccountId32,
-		to: AccountId32,
-		amount: u128,
-		destination_status: Status,
-	},
+    Unreserved {
+        who: AccountId32,
+        amount: u128,
+    },
     #[serde(rename_all = "camelCase")]
-	Deposit {
-	    who: AccountId32,
-	    amount: u128,
-	},
-	Withdraw {
-	    who: AccountId32,
-	    amount: u128,
-	},
+    ReserveRepatriated {
+        from: AccountId32,
+        to: AccountId32,
+        amount: u128,
+        destination_status: Status,
+    },
     #[serde(rename_all = "camelCase")]
-	Slashed {
-	    who: AccountId32,
-	    amount: u128,
-	},
+    Deposit {
+        who: AccountId32,
+        amount: u128,
+    },
+    Withdraw {
+        who: AccountId32,
+        amount: u128,
+    },
+    #[serde(rename_all = "camelCase")]
+    Slashed {
+        who: AccountId32,
+        amount: u128,
+    },
 }
 
 pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
