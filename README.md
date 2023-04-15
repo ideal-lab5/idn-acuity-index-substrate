@@ -64,6 +64,12 @@ Database entries will be key-only. No value will be stored. The blocknumber and 
 
 Hybrid is still early in the development process. Currently it can index event parameters from many events in Polkadot: AccountId, AccountIndex, AuctionIndex, BountyIndex, CandidateHash, MessageId, ParaId, PoolId, ProposalHash, ProposalIndex, RefIndex, RegistrarIndex, TipHash.
 
+#### Run tests
+
+```
+cargo test
+```
+
 #### Build
 
 ```
