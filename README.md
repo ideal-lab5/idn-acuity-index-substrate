@@ -82,6 +82,8 @@ cargo build --release
 ./target/release/hybrid-indexer --url wss://rpc.polkadot.io:443 --block-height 13800000 
 ```
 
+All parameters that are indexed will be printed on the console, except AccountId.
+
 The earlist block that can be indexed on Polkadot is 7,229,126.
 
 If the --block-height parameter is not specified it will resume from where it left off in the previous run.
