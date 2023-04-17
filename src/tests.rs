@@ -43,7 +43,7 @@ fn init_db(name: &str) -> Trees {
 fn test_index_event_account_id() {
     let trees = init_db("target/debug/test_account_id");
     let account_id = AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap();
-    index_event_account_id(trees.clone(), account_id.clone(), 4, 5, &[0; 0]);
+    index_event_account_id(trees.clone(), account_id.clone(), 4, 5);
 
     let key1 = AccountIdKey {
         account_id: account_id.clone(),
@@ -71,7 +71,7 @@ fn test_account_index_key() {
 #[test]
 fn test_index_event_account_index() {
     let trees = init_db("target/debug/test_account_index");
-    index_event_account_index(trees.clone(), 8, 4, 5, &[0; 0]);
+    index_event_account_index(trees.clone(), 8, 4, 5);
 
     let key1 = AccountIndexKey {
         account_index: 8,
@@ -99,7 +99,7 @@ fn test_auction_index_key() {
 #[test]
 fn test_index_event_auction_index() {
     let trees = init_db("target/debug/test_auction_index");
-    index_event_auction_index(trees.clone(), 8, 4, 5, &[0; 0]);
+    index_event_auction_index(trees.clone(), 8, 4, 5);
 
     let key1 = AuctionIndexKey {
         auction_index: 8,
@@ -127,7 +127,7 @@ fn test_bounty_index_key() {
 #[test]
 fn test_index_event_bounty_index() {
     let trees = init_db("target/debug/test_bounty_index");
-    index_event_bounty_index(trees.clone(), 8, 4, 5, &[0; 0]);
+    index_event_bounty_index(trees.clone(), 8, 4, 5);
 
     let key1 = BountyIndexKey {
         bounty_index: 8,
@@ -155,7 +155,7 @@ fn test_candidate_hash_key() {
 #[test]
 fn test_index_event_candidate_hash() {
     let trees = init_db("target/debug/test_candidate_hash");
-    index_event_candidate_hash(trees.clone(), [8; 32], 4, 5, &[0; 0]);
+    index_event_candidate_hash(trees.clone(), [8; 32], 4, 5);
 
     let key1 = CandidateHashKey {
         candidate_hash: [8; 32],
@@ -183,7 +183,7 @@ fn test_message_id_key() {
 #[test]
 fn test_index_event_message_id() {
     let trees = init_db("target/debug/test_message_id");
-    index_event_message_id(trees.clone(), [8; 32], 4, 5, &[0; 0]);
+    index_event_message_id(trees.clone(), [8; 32], 4, 5);
 
     let key1 = MessageIdKey {
         message_id: [8; 32],
@@ -211,7 +211,7 @@ fn test_para_id_key() {
 #[test]
 fn test_index_event_para_id() {
     let trees = init_db("target/debug/test_para_id");
-    index_event_para_id(trees.clone(), 8, 4, 5, &[0; 0]);
+    index_event_para_id(trees.clone(), 8, 4, 5);
 
     let key1 = ParaIdKey {
         para_id: 8,
@@ -239,7 +239,7 @@ fn test_pool_id_key() {
 #[test]
 fn test_index_event_pool_id() {
     let trees = init_db("target/debug/test_pool_id");
-    index_event_pool_id(trees.clone(), 8, 4, 5, &[0; 0]);
+    index_event_pool_id(trees.clone(), 8, 4, 5);
 
     let key1 = PoolIdKey {
         pool_id: 8,
@@ -267,7 +267,7 @@ fn test_ref_index_key() {
 #[test]
 fn test_index_event_ref_index() {
     let trees = init_db("target/debug/test_ref_index");
-    index_event_ref_index(trees.clone(), 8, 4, 5, &[0; 0]);
+    index_event_ref_index(trees.clone(), 8, 4, 5);
 
     let key1 = RefIndexKey {
         ref_index: 8,
@@ -295,7 +295,7 @@ fn test_registrar_index_key() {
 #[test]
 fn test_index_event_registrar_index() {
     let trees = init_db("target/debug/test_registrar_index");
-    index_event_registrar_index(trees.clone(), 8, 4, 5, &[0; 0]);
+    index_event_registrar_index(trees.clone(), 8, 4, 5);
 
     let key1 = RegistrarIndexKey {
         registrar_index: 8,
@@ -323,7 +323,7 @@ fn test_proposal_hash_key() {
 #[test]
 fn test_index_event_proposal_hash() {
     let trees = init_db("target/debug/test_proposal_hash");
-    index_event_proposal_hash(trees.clone(), [8; 32], 4, 5, &[0; 0]);
+    index_event_proposal_hash(trees.clone(), [8; 32], 4, 5);
 
     let key1 = ProposalHashKey {
         proposal_hash: [8; 32],
@@ -351,7 +351,7 @@ fn test_proposal_index_key() {
 #[test]
 fn test_index_event_proposal_index() {
     let trees = init_db("target/debug/test_proposal_index");
-    index_event_proposal_index(trees.clone(), 8, 4, 5, &[0; 0]);
+    index_event_proposal_index(trees.clone(), 8, 4, 5);
 
     let key1 = ProposalIndexKey {
         proposal_index: 8,
@@ -379,7 +379,7 @@ fn test_tip_hash_key() {
 #[test]
 fn test_index_event_tip_hash() {
     let trees = init_db("target/debug/test_tip_hash");
-    index_event_tip_hash(trees.clone(), [8; 32], 4, 5, &[0; 0]);
+    index_event_tip_hash(trees.clone(), [8; 32], 4, 5);
 
     let key1 = TipHashKey {
         tip_hash: [8; 32],
