@@ -18,36 +18,6 @@ pub struct ParaId(pub u32);
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
 pub mod polkadot {}
 
-use crate::pallets::bags_list::BagsList;
-use crate::pallets::balances::Balances;
-use crate::pallets::bounties::Bounties;
-use crate::pallets::child_bounties::ChildBounties;
-use crate::pallets::claims::Claims;
-use crate::pallets::collective::Collective;
-use crate::pallets::democracy::Democracy;
-use crate::pallets::election_provider_multi_phase::ElectionProviderMultiPhase;
-use crate::pallets::elections_phragmen::PhragmenElection;
-use crate::pallets::fast_unstake::FastUnstake;
-use crate::pallets::identity::Identity;
-use crate::pallets::indices::Indices;
-use crate::pallets::multisig::Multisig;
-use crate::pallets::nomination_pools::NominationPools;
-use crate::pallets::proxy::Proxy;
-use crate::pallets::system::System;
-use crate::pallets::tips::Tips;
-use crate::pallets::transaction_payment::TransactionPayment;
-use crate::pallets::treasury::Treasury;
-use crate::pallets::vesting::Vesting;
-
-use crate::pallets::polkadot::auctions::Auctions;
-use crate::pallets::polkadot::crowdloan::Crowdloan;
-use crate::pallets::polkadot::parachains_disputes::ParasDisputes;
-use crate::pallets::polkadot::parachains_hrmp::Hrmp;
-use crate::pallets::polkadot::parachains_paras::Paras;
-use crate::pallets::polkadot::parachains_ump::Ump;
-use crate::pallets::polkadot::paras_registrar::Registrar;
-use crate::pallets::polkadot::slots::Slots;
-
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
@@ -404,68 +374,6 @@ impl TipHashKey {
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
         }
     }
-}
-
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-#[serde(tag = "pallet")]
-pub enum Event {
-    #[serde(rename_all = "camelCase")]
-    Auctions(Auctions),
-    #[serde(rename_all = "camelCase")]
-    BagsList(BagsList),
-    #[serde(rename_all = "camelCase")]
-    Balances(Balances),
-    #[serde(rename_all = "camelCase")]
-    Bounties(Bounties),
-    #[serde(rename_all = "camelCase")]
-    ChildBounties(ChildBounties),
-    #[serde(rename_all = "camelCase")]
-    Claims(Claims),
-    #[serde(rename_all = "camelCase")]
-    Collective(Collective),
-    #[serde(rename_all = "camelCase")]
-    Crowdloan(Crowdloan),
-    #[serde(rename_all = "camelCase")]
-    Democracy(Democracy),
-    #[serde(rename_all = "camelCase")]
-    ElectionProviderMultiPhase(ElectionProviderMultiPhase),
-    #[serde(rename_all = "camelCase")]
-    FastUnstake(FastUnstake),
-    #[serde(rename_all = "camelCase")]
-    Hrmp(Hrmp),
-    #[serde(rename_all = "camelCase")]
-    Paras(Paras),
-    #[serde(rename_all = "camelCase")]
-    ParasDisputes(ParasDisputes),
-    #[serde(rename_all = "camelCase")]
-    PhragmenElection(PhragmenElection),
-    #[serde(rename_all = "camelCase")]
-    Identity(Identity),
-    #[serde(rename_all = "camelCase")]
-    Indices(Indices),
-    #[serde(rename_all = "camelCase")]
-    Multisig(Multisig),
-    #[serde(rename_all = "camelCase")]
-    NominationPools(NominationPools),
-    #[serde(rename_all = "camelCase")]
-    Proxy(Proxy),
-    #[serde(rename_all = "camelCase")]
-    Registrar(Registrar),
-    #[serde(rename_all = "camelCase")]
-    Slots(Slots),
-    #[serde(rename_all = "camelCase")]
-    System(System),
-    #[serde(rename_all = "camelCase")]
-    Tips(Tips),
-    #[serde(rename_all = "camelCase")]
-    TransactionPayment(TransactionPayment),
-    #[serde(rename_all = "camelCase")]
-    Treasury(Treasury),
-    #[serde(rename_all = "camelCase")]
-    Ump(Ump),
-    #[serde(rename_all = "camelCase")]
-    Vesting(Vesting),
 }
 
 pub fn vector_as_u8_32_array(vector: &Vec<u8>) -> [u8; 32] {

@@ -40,7 +40,7 @@ use crate::pallets::polkadot::parachains_ump::*;
 use crate::pallets::polkadot::paras_registrar::*;
 use crate::pallets::polkadot::slots::*;
 
-pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32) {
     // Generate key
     let key = AccountIdKey {
         account_id: account_id,
@@ -48,10 +48,10 @@ pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_numbe
         i: i,
     }.serialize();
     // Insert record.
-    trees.account_id.insert(key, bytes).unwrap();
+    trees.account_id.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_account_index(trees: Trees, account_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_account_index(trees: Trees, account_index: u32, block_number: u32, i: u32) {
     println!("AccountIndex: {}", account_index);
     // Generate key
     let key = AccountIndexKey {
@@ -60,10 +60,10 @@ pub fn index_event_account_index(trees: Trees, account_index: u32, block_number:
         i: i,
     }.serialize();
     // Insert record.
-    trees.account_index.insert(key, bytes).unwrap();
+    trees.account_index.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number: u32, i: u32) {
     println!("AuctionIndex: {}", auction_index);
     // Generate key
     let key = AuctionIndexKey {
@@ -72,10 +72,10 @@ pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number:
         i: i,
     }.serialize();
     // Insert record.
-    trees.auction_index.insert(key, bytes).unwrap();
+    trees.auction_index.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u32, i: u32) {
     println!("BountyIndex: {}", bounty_index);
     // Generate key
     let key = BountyIndexKey {
@@ -84,10 +84,10 @@ pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u
         i: i,
     }.serialize();
     // Insert record.
-    trees.bounty_index.insert(key, bytes).unwrap();
+    trees.bounty_index.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_number: u32, i: u32) {
     println!("CandidateHash: 0x{}", hex::encode(candidate_hash));
     // Generate key
     let key = CandidateHashKey {
@@ -96,10 +96,10 @@ pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_
         i: i,
     }.serialize();
     // Insert record.
-    trees.candidate_hash.insert(key, bytes).unwrap();
+    trees.candidate_hash.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: u32, i: u32) {
     println!("MessageId: 0x{}", hex::encode(message_id));
     // Generate key
     let key = MessageIdKey {
@@ -108,10 +108,10 @@ pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: 
         i: i,
     }.serialize();
     // Insert record.
-    trees.message_id.insert(key, bytes).unwrap();
+    trees.message_id.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32) {
     println!("ParaId: {}", para_id);
     // Generate key
     let key = ParaIdKey {
@@ -120,10 +120,10 @@ pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32
         i: i,
     }.serialize();
     // Insert record.
-    trees.para_id.insert(key, bytes).unwrap();
+    trees.para_id.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32) {
     println!("PoolId: {}", pool_id);
     // Generate key
     let key = PoolIdKey {
@@ -132,10 +132,10 @@ pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32
         i: i,
     }.serialize();
     // Insert record.
-    trees.pool_id.insert(key, bytes).unwrap();
+    trees.pool_id.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32) {
     println!("ProposalHash: 0x{}", hex::encode(proposal_hash));
     // Generate key
     let key = ProposalHashKey {
@@ -144,10 +144,10 @@ pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_nu
         i: i,
     }.serialize();
     // Insert record.
-    trees.proposal_hash.insert(key, bytes).unwrap();
+    trees.proposal_hash.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_number: u32, i: u32) {
     println!("ProposalIndex: {}", proposal_index);
     // Generate key
     let key = ProposalIndexKey {
@@ -156,10 +156,10 @@ pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_numbe
         i: i,
     }.serialize();
     // Insert record.
-    trees.proposal_index.insert(key, bytes).unwrap();
+    trees.proposal_index.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i: u32) {
     println!("RefIndex: {}", ref_index);
     // Generate key
     let key = RefIndexKey {
@@ -168,10 +168,10 @@ pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i:
         i: i,
     }.serialize();
     // Insert record.
-    trees.ref_index.insert(key, bytes).unwrap();
+    trees.ref_index.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_number: u32, i: u32) {
     println!("RegistrarIndex: {}", registrar_index);
     // Generate key
     let key = RegistrarIndexKey {
@@ -180,10 +180,10 @@ pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_num
         i: i,
     }.serialize();
     // Insert record.
-    trees.registrar_index.insert(key, bytes).unwrap();
+    trees.registrar_index.insert(key, &[]).unwrap();
 }
 
-pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32, i: u32, bytes: &[u8]) {
+pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32, i: u32) {
     println!("TipHash: 0x{}", hex::encode(tip_hash));
     // Generate key
     let key = TipHashKey {
@@ -192,7 +192,7 @@ pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32,
         i: i,
     }.serialize();
     // Insert record.
-    trees.tip_hash.insert(key, bytes).unwrap();
+    trees.tip_hash.insert(key, &[]).unwrap();
 }
 
 fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
