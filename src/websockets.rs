@@ -67,8 +67,9 @@ struct EventFull {
 enum ResponseMessage {
     #[serde(rename_all = "camelCase")]
     Status {
+        last_head_block: u32,
         last_batch_block: u32,
-        latest_block: u32,
+        batch_indexing_complete: bool,
     },
     Events {
         events: Vec<EventFull>,
@@ -82,13 +83,17 @@ async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
     match msg {
         RequestMessage::Status => {
             ResponseMessage::Status {
+                last_head_block: match trees.root.get("last_head_block").unwrap() {
+                    Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
+                    None => 0,
+                },
                 last_batch_block: match trees.root.get("last_batch_block").unwrap() {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
                     None => 0,
                 },
-                latest_block: match trees.root.get("latest_block").unwrap() {
-                    Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
-                    None => 0,
+                batch_indexing_complete: match trees.root.get("batch_indexing_complete").unwrap() {
+                    Some(value) => value.to_vec()[0] == 1,
+                    None => false,
                 },
             }
         },

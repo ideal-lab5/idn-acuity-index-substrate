@@ -269,7 +269,7 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
             i += 1;
         }
 
-        trees.root.insert("latest_block", &block_number.to_be_bytes()).unwrap();
+        trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
 
         let block = blocks_sub.next().await.unwrap().unwrap();
         block_number = block.header().number;
@@ -278,16 +278,28 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
 }
 
 pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, args: Args) {
+    // Determine the correct block to start batch indexing.
     let mut block_number: u32 = match args.block_height {
         Some(block_height) => block_height,
         None => {
-            match trees.root.get("last_batch_block").unwrap() {
-                Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
-                None => 0,
+            match match trees.root.get("batch_indexing_complete").unwrap() {
+                    Some(value) => value.to_vec()[0] == 1,
+                    None => false,
+                }
+            {
+                true => match trees.root.get("last_head_block").unwrap() {
+                    Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
+                    None => 0,
+                }
+                false => match trees.root.get("last_batch_block").unwrap() {
+                    Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
+                    None => 0,
+                }
             }
         }
     };
-
+    // Record in database that batch indexing has not finished.
+    trees.root.insert("batch_indexing_complete", &0_u8.to_be_bytes()).unwrap();
     // Get the hash of the starting block.
     let mut block_hash = api.rpc().block_hash(Some(block_number.into())).await.unwrap().unwrap();
     // Download the metadata of the starting block.
@@ -322,6 +334,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         match api.rpc().block_hash(Some(block_number.into())).await.unwrap() {
             Some(new_hash) => block_hash = new_hash,
             None => {
+                trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes()).unwrap();
                 println!("Finished batch indexing.");
                 break;
             }
