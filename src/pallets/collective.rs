@@ -66,7 +66,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
             index_event_proposal_index(trees.clone(), event.proposal_index, block_number, event_index, &value);
-            index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            index_event_proposal_hash(trees, event.proposal_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         "Voted" => {
@@ -83,7 +83,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
-            index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            index_event_proposal_hash(trees, event.proposal_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         "Approved" => {
@@ -95,7 +95,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            index_event_proposal_hash(trees, event.proposal_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         "Disapproved" => {
@@ -107,7 +107,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            index_event_proposal_hash(trees, event.proposal_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         "Executed" => {
@@ -119,7 +119,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            index_event_proposal_hash(trees, event.proposal_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         "MemberExecuted" => {
@@ -131,7 +131,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            index_event_proposal_hash(trees, event.proposal_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         "Closed" => {
@@ -145,7 +145,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_hash(trees.clone(), event.proposal_hash.into(), block_number, event_index, &value);
+            index_event_proposal_hash(trees, event.proposal_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

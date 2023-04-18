@@ -70,7 +70,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         "Contributed" => {
@@ -84,7 +84,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
-            index_event_para_id(trees.clone(), event.fund_index.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.fund_index.0, block_number, event_index, &value);
             Ok(())
         },
         "Withdrew" => {
@@ -98,7 +98,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
-            index_event_para_id(trees.clone(), event.fund_index.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.fund_index.0, block_number, event_index, &value);
             Ok(())
         },
         "PartiallyRefunded" => {
@@ -109,7 +109,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         "AllRefunded" => {
@@ -120,7 +120,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         "Dissolved" => {
@@ -131,7 +131,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         "HandleBidResult" => {
@@ -142,7 +142,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         "Edited" => {
@@ -153,7 +153,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         "MemoUpdated" => {
@@ -167,7 +167,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         "AddedToNewRaise" => {
@@ -178,7 +178,7 @@ pub fn crowdloan_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

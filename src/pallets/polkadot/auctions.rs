@@ -65,7 +65,7 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_auction_index(trees.clone(), event.auction_index, block_number, event_index, &value);
+            index_event_auction_index(trees, event.auction_index, block_number, event_index, &value);
             Ok(())
         },
         "AuctionClosed" => {
@@ -76,7 +76,7 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_auction_index(trees.clone(), event.auction_index, block_number, event_index, &value);
+            index_event_auction_index(trees, event.auction_index, block_number, event_index, &value);
             Ok(())
         },
         "Reserved" => {
@@ -89,7 +89,7 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.bidder, block_number, event_index, &value);
+            index_event_account_id(trees, event.bidder, block_number, event_index, &value);
             Ok(())
         },
         "Unreserved" => {
@@ -101,7 +101,7 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.bidder, block_number, event_index, &value);
+            index_event_account_id(trees, event.bidder, block_number, event_index, &value);
             Ok(())
         },
         "ReserveConfiscated" => {
@@ -115,7 +115,7 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.leaser, block_number, event_index, &value);
+            index_event_account_id(trees, event.leaser, block_number, event_index, &value);
             Ok(())
         },
         "BidAccepted" => {
@@ -131,7 +131,7 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.bidder, block_number, event_index, &value);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         "WinningOffset" => {
@@ -143,7 +143,7 @@ pub fn auctions_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_auction_index(trees.clone(), event.auction_index, block_number, event_index, &value);
+            index_event_auction_index(trees, event.auction_index, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

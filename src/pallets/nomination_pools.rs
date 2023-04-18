@@ -46,6 +46,7 @@ impl From<SubCommissionChangeRate> for CommissionChangeRate {
 */
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
+#[allow(clippy::enum_variant_names)]
 pub enum NominationPools {
     #[serde(rename_all = "camelCase")]
     Created {
@@ -145,7 +146,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.depositor, block_number, event_index, &value);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             Ok(())
         },
         "Bonded" => {
@@ -160,7 +161,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             Ok(())
         },
         "PaidOut" => {
@@ -174,7 +175,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             Ok(())
         },
         "Unbonded" => {
@@ -190,7 +191,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             Ok(())
         },
         "Withdrawn" => {
@@ -205,7 +206,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             Ok(())
         },
         "Destroyed" => {
@@ -216,7 +217,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             Ok(())
         },
         "StateChanged" => {
@@ -228,7 +229,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             Ok(())
         },
         "MemberRemoved" => {
@@ -241,7 +242,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
             );
             let value = Event::encode(&event_db);
             index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
+            index_event_account_id(trees, event.member, block_number, event_index, &value);
             Ok(())
         },
         "RolesUpdated" => {
@@ -254,17 +255,14 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
                 }
             );
             let value = Event::encode(&event_db);
-            match event.root {
-                Some(account) => index_event_account_id(trees.clone(), account, block_number, event_index, &value),
-                None => {},
+            if let Some(account) = event.root {
+                index_event_account_id(trees.clone(), account, block_number, event_index, &value);
             }
-            match event.state_toggler {
-                Some(account) => index_event_account_id(trees.clone(), account, block_number, event_index, &value),
-                None => {},
+            if let Some(account) = event.state_toggler {
+                index_event_account_id(trees.clone(), account, block_number, event_index, &value);
             }
-            match event.nominator {
-                Some(account) => index_event_account_id(trees.clone(), account, block_number, event_index, &value),
-                None => {},
+            if let Some(account) = event.nominator {
+                index_event_account_id(trees, account, block_number, event_index, &value);
             }
             Ok(())
         },
@@ -277,7 +275,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             Ok(())
         },
         "UnbondingPoolSlashed" => {
@@ -290,7 +288,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             Ok(())
         },
 /*
@@ -303,7 +301,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
             match event.current {
                 Some((i, account)) => index_event_account_id(trees.clone(), account, block_number, event_index, &value),
                 None => {},
@@ -318,7 +316,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
         },
         "PoolCommissionClaimed" => {
             let event = event.as_event::<polkadot::nomination_pools::events::PoolCommissionClaimed>()?.unwrap();
@@ -329,7 +327,7 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index, &value);
+            index_event_pool_id(trees, event.pool_id, block_number, event_index, &value);
         },
 */
         _ => Ok(()),

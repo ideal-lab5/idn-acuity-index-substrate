@@ -38,7 +38,7 @@ pub fn slots_index_event(trees: Trees, block_number: u32, event_index: u32, even
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.leaser, block_number, event_index, &value);
+            index_event_account_id(trees, event.leaser, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

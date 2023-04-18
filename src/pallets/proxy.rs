@@ -10,6 +10,7 @@ use crate::substrate::*;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
+#[allow(clippy::unnecessary_cast)]
 pub enum ProxyType {
     Any = 0,
     NonTransfer = 1,
@@ -83,7 +84,7 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.pure, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            index_event_account_id(trees, event.who, block_number, event_index, &value);
             Ok(())
         },
         "Announced" => {
@@ -97,7 +98,7 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.real, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.proxy, block_number, event_index, &value);
+            index_event_account_id(trees, event.proxy, block_number, event_index, &value);
             Ok(())
         },
         "ProxyAdded" => {
@@ -112,7 +113,7 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.delegator, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.delegatee, block_number, event_index, &value);
+            index_event_account_id(trees, event.delegatee, block_number, event_index, &value);
             Ok(())
         },
         "ProxyRemoved" => {
@@ -127,7 +128,7 @@ pub fn proxy_index_event(trees: Trees, block_number: u32, event_index: u32, even
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.delegator, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.delegatee, block_number, event_index, &value);
+            index_event_account_id(trees, event.delegatee, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

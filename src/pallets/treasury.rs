@@ -44,7 +44,7 @@ pub fn treasury_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_index(trees.clone(), event.proposal_index, block_number, event_index, &value);
+            index_event_proposal_index(trees, event.proposal_index, block_number, event_index, &value);
             Ok(())
         },
         "Awarded" => {
@@ -58,7 +58,7 @@ pub fn treasury_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_proposal_index(trees.clone(), event.proposal_index, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            index_event_account_id(trees, event.account, block_number, event_index, &value);
             Ok(())
         },
         "Rejected" => {
@@ -70,7 +70,7 @@ pub fn treasury_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_index(trees.clone(), event.proposal_index, block_number, event_index, &value);
+            index_event_proposal_index(trees, event.proposal_index, block_number, event_index, &value);
             Ok(())
         },
         "SpendApproved" => {
@@ -84,7 +84,7 @@ pub fn treasury_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_proposal_index(trees.clone(), event.proposal_index, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.beneficiary, block_number, event_index, &value);
+            index_event_account_id(trees, event.beneficiary, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

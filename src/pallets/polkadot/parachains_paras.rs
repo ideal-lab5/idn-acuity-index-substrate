@@ -30,7 +30,7 @@ pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index
                 Paras::CurrentCodeUpdated(ParaId(event.0.0))
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.0.0, block_number, event_index, &value);
             Ok(())
         },
         "CurrentHeadUpdated" => {
@@ -39,7 +39,7 @@ pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index
                 Paras::CurrentHeadUpdated(ParaId(event.0.0))
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.0.0, block_number, event_index, &value);
             Ok(())
         },
         "CodeUpgradeScheduled" => {
@@ -48,7 +48,7 @@ pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index
                 Paras::CodeUpgradeScheduled(ParaId(event.0.0))
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.0.0, block_number, event_index, &value);
             Ok(())
         },
         "NewHeadNoted" => {
@@ -57,7 +57,7 @@ pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index
                 Paras::NewHeadNoted(ParaId(event.0.0))
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.0.0, block_number, event_index, &value);
             Ok(())
         },
         "ActionQueued" => {
@@ -66,7 +66,7 @@ pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index
                 Paras::ActionQueued(ParaId(event.0.0), event.1)
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.0.0, block_number, event_index, &value);
             Ok(())
         },
         "PvfCheckStarted" => {
@@ -75,7 +75,7 @@ pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index
                 Paras::PvfCheckStarted(ValidationCodeHash(event.0.0.0), ParaId(event.1.0))
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.1.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.1.0, block_number, event_index, &value);
             Ok(())
         },
         "PvfCheckAccepted" => {
@@ -84,7 +84,7 @@ pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index
                 Paras::PvfCheckAccepted(ValidationCodeHash(event.0.0.0), ParaId(event.1.0))
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.1.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.1.0, block_number, event_index, &value);
             Ok(())
         },
         "PvfCheckRejected" => {
@@ -93,7 +93,7 @@ pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index
                 Paras::PvfCheckRejected(ValidationCodeHash(event.0.0.0), ParaId(event.1.0))
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.1.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.1.0, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

@@ -102,7 +102,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_index(trees.clone(), event.proposal_index, block_number, event_index, &value);
+            index_event_proposal_index(trees, event.proposal_index, block_number, event_index, &value);
             Ok(())
         },
         "Tabled" => {
@@ -114,7 +114,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_index(trees.clone(), event.proposal_index, block_number, event_index, &value);
+            index_event_proposal_index(trees, event.proposal_index, block_number, event_index, &value);
             Ok(())
         },
         "Started" => {
@@ -126,7 +126,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_ref_index(trees.clone(), event.ref_index, block_number, event_index, &value);
+            index_event_ref_index(trees, event.ref_index, block_number, event_index, &value);
             Ok(())
         },
         "Passed" => {
@@ -137,7 +137,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_ref_index(trees.clone(), event.ref_index, block_number, event_index, &value);
+            index_event_ref_index(trees, event.ref_index, block_number, event_index, &value);
             Ok(())
         },
         "NotPassed" => {
@@ -148,7 +148,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_ref_index(trees.clone(), event.ref_index, block_number, event_index, &value);
+            index_event_ref_index(trees, event.ref_index, block_number, event_index, &value);
             Ok(())
         },
         "Cancelled" => {
@@ -159,7 +159,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_ref_index(trees.clone(), event.ref_index, block_number, event_index, &value);
+            index_event_ref_index(trees, event.ref_index, block_number, event_index, &value);
             Ok(())
         },
         "Delegated" => {
@@ -172,7 +172,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.target, block_number, event_index, &value);
+            index_event_account_id(trees, event.target, block_number, event_index, &value);
             Ok(())
         },
         "Undelegated" => {
@@ -183,7 +183,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            index_event_account_id(trees, event.account, block_number, event_index, &value);
             Ok(())
         },
         "Vetoed" => {
@@ -196,7 +196,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            index_event_account_id(trees, event.who, block_number, event_index, &value);
             Ok(())
         },
         "Voted" => {
@@ -209,7 +209,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.voter, block_number, event_index, &value);
-            index_event_ref_index(trees.clone(), event.ref_index, block_number, event_index, &value);
+            index_event_ref_index(trees, event.ref_index, block_number, event_index, &value);
             Ok(())
         },
         "Seconded" => {
@@ -222,7 +222,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.seconder, block_number, event_index, &value);
-            index_event_proposal_index(trees.clone(), event.prop_index, block_number, event_index, &value);
+            index_event_proposal_index(trees, event.prop_index, block_number, event_index, &value);
             Ok(())
         },
         "ProposalCanceled" => {
@@ -233,7 +233,7 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_proposal_index(trees.clone(), event.prop_index, block_number, event_index, &value);
+            index_event_proposal_index(trees, event.prop_index, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

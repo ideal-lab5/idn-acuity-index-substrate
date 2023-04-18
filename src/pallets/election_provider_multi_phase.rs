@@ -64,9 +64,8 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
                 }
             );
             let value = Event::encode(&event_db);
-            match event.origin {
-                Some(account) => index_event_account_id(trees.clone(), account, block_number, event_index, &value),
-                None => {},
+            if let Some(account) = event.origin {
+                index_event_account_id(trees, account, block_number, event_index, &value);
             }
             Ok(())
         },
@@ -79,7 +78,7 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            index_event_account_id(trees, event.account, block_number, event_index, &value);
             Ok(())
         },
         "Slashed" => {
@@ -91,7 +90,7 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.account, block_number, event_index, &value);
+            index_event_account_id(trees, event.account, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

@@ -10,6 +10,7 @@ use crate::substrate::*;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
+#[allow(clippy::enum_variant_names)]
 pub enum Identity {
     #[serde(rename_all = "camelCase")]
     IdentitySet {
@@ -74,7 +75,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.who.clone(), block_number, event_index, &value);
+            index_event_account_id(trees, event.who, block_number, event_index, &value);
             Ok(())
         },
         "IdentityCleared" => {
@@ -86,7 +87,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            index_event_account_id(trees, event.who, block_number, event_index, &value);
             Ok(())
         },
         "IdentityKilled" => {
@@ -98,7 +99,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            index_event_account_id(trees, event.who, block_number, event_index, &value);
             Ok(())
         },
         "JudgementRequested" => {
@@ -111,7 +112,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
-            index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
+            index_event_registrar_index(trees, event.registrar_index, block_number, event_index, &value);
             Ok(())
         },
         "JudgementUnrequested" => {
@@ -124,7 +125,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
-            index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
+            index_event_registrar_index(trees, event.registrar_index, block_number, event_index, &value);
             Ok(())
         },
         "JudgementGiven" => {
@@ -137,7 +138,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.target, block_number, event_index, &value);
-            index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
+            index_event_registrar_index(trees, event.registrar_index, block_number, event_index, &value);
             Ok(())
         },
         "RegistrarAdded" => {
@@ -148,7 +149,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_registrar_index(trees.clone(), event.registrar_index, block_number, event_index, &value);
+            index_event_registrar_index(trees, event.registrar_index, block_number, event_index, &value);
             Ok(())
         },
         "SubIdentityAdded" => {
@@ -162,7 +163,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
+            index_event_account_id(trees, event.main, block_number, event_index, &value);
             Ok(())
         },
         "SubIdentityRemoved" => {
@@ -176,7 +177,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
+            index_event_account_id(trees, event.main, block_number, event_index, &value);
             Ok(())
         },
         "SubIdentityRevoked" => {
@@ -190,7 +191,7 @@ pub fn identity_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.sub, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.main, block_number, event_index, &value);
+            index_event_account_id(trees, event.main, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

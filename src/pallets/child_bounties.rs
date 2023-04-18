@@ -48,7 +48,7 @@ pub fn child_bounties_index_event(trees: Trees, block_number: u32, event_index: 
             );
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
-            index_event_bounty_index(trees.clone(), event.child_index, block_number, event_index, &value);
+            index_event_bounty_index(trees, event.child_index, block_number, event_index, &value);
             Ok(())
         },
         "Awarded" => {
@@ -63,7 +63,7 @@ pub fn child_bounties_index_event(trees: Trees, block_number: u32, event_index: 
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
             index_event_bounty_index(trees.clone(), event.child_index, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.beneficiary, block_number, event_index, &value);
+            index_event_account_id(trees, event.beneficiary, block_number, event_index, &value);
             Ok(())
         },
         "Claimed" => {
@@ -79,7 +79,7 @@ pub fn child_bounties_index_event(trees: Trees, block_number: u32, event_index: 
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
             index_event_bounty_index(trees.clone(), event.child_index, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.beneficiary, block_number, event_index, &value);
+            index_event_account_id(trees, event.beneficiary, block_number, event_index, &value);
             Ok(())
         },
         "Canceled" => {
@@ -92,7 +92,7 @@ pub fn child_bounties_index_event(trees: Trees, block_number: u32, event_index: 
             );
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
-            index_event_bounty_index(trees.clone(), event.child_index, block_number, event_index, &value);
+            index_event_bounty_index(trees, event.child_index, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

@@ -39,7 +39,7 @@ pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index:
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.manager, block_number, event_index, &value);
+            index_event_account_id(trees, event.manager, block_number, event_index, &value);
             Ok(())
         },
         "Deregistered" => {
@@ -50,7 +50,7 @@ pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index:
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.para_id.0, block_number, event_index, &value);
             Ok(())
         },
         "Reserved" => {
@@ -63,7 +63,7 @@ pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index:
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.para_id.0, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            index_event_account_id(trees, event.who, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

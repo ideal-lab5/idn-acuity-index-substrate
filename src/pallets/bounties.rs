@@ -10,6 +10,7 @@ use crate::substrate::*;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
+#[allow(clippy::enum_variant_names)]
 pub enum Bounties {
     #[serde(rename_all = "camelCase")]
     BountyProposed {
@@ -55,7 +56,7 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            index_event_bounty_index(trees, event.index, block_number, event_index, &value);
             Ok(())
         },
         "BountyRejected" => {
@@ -67,7 +68,7 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            index_event_bounty_index(trees, event.index, block_number, event_index, &value);
             Ok(())
         },
         "BountyBecameActive" => {
@@ -78,7 +79,7 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            index_event_bounty_index(trees, event.index, block_number, event_index, &value);
             Ok(())
         },
         "BountyAwarded" => {
@@ -91,7 +92,7 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.beneficiary, block_number, event_index, &value);
+            index_event_account_id(trees, event.beneficiary, block_number, event_index, &value);
             Ok(())
         },
         "BountyClaimed" => {
@@ -105,7 +106,7 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.beneficiary, block_number, event_index, &value);
+            index_event_account_id(trees, event.beneficiary, block_number, event_index, &value);
             Ok(())
         },
         "BountyCanceled" => {
@@ -116,7 +117,7 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            index_event_bounty_index(trees, event.index, block_number, event_index, &value);
             Ok(())
         },
         "BountyExtended" => {
@@ -127,7 +128,7 @@ pub fn bounties_index_event(trees: Trees, block_number: u32, event_index: u32, e
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_bounty_index(trees.clone(), event.index, block_number, event_index, &value);
+            index_event_bounty_index(trees, event.index, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

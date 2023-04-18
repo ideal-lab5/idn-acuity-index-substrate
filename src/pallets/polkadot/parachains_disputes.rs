@@ -45,6 +45,7 @@ impl From<SubDisputeResult> for DisputeResult {
 }
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[allow(clippy::enum_variant_names)]
 pub enum ParasDisputes {
     DisputeInitiated(CandidateHash, DisputeLocation),
     DisputeConcluded(CandidateHash, DisputeResult),
@@ -59,7 +60,7 @@ pub fn parachains_disputes_index_event(trees: Trees, block_number: u32, event_in
                 ParasDisputes::DisputeInitiated(CandidateHash(event.0.0.0), event.1.into())
             );
             let value = Event::encode(&event_db);
-            index_event_candidate_hash(trees.clone(), event.0.0.0, block_number, event_index, &value);
+            index_event_candidate_hash(trees, event.0.0.0, block_number, event_index, &value);
             Ok(())
         },
         "DisputeConcluded" => {
@@ -68,7 +69,7 @@ pub fn parachains_disputes_index_event(trees: Trees, block_number: u32, event_in
                 ParasDisputes::DisputeConcluded(CandidateHash(event.0.0.0), event.1.into())
             );
             let value = Event::encode(&event_db);
-            index_event_candidate_hash(trees.clone(), event.0.0.0, block_number, event_index, &value);
+            index_event_candidate_hash(trees, event.0.0.0, block_number, event_index, &value);
             Ok(())
         },
         "DisputeTimedOut" => {
@@ -77,7 +78,7 @@ pub fn parachains_disputes_index_event(trees: Trees, block_number: u32, event_in
                 ParasDisputes::DisputeTimedOut(CandidateHash(event.0.0.0))
             );
             let value = Event::encode(&event_db);
-            index_event_candidate_hash(trees.clone(), event.0.0.0, block_number, event_index, &value);
+            index_event_candidate_hash(trees, event.0.0.0, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

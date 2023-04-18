@@ -43,9 +43,9 @@ use crate::pallets::polkadot::slots::*;
 pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32, bytes: &[u8]) {
     // Generate key
     let key = AccountIdKey {
-        account_id: account_id,
-        block_number: block_number,
-        i: i,
+        account_id,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.account_id.insert(key, bytes).unwrap();
@@ -55,9 +55,9 @@ pub fn index_event_account_index(trees: Trees, account_index: u32, block_number:
     println!("AccountIndex: {}", account_index);
     // Generate key
     let key = AccountIndexKey {
-        account_index: account_index,
-        block_number: block_number,
-        i: i,
+        account_index,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.account_index.insert(key, bytes).unwrap();
@@ -67,9 +67,9 @@ pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number:
     println!("AuctionIndex: {}", auction_index);
     // Generate key
     let key = AuctionIndexKey {
-        auction_index: auction_index,
-        block_number: block_number,
-        i: i,
+        auction_index,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.auction_index.insert(key, bytes).unwrap();
@@ -79,9 +79,9 @@ pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u
     println!("BountyIndex: {}", bounty_index);
     // Generate key
     let key = BountyIndexKey {
-        bounty_index: bounty_index,
-        block_number: block_number,
-        i: i,
+        bounty_index,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.bounty_index.insert(key, bytes).unwrap();
@@ -91,9 +91,9 @@ pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_
     println!("CandidateHash: 0x{}", hex::encode(candidate_hash));
     // Generate key
     let key = CandidateHashKey {
-        candidate_hash: candidate_hash,
-        block_number: block_number,
-        i: i,
+        candidate_hash,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.candidate_hash.insert(key, bytes).unwrap();
@@ -103,9 +103,9 @@ pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: 
     println!("MessageId: 0x{}", hex::encode(message_id));
     // Generate key
     let key = MessageIdKey {
-        message_id: message_id,
-        block_number: block_number,
-        i: i,
+        message_id,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.message_id.insert(key, bytes).unwrap();
@@ -115,9 +115,9 @@ pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32
     println!("ParaId: {}", para_id);
     // Generate key
     let key = ParaIdKey {
-        para_id: para_id,
-        block_number: block_number,
-        i: i,
+        para_id,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.para_id.insert(key, bytes).unwrap();
@@ -127,9 +127,9 @@ pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32
     println!("PoolId: {}", pool_id);
     // Generate key
     let key = PoolIdKey {
-        pool_id: pool_id,
-        block_number: block_number,
-        i: i,
+        pool_id,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.pool_id.insert(key, bytes).unwrap();
@@ -139,9 +139,9 @@ pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_nu
     println!("ProposalHash: 0x{}", hex::encode(proposal_hash));
     // Generate key
     let key = ProposalHashKey {
-        proposal_hash: proposal_hash,
-        block_number: block_number,
-        i: i,
+        proposal_hash,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.proposal_hash.insert(key, bytes).unwrap();
@@ -151,9 +151,9 @@ pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_numbe
     println!("ProposalIndex: {}", proposal_index);
     // Generate key
     let key = ProposalIndexKey {
-        proposal_index: proposal_index,
-        block_number: block_number,
-        i: i,
+        proposal_index,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.proposal_index.insert(key, bytes).unwrap();
@@ -163,9 +163,9 @@ pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i:
     println!("RefIndex: {}", ref_index);
     // Generate key
     let key = RefIndexKey {
-        ref_index: ref_index,
-        block_number: block_number,
-        i: i,
+        ref_index,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.ref_index.insert(key, bytes).unwrap();
@@ -175,9 +175,9 @@ pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_num
     println!("RegistrarIndex: {}", registrar_index);
     // Generate key
     let key = RegistrarIndexKey {
-        registrar_index: registrar_index,
-        block_number: block_number,
-        i: i,
+        registrar_index,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.registrar_index.insert(key, bytes).unwrap();
@@ -187,9 +187,9 @@ pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32,
     println!("TipHash: 0x{}", hex::encode(tip_hash));
     // Generate key
     let key = TipHashKey {
-        tip_hash: tip_hash,
-        block_number: block_number,
-        i: i,
+        tip_hash,
+        block_number,
+        i,
     }.serialize();
     // Insert record.
     trees.tip_hash.insert(key, bytes).unwrap();
@@ -227,7 +227,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "TransactionPayment" => transaction_payment_index_event(trees, block_number, event_index, event),
         "Treasury" => treasury_index_event(trees, block_number, event_index, event),
         "Vesting" => vesting_index_event(trees, block_number, event_index, event),
-        _ => Ok({}),
+        _ => Ok(()),
     };
 
     match result  {
@@ -259,13 +259,10 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
                 Ok(evt) => {
                     index_event(trees.clone(), block_number, i, evt);
                 },
-                Err(error) => match error {
-                    Metadata(EventNotFound(_, _)) => {
-                        println!("Downloading new metadata.");
-                        metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
-                        continue 'blocks;
-                    },
-                    _ => {},
+                Err(error) => if let Metadata(EventNotFound(_, _)) = error {
+                    println!("Downloading new metadata.");
+                    metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
+                    continue 'blocks;
                 }
             }
 
@@ -285,7 +282,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         Some(block_height) => block_height,
         None => {
             match trees.root.get("last_batch_block").unwrap() {
-                Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value.to_vec())),
+                Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
                 None => 0,
             }
         }
@@ -307,13 +304,10 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
                 Ok(evt) => {
                     index_event(trees.clone(), block_number, i, evt);
                 },
-                Err(error) => match error {
-                    Metadata(EventNotFound(_, _)) => {
-                        println!("Downloading new metadata.");
-                        metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
-                        continue 'blocks;
-                    },
-                    _ => {},
+                Err(error) => if let Metadata(EventNotFound(_, _)) = error {
+                    println!("Downloading new metadata.");
+                    metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
+                    continue 'blocks;
                 }
             }
 

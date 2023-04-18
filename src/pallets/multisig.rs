@@ -18,6 +18,7 @@ pub struct Timepoint {
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
+#[allow(clippy::enum_variant_names)]
 pub enum Multisig {
     #[serde(rename_all = "camelCase")]
     NewMultisig {
@@ -62,7 +63,7 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.approving, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.multisig, block_number, event_index, &value);
+            index_event_account_id(trees, event.multisig, block_number, event_index, &value);
             Ok(())
         },
         "MultisigApproval" => {
@@ -77,7 +78,7 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.approving, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.multisig, block_number, event_index, &value);
+            index_event_account_id(trees, event.multisig, block_number, event_index, &value);
             Ok(())
         },
         "MultisigExecuted" => {
@@ -92,7 +93,7 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.approving, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.multisig, block_number, event_index, &value);
+            index_event_account_id(trees, event.multisig, block_number, event_index, &value);
             Ok(())
         },
         "MultisigCancelled" => {
@@ -107,7 +108,7 @@ pub fn multisig_index_event(trees: Trees, block_number: u32, event_index: u32, e
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.cancelling, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.multisig, block_number, event_index, &value);
+            index_event_account_id(trees, event.multisig, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

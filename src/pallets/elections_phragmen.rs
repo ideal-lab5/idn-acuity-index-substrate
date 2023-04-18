@@ -58,7 +58,7 @@ pub fn elections_phragmen_index_event(trees: Trees, block_number: u32, event_ind
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.member, block_number, event_index, &value);
+            index_event_account_id(trees, event.member, block_number, event_index, &value);
             Ok(())
         },
         "Renounced" => {
@@ -69,7 +69,7 @@ pub fn elections_phragmen_index_event(trees: Trees, block_number: u32, event_ind
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.candidate, block_number, event_index, &value);
+            index_event_account_id(trees, event.candidate, block_number, event_index, &value);
             Ok(())
         },
         "CandidateSlashed" => {
@@ -81,7 +81,7 @@ pub fn elections_phragmen_index_event(trees: Trees, block_number: u32, event_ind
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.candidate, block_number, event_index, &value);
+            index_event_account_id(trees, event.candidate, block_number, event_index, &value);
             Ok(())
         },
         "SeatHolderSlashed" => {
@@ -93,7 +93,7 @@ pub fn elections_phragmen_index_event(trees: Trees, block_number: u32, event_ind
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_id(trees.clone(), event.seat_holder, block_number, event_index, &value);
+            index_event_account_id(trees, event.seat_holder, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

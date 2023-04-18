@@ -91,11 +91,11 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             let event = Event::Balances(
                 Balances::Endowed {
                     account: endowed_event.account.clone(),
-                    free_balance: endowed_event.free_balance.clone(),
+                    free_balance: endowed_event.free_balance,
                 }
             );
             let value = Event::encode(&event);
-            index_event_account_id(trees.clone(), endowed_event.account, block_number, event_index, &value);
+            index_event_account_id(trees, endowed_event.account, block_number, event_index, &value);
             Ok(())
         },
         "DustLost" => {
@@ -107,7 +107,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                 }
             );
             let value = Event::encode(&event);
-            index_event_account_id(trees.clone(), dustlost_event.account, block_number, event_index, &value);
+            index_event_account_id(trees, dustlost_event.account, block_number, event_index, &value);
             Ok(())
         },
         "Transfer" => {
@@ -121,7 +121,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), transfer_event.from, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), transfer_event.to, block_number, event_index, &value);
+            index_event_account_id(trees, transfer_event.to, block_number, event_index, &value);
             Ok(())
         },
         "BalanceSet" => {
@@ -134,7 +134,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                 }
             );
             let value = Event::encode(&event);
-            index_event_account_id(trees.clone(), balance_set_event.who, block_number, event_index, &value);
+            index_event_account_id(trees, balance_set_event.who, block_number, event_index, &value);
             Ok(())
         },
         "Reserved" => {
@@ -146,7 +146,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                 }
             );
             let value = Event::encode(&event);
-            index_event_account_id(trees.clone(), reserved_event.who, block_number, event_index, &value);
+            index_event_account_id(trees, reserved_event.who, block_number, event_index, &value);
             Ok(())
         },
         "Unreserved" => {
@@ -158,7 +158,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                 }
             );
             let value = Event::encode(&event);
-            index_event_account_id(trees.clone(), unreserved_event.who, block_number, event_index, &value);
+            index_event_account_id(trees, unreserved_event.who, block_number, event_index, &value);
             Ok(())
         },
         "ReserveRepatriated" => {
@@ -173,7 +173,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event);
             index_event_account_id(trees.clone(), reserve_repatriated_event.from, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), reserve_repatriated_event.to, block_number, event_index, &value);
+            index_event_account_id(trees, reserve_repatriated_event.to, block_number, event_index, &value);
             Ok(())
         },
         "Deposit" => {
@@ -185,7 +185,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                 }
             );
             let value = Event::encode(&event);
-            index_event_account_id(trees.clone(), deposit_event.who, block_number, event_index, &value);
+            index_event_account_id(trees, deposit_event.who, block_number, event_index, &value);
             Ok(())
         },
         "Withdraw" => {
@@ -197,7 +197,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                 }
             );
             let value = Event::encode(&event);
-            index_event_account_id(trees.clone(), withdraw_event.who, block_number, event_index, &value);
+            index_event_account_id(trees, withdraw_event.who, block_number, event_index, &value);
             Ok(())
         },
         "Slashed" => {
@@ -209,7 +209,7 @@ pub fn balance_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                 }
             );
             let value = Event::encode(&event);
-            index_event_account_id(trees.clone(), slashed_event.who, block_number, event_index, &value);
+            index_event_account_id(trees, slashed_event.who, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

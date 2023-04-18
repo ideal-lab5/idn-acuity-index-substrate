@@ -11,6 +11,7 @@ use crate::substrate::*;
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
+#[allow(clippy::enum_variant_names)]
 pub enum Indices {
     #[serde(rename_all = "camelCase")]
     IndexAssigned {
@@ -40,7 +41,7 @@ pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event_db);
             index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
-            index_event_account_index(trees.clone(), event.index, block_number, event_index, &value);
+            index_event_account_index(trees, event.index, block_number, event_index, &value);
             Ok(())
         },
         "IndexFreed" => {
@@ -51,7 +52,7 @@ pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, ev
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_account_index(trees.clone(), event.index, block_number, event_index, &value);
+            index_event_account_index(trees, event.index, block_number, event_index, &value);
             Ok(())
         },
         "IndexFrozen" => {
@@ -64,7 +65,7 @@ pub fn indices_index_event(trees: Trees, block_number: u32, event_index: u32, ev
             );
             let value = Event::encode(&event_db);
             index_event_account_index(trees.clone(), event.index, block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            index_event_account_id(trees, event.who, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

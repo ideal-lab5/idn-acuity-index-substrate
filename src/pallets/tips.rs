@@ -46,7 +46,7 @@ pub fn tips_index_event(trees: Trees, block_number: u32, event_index: u32, event
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_tip_hash(trees.clone(), event.tip_hash.into(), block_number, event_index, &value);
+            index_event_tip_hash(trees, event.tip_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         "TipClosing" => {
@@ -57,7 +57,7 @@ pub fn tips_index_event(trees: Trees, block_number: u32, event_index: u32, event
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_tip_hash(trees.clone(), event.tip_hash.into(), block_number, event_index, &value);
+            index_event_tip_hash(trees, event.tip_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         "TipClosed" => {
@@ -71,7 +71,7 @@ pub fn tips_index_event(trees: Trees, block_number: u32, event_index: u32, event
             );
             let value = Event::encode(&event_db);
             index_event_tip_hash(trees.clone(), event.tip_hash.into(), block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.who, block_number, event_index, &value);
+            index_event_account_id(trees, event.who, block_number, event_index, &value);
             Ok(())
         },
         "TipRetracted" => {
@@ -82,7 +82,7 @@ pub fn tips_index_event(trees: Trees, block_number: u32, event_index: u32, event
                 }
             );
             let value = Event::encode(&event_db);
-            index_event_tip_hash(trees.clone(), event.tip_hash.into(), block_number, event_index, &value);
+            index_event_tip_hash(trees, event.tip_hash.into(), block_number, event_index, &value);
             Ok(())
         },
         "TipSlashed" => {
@@ -96,7 +96,7 @@ pub fn tips_index_event(trees: Trees, block_number: u32, event_index: u32, event
             );
             let value = Event::encode(&event_db);
             index_event_tip_hash(trees.clone(), event.tip_hash.into(), block_number, event_index, &value);
-            index_event_account_id(trees.clone(), event.finder, block_number, event_index, &value);
+            index_event_account_id(trees, event.finder, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

@@ -43,7 +43,7 @@ pub fn parachains_ump_index_event(trees: Trees, block_number: u32, event_index: 
                 Ump::InvalidFormat(event.0)
             );
             let value = Event::encode(&event_db);
-            index_event_message_id(trees.clone(), event.0, block_number, event_index, &value);
+            index_event_message_id(trees, event.0, block_number, event_index, &value);
             Ok(())
         },
         "UnsupportedVersion" => {
@@ -52,7 +52,7 @@ pub fn parachains_ump_index_event(trees: Trees, block_number: u32, event_index: 
                 Ump::UnsupportedVersion(event.0)
             );
             let value = Event::encode(&event_db);
-            index_event_message_id(trees.clone(), event.0, block_number, event_index, &value);
+            index_event_message_id(trees, event.0, block_number, event_index, &value);
             Ok(())
         },
         "ExecutedUpward" => {
@@ -61,7 +61,7 @@ pub fn parachains_ump_index_event(trees: Trees, block_number: u32, event_index: 
                 Ump::ExecutedUpward(event.0)
             );
             let value = Event::encode(&event_db);
-            index_event_message_id(trees.clone(), event.0, block_number, event_index, &value);
+            index_event_message_id(trees, event.0, block_number, event_index, &value);
             Ok(())
         },
         "WeightExhausted" => {
@@ -70,7 +70,7 @@ pub fn parachains_ump_index_event(trees: Trees, block_number: u32, event_index: 
                 Ump::WeightExhausted(event.0, event.1.into(), event.2.into())
             );
             let value = Event::encode(&event_db);
-            index_event_message_id(trees.clone(), event.0, block_number, event_index, &value);
+            index_event_message_id(trees, event.0, block_number, event_index, &value);
             Ok(())
         },
         "UpwardMessagesReceived" => {
@@ -79,7 +79,7 @@ pub fn parachains_ump_index_event(trees: Trees, block_number: u32, event_index: 
                 Ump::UpwardMessagesReceived(ParaId(event.0.0), event.1, event.2)
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.0.0, block_number, event_index, &value);
             Ok(())
         },
         "OverweightEnqueued" => {
@@ -89,7 +89,7 @@ pub fn parachains_ump_index_event(trees: Trees, block_number: u32, event_index: 
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
-            index_event_message_id(trees.clone(), event.1, block_number, event_index, &value);
+            index_event_message_id(trees, event.1, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),

@@ -24,7 +24,7 @@ impl From<SubHrmpChannelId> for HrmpChannelId {
 }
 
 #[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-pub enum Hrmp {
+#[allow(clippy::enum_variant_names)]pub enum Hrmp {
     OpenChannelRequested(ParaId, ParaId, u32, u32),
     OpenChannelCanceled(ParaId, HrmpChannelId),
     OpenChannelAccepted(ParaId, ParaId),
@@ -41,7 +41,7 @@ pub fn parachains_hrmp_index_event(trees: Trees, block_number: u32, event_index:
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
-            index_event_para_id(trees.clone(), event.1.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.1.0, block_number, event_index, &value);
             Ok(())
         },
         "OpenChannelCanceled" => {
@@ -50,7 +50,7 @@ pub fn parachains_hrmp_index_event(trees: Trees, block_number: u32, event_index:
                 Hrmp::OpenChannelCanceled(ParaId(event.0.0), event.1.into())
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.0.0, block_number, event_index, &value);
             Ok(())
         },
         "OpenChannelAccepted" => {
@@ -60,7 +60,7 @@ pub fn parachains_hrmp_index_event(trees: Trees, block_number: u32, event_index:
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
-            index_event_para_id(trees.clone(), event.1.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.1.0, block_number, event_index, &value);
             Ok(())
         },
         "ChannelClosed" => {
@@ -69,7 +69,7 @@ pub fn parachains_hrmp_index_event(trees: Trees, block_number: u32, event_index:
                 Hrmp::ChannelClosed(ParaId(event.0.0), event.1.into())
             );
             let value = Event::encode(&event_db);
-            index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.0.0, block_number, event_index, &value);
             Ok(())
         },
         "HrmpChannelForceOpened" => {
@@ -79,7 +79,7 @@ pub fn parachains_hrmp_index_event(trees: Trees, block_number: u32, event_index:
             );
             let value = Event::encode(&event_db);
             index_event_para_id(trees.clone(), event.0.0, block_number, event_index, &value);
-            index_event_para_id(trees.clone(), event.1.0, block_number, event_index, &value);
+            index_event_para_id(trees, event.1.0, block_number, event_index, &value);
             Ok(())
         },
         _ => Ok(()),
