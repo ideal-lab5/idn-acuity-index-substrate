@@ -78,8 +78,6 @@ pub enum ResponseMessage {
 }
 
 pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
-    println!("msg: {:?}", msg);
-
     match msg {
         RequestMessage::Status => {
             ResponseMessage::Status {
@@ -350,8 +348,6 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees
         tokio::select! {
             Some(msg) = ws_receiver.next() => {
                 let msg = msg.unwrap();
-                println!("Message: {}", msg.to_text().unwrap());
-
                 if msg.is_text() || msg.is_binary() {
                     if let Ok(request_json) = serde_json::from_str(msg.to_text().unwrap()) {
                         let response_msg = process_msg(&trees, request_json).await;
