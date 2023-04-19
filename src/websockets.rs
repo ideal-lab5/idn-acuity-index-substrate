@@ -54,17 +54,17 @@ pub enum RequestMessage {
     },
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct EventFull {
-    block_number: u32,
-    event: Event,
+pub struct EventFull {
+    pub block_number: u32,
+    pub event: Event,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 #[serde(tag = "type", content = "data")]
 #[serde(rename_all = "camelCase")]
-enum ResponseMessage {
+pub enum ResponseMessage {
     #[serde(rename_all = "camelCase")]
     Status {
         last_head_block: u32,
@@ -77,7 +77,7 @@ enum ResponseMessage {
     Error,
 }
 
-async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
+pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
     println!("msg: {:?}", msg);
 
     match msg {

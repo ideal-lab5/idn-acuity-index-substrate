@@ -411,6 +411,8 @@ impl TipHashKey {
 #[serde(tag = "pallet")]
 pub enum Event {
     #[serde(rename_all = "camelCase")]
+    None,
+    #[serde(rename_all = "camelCase")]
     Auctions(Auctions),
     #[serde(rename_all = "camelCase")]
     BagsList(BagsList),
