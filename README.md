@@ -86,7 +86,11 @@ All parameters that are indexed will be printed on the console, except AccountId
 
 The earlist block that can be indexed on Polkadot is 7,229,126.
 
-If the --block-height parameter is not specified it will resume from where it left off in the previous run.
+The indexer simultaneously indexes historical blocks (batch) and finalized blocks (head).
+
+When the indexer starts it will start batch indexing from where indexing finished last time it was run. This can be overidden with the --block-height parameter.
+
+Head blocks are always indexed as they are finalized. Once batch indexing has caught up with head it will stop and only blocks being finalized will be indexed.
 
 #### Run the dapp
 
@@ -107,3 +111,15 @@ docker run --rm -p 8172:8172 [image_hash]
 ```
 
 Now run the dockerfile for [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp).
+
+### Testing Guide
+
+Ensure that you have both the the indexer and dapp running, either by following the above tutorial, or by following the Docker instructions.
+
+Observe that at block #13800016 new metadata will be downloaded because a runtime upgrade has occured.
+
+All indexed event parameters except AccountId are printed in the console. Upon observing these parameters, copy and paste them into the dapp and click Search. The indexed events should appear immediately. AccountIds from the event details can then be copy and pasted in the same manner to find other events that are indexed by the same AccountId.
+
+Currently, not all Polkadot events are indexed. Of the events that are indexed, some or all event details will not be displayed. AccountIds are displayed as generic Substrate addresses, not Polkadot addresses. This is because in milestone 2, the events will not be stored in the index and will be loaded from the blockchain in the frontend.
+
+It may not be possible to manually test all key types currently indexed by Hybrid.
