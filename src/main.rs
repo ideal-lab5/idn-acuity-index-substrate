@@ -46,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     println!("Opened database.");
     // Determine url of Substrate node to connect to.
-    let url = args.url.clone().unwrap_or("wss://rpc.polkadot.io:443".to_string());
+    let url = args.url.clone().unwrap_or_else(|| "wss://rpc.polkadot.io:443".to_string());
     let api = OnlineClient::<PolkadotConfig>::from_url(url).await.unwrap();
     println!("Connected to Substrate node.");
 
