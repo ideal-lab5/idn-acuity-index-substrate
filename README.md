@@ -121,11 +121,11 @@ Observe that at block #13800016 new metadata will be downloaded because a runtim
 Using the dapp, test the following search queries and verify the results:
 
 ```
-AccountId: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77
-15104642, balances, Withdraw, who: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77, amount: 121000000
-15104642, balances, Transfer, from: 5EYCAe5ijiYfyeZ2JJEYsk8UzApweYacAt5zgjz1FMQbykPU, to: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77, value: 189304306673
-15104642, childBounties, Claimed, index: 11, childIndex: 187, payout: 189304306673, beneficiary: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77
-15104642, transactionPayment, TransactionFeePaid, who: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77, actualFee: 121000000, tip: 0
+AccountId: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2
+15104642, balances, Withdraw, who: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2, amount: 121000000
+15104642, balances, Transfer, from: 5EYCAe5ijiYfyeZ2JJEYsk8UzApweYacAt5zgjz1FMQbykPU, to: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2, value: 189304306673
+15104642, childBounties, Claimed, index: 11, childIndex: 187, payout: 189304306673, beneficiary: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2
+15104642, transactionPayment, TransactionFeePaid, who: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2, actualFee: 121000000, tip: 0
 ```
 
 ```
@@ -141,7 +141,7 @@ AuctionIndex: 15
 
 ```
 BountyIndex: 11
-15104642, childBounties, Claimed, index: 11, childIndex: 187, payout: 189304306673, beneficiary: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77
+15104642, childBounties, Claimed, index: 11, childIndex: 187, payout: 189304306673, beneficiary: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2
 ```
 
 ```
