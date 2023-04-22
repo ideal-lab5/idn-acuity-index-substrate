@@ -1,5 +1,5 @@
 use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 
 use crate::shared::*;
 use crate::substrate::*;
@@ -10,7 +10,7 @@ pub struct HeadData(pub Vec<u8>);
 pub struct CoreIndex(pub u32);
 pub struct GroupIndex(pub u32);
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
 pub enum ParaInclusion {
     #[serde(rename_all = "camelCase")]

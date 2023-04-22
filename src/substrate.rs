@@ -238,6 +238,23 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
     };
 }
 
+pub async fn index_block(api: OnlineClient<PolkadotConfig>, trees: Trees, block_number: u32) {
+    // Get block hash.
+    let block_hash = api.rpc().block_hash(Some(block_number.into())).await.unwrap().unwrap();
+    // Download the metadata of the starting block.
+    let metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
+
+    println!(" 📚 #{block_number}: 0x{}", hex::encode(block_hash.0));
+
+    let events = subxt::events::Events::new_from_client(metadata, block_hash, api).await.unwrap();
+
+    for (i, evt) in events.iter().enumerate() {
+        if let Ok(evt) = evt {
+            index_event(trees.clone(), block_number, i.try_into().unwrap(), evt);
+        }
+    }
+}
+
 pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
@@ -252,12 +269,11 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
         println!(" ✨ #{block_number}: 0x{}", hex::encode(block_hash.0));
 
         let events = subxt::events::Events::new_from_client(metadata.clone(), block_hash, api.clone()).await.unwrap();
-        let mut i = 0;
 
-        for evt in events.iter() {
+        for (i, evt) in events.iter().enumerate() {
             match evt {
                 Ok(evt) => {
-                    index_event(trees.clone(), block_number, i, evt);
+                    index_event(trees.clone(), block_number, i.try_into().unwrap(), evt);
                 },
                 Err(error) => if let Metadata(EventNotFound(_, _)) = error {
                     println!(" ✨ Downloading new metadata.");
@@ -265,8 +281,6 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
                     continue 'blocks;
                 }
             }
-
-            i += 1;
         }
 
         trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
@@ -309,12 +323,11 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         println!(" 📚 #{block_number}: 0x{}", hex::encode(block_hash.0));
 
         let events = subxt::events::Events::new_from_client(metadata.clone(), block_hash, api.clone()).await.unwrap();
-        let mut i = 0;
 
-        for evt in events.iter() {
+        for (i, evt) in events.iter().enumerate() {
             match evt {
                 Ok(evt) => {
-                    index_event(trees.clone(), block_number, i, evt);
+                    index_event(trees.clone(), block_number, i.try_into().unwrap(), evt);
                 },
                 Err(error) => if let Metadata(EventNotFound(_, _)) = error {
                     println!(" 📚 Downloading new metadata.");
@@ -322,8 +335,6 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
                     continue 'blocks;
                 }
             }
-
-            i += 1;
         }
 
         trees.root.insert("last_batch_block", &block_number.to_be_bytes()).unwrap();

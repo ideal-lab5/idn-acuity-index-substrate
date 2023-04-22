@@ -10,9 +10,9 @@ use subxt::{
 use sled::Tree;
 
 use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub struct ParaId(pub u32);
 
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
@@ -406,7 +406,7 @@ impl TipHashKey {
     }
 }
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "pallet")]
 pub enum Event {

@@ -3,12 +3,12 @@ use subxt::{
 };
 
 use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 
 use crate::shared::*;
 use crate::substrate::*;
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
 pub enum BagsList {
     #[serde(rename_all = "camelCase")]

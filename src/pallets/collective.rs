@@ -3,48 +3,62 @@ use subxt::{
 };
 
 use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 
 use crate::shared::*;
 use crate::substrate::*;
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Debug, Clone)]
+pub struct ProposalHash(pub [u8; 32]);
+
+impl Serialize for ProposalHash {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut hex_string = "0x".to_owned();
+        hex_string.push_str(&hex::encode(self.0));
+        serializer.serialize_str(&hex_string)
+    }
+}
+
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
 pub enum Collective {
     #[serde(rename_all = "camelCase")]
     Proposed {
         account: AccountId32,
         proposal_index: u32,
-        proposal_hash: [u8; 32],
+        proposal_hash: ProposalHash,
         threshold: u32,
     },
     #[serde(rename_all = "camelCase")]
     Voted {
         account: AccountId32,
-        proposal_hash: [u8; 32],
+        proposal_hash: ProposalHash,
         voted: bool,
         yes: u32,
         no: u32,
     },
     #[serde(rename_all = "camelCase")]
     Approved {
-        proposal_hash: [u8; 32],
+        proposal_hash: ProposalHash,
     },
     #[serde(rename_all = "camelCase")]
     Disapproved {
-        proposal_hash: [u8; 32],
+        proposal_hash: ProposalHash,
     },
     #[serde(rename_all = "camelCase")]
     Executed {
-        proposal_hash: [u8; 32],
+        proposal_hash: ProposalHash,
     },
     #[serde(rename_all = "camelCase")]
     MemberExecuted {
-        proposal_hash: [u8; 32],
+        proposal_hash: ProposalHash,
     },
     #[serde(rename_all = "camelCase")]
     Closed {
-        proposal_hash: [u8; 32],
+        proposal_hash: ProposalHash,
         yes: u32,
         no: u32,
     },
@@ -59,7 +73,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 Collective::Proposed {
                     account: event.account.clone(),
                     proposal_index: event.proposal_index,
-                    proposal_hash: event.proposal_hash.into(),
+                    proposal_hash: ProposalHash(event.proposal_hash.into()),
                     threshold: event.threshold,
                 }
             );
@@ -75,7 +89,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
             let event_db = Event::Collective(
                 Collective::Voted {
                     account: event.account.clone(),
-                    proposal_hash: event.proposal_hash.into(),
+                    proposal_hash: ProposalHash(event.proposal_hash.into()),
                     voted: event.voted,
                     yes: event.yes,
                     no: event.no,
@@ -91,7 +105,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 .ok_or(subxt::Error::Other("Event not found.".to_string()))?;
             let event_db = Event::Collective(
                 Collective::Approved {
-            	    proposal_hash: event.proposal_hash.into(),
+            	        proposal_hash: ProposalHash(event.proposal_hash.into()),
                 }
             );
             let value = Event::encode(&event_db);
@@ -103,7 +117,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 .ok_or(subxt::Error::Other("Event not found.".to_string()))?;
             let event_db = Event::Collective(
                 Collective::Disapproved {
-            	    proposal_hash: event.proposal_hash.into(),
+            	    proposal_hash: ProposalHash(event.proposal_hash.into()),
                 }
             );
             let value = Event::encode(&event_db);
@@ -115,7 +129,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 .ok_or(subxt::Error::Other("Event not found.".to_string()))?;
             let event_db = Event::Collective(
                 Collective::Executed {
-            	    proposal_hash: event.proposal_hash.into(),
+            	        proposal_hash: ProposalHash(event.proposal_hash.into()),
                 }
             );
             let value = Event::encode(&event_db);
@@ -127,7 +141,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 .ok_or(subxt::Error::Other("Event not found.".to_string()))?;
             let event_db = Event::Collective(
                 Collective::MemberExecuted {
-            	    proposal_hash: event.proposal_hash.into(),
+            	        proposal_hash: ProposalHash(event.proposal_hash.into()),
                 }
             );
             let value = Event::encode(&event_db);
@@ -139,7 +153,7 @@ pub fn collective_index_event(trees: Trees, block_number: u32, event_index: u32,
                 .ok_or(subxt::Error::Other("Event not found.".to_string()))?;
             let event_db = Event::Collective(
                 Collective::Closed {
-            	    proposal_hash: event.proposal_hash.into(),
+            	        proposal_hash: ProposalHash(event.proposal_hash.into()),
                     yes: event.yes,
                     no: event.no,
                 }

@@ -1,10 +1,10 @@
 use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 
 use crate::shared::*;
 use crate::substrate::*;
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub struct HrmpChannelId {
     /// The para that acts as the sender in this channel.
     pub sender: ParaId,
@@ -23,8 +23,9 @@ impl From<SubHrmpChannelId> for HrmpChannelId {
     }
 }
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
-#[allow(clippy::enum_variant_names)]pub enum Hrmp {
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
+#[allow(clippy::enum_variant_names)]
+pub enum Hrmp {
     OpenChannelRequested(ParaId, ParaId, u32, u32),
     OpenChannelCanceled(ParaId, HrmpChannelId),
     OpenChannelAccepted(ParaId, ParaId),

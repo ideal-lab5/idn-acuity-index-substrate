@@ -3,12 +3,12 @@ use subxt::{
 };
 
 use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 
 use crate::shared::*;
 use crate::substrate::*;
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub enum VoteThreshold {
     SuperMajorityApprove,
     SuperMajorityAgainst,
@@ -27,10 +27,10 @@ impl From<SubVoteThreshold> for VoteThreshold {
     }
 }
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub struct H256([u8; 32]);
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
 pub enum Democracy {
     #[serde(rename_all = "camelCase")]

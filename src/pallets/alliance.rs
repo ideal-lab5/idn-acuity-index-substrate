@@ -3,12 +3,12 @@ use subxt::{
 };
 
 use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 
 type Cid = Vec<u8>;
 type UnscrupulousItemOf = Vec<u8>;
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 #[serde(tag = "variant", content = "details")]
 pub enum Alliance {
     #[serde(rename_all = "camelCase")]

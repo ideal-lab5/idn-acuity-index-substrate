@@ -1,16 +1,16 @@
 use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 
 use crate::shared::*;
 use crate::substrate::*;
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ValidationCodeHash([u8; 32]);
 
 pub type SessionIndex = u32;
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub enum Paras {
     CurrentCodeUpdated(ParaId),
     CurrentHeadUpdated(ParaId),
