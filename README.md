@@ -94,7 +94,7 @@ Head blocks are always indexed as they are finalized. Once batch indexing has ca
 
 #### Run the dapp
 
-Go to [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp) and follow the tutorial to run the frontend to query the indexer.
+Go to [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp/tree/milestone-1) and follow the tutorial to run the frontend to query the indexer.
 
 ### Docker
 
@@ -110,7 +110,7 @@ Then run the image with the correct port mapping:
 docker run --rm -p 8172:8172 [image_hash]
 ```
 
-Now run the dockerfile for [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp).
+Now run the dockerfile for [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp/tree/milestone-1).
 
 ### Testing Guide
 
@@ -118,8 +118,52 @@ Ensure that you have both the the indexer and dapp running, either by following 
 
 Observe that at block #13800016 new metadata will be downloaded because a runtime upgrade has occured.
 
-All indexed event parameters except AccountId are printed in the console. Upon observing these parameters, copy and paste them into the dapp and click Search. The indexed events should appear immediately. AccountIds from the event details can then be copy and pasted in the same manner to find other events that are indexed by the same AccountId.
+Using the dapp, test the following search queries and verify the results:
 
-Currently, not all Polkadot events are indexed. Of the events that are indexed, some or all event details will not be displayed. AccountIds are displayed as generic Substrate addresses, not Polkadot addresses. This is because in milestone 2, the events will not be stored in the index and will be loaded from the blockchain in the frontend.
+AccountId: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2
+15104642, balances, Withdraw, who: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2, amount: 121000000
+15104642	, balances, Transfer, from: 5EYCAe5ijiYfyeZ2JJEYsk8UzApweYacAt5zgjz1FMQbykPU, to: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2, value: 189304306673
+15104642	, childBounties, Claimed, index: 11, childIndex: 187, payout: 189304306673, beneficiary: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2
+15104642	, transactionPayment, TransactionFeePaid, who: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2, actualFee: 121000000, tip: 0
 
-It may not be possible to manually test all key types currently indexed by Hybrid.
+AccountIndex: 9494
+10013701	, indices, IndexFreed, index: 9494
+
+AuctionIndex: 15
+10018925, auctions, WinningOffset, auctionIndex: 15, blockNumber: 3377
+10018925, auctions, AuctionClosed, auctionIndex: 15
+
+BountyIndex: 11
+15104642, childBounties, Claimed, index: 11, childIndex: 187, payout: 189304306673, beneficiary: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2
+
+CandidateHash: 0x6a1cd467afb69aa2b23866538b1160a60d96228587c5d7efc1d3c1ce4e3efb63
+10059744, parasDisputes, DisputeInitiated, candidate_hash: 0x6a1cd467afb69aa2b23866538b1160a60d96228587c5d7efc1d3c1ce4e3efb63, dispute_location: local
+10059744, parasDisputes, DisputeConcluded, candidate_hash: 0x6a1cd467afb69aa2b23866538b1160a60d96228587c5d7efc1d3c1ce4e3efb63, dispute_location: valid
+
+MessageId: 0xc656c0814b4174d3fbae7b0dd3ae63a94ac858b9120f8dc13027d2ee89f54a46 
+15100192, ump, ExecutedUpward, id: 0xc656c0814b4174d3fbae7b0dd3ae63a94ac858b9120f8dc13027d2ee89f54a46
+
+ParaId: 2013
+10018925, slots, Leased, paraId: 2013, leaser: 5EYCAe5ijiYdg22N9CfytScFVQsZ9tKaH8GwQKcCtrisZvAb, periodBegin: 8, periodCount: 8, extraReserved: 9336595339185988, totalAmount: 9336595339185988
+
+PoolId: 12
+15180584, nominationPools, PaidOut, member: 5HpXUP5QYvsDuTA2Y7SCRtJ66fE21Kv76CxHx3gM4w2Y51CG, poolId: 12, payout: 21784733850
+15180584, nominationPools, Bonded, member: 5HpXUP5QYvsDuTA2Y7SCRtJ66fE21Kv76CxHx3gM4w2Y51CG, poolId: 12, bonded: 21784733850, joined: false
+
+ProposalHash: 0x7c403355a3747fea8a84968a7a83b7f5d2b26ea0b5d63b317ae65c1b091cf07b
+10025666, collective, Voted, account: 5FH76VkU2cfKSpxxHxdc53cTnVADJtdmgZ7hPZFHd15KVt4m, proposalHash: 0x7c403355a3747fea8a84968a7a83b7f5d2b26ea0b5d63b317ae65c1b091cf07b, voted: true, yes: 3, no: 0
+
+ProposalIndex: 103
+10022400, treasury, Awarded, proposalIndex: 103, award: 39509700000000, account: 5HpTYRjg7XHrhUW4NTDAL9xJi7iw7e1UBUYghnH9eHUK8GeH
+
+RefIndex: 114
+15100839, democracy, Voted, voter: 5G78rS6hYFeAr9Cb49NcXU2zEsL3Z7qQg1JCrYwea6kV8KFS, refIndex: 114
+
+RegistrarIndex: 1
+10027254, identity, JudgementRequested, who: 5C7WyVoJGo9NLjHuK9bvgyoytWsDqSgzMdAX4n6nWSruk2dE, registrarIndex: 1
+
+TipHash: 0x729c6a740112abfc8cd143771f1f88518c3906e86f601a6c6a312fe7f7babf33
+10146463, tips, NewTip, tip_hash: 0x729c6a740112abfc8cd143771f1f88518c3906e86f601a6c6a312fe7f7babf33
+
+Currently, not all Polkadot events are indexed. Of the events that are indexed, some event details will not be displayed. AccountIds are displayed as generic Substrate addresses, not Polkadot addresses. This is because in milestone 2, the events will not be stored in the index and will be loaded from the blockchain in the frontend.
+
