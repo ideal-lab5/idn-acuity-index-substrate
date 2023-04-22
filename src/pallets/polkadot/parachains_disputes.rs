@@ -56,6 +56,7 @@ impl From<SubDisputeResult> for DisputeResult {
 }
 
 #[derive(Encode, Decode, Serialize, Debug, Clone)]
+#[allow(clippy::enum_variant_names)]
 #[serde(tag = "variant", content = "details")]
 pub enum ParasDisputes {
     DisputeInitiated {
