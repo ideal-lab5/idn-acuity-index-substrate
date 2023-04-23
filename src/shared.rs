@@ -10,9 +10,9 @@ use subxt::{
 use sled::Tree;
 
 use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 
-#[derive(Encode, Decode, Serialize, Deserialize, Debug, Clone)]
+#[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub struct ParaId(pub u32);
 
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
@@ -69,9 +69,9 @@ impl AccountIdKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         AccountIdKey {
-            account_id: AccountId32(vector_as_u8_32_array(&vec[0..32].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            account_id: AccountId32(vector_as_u8_32_array(&vec[0..32])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
@@ -94,9 +94,9 @@ impl AccountIndexKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         AccountIndexKey {
-            account_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+            account_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -119,9 +119,9 @@ impl AuctionIndexKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         AuctionIndexKey {
-            auction_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+            auction_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -144,9 +144,9 @@ impl BountyIndexKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         BountyIndexKey {
-            bounty_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+            bounty_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -169,9 +169,9 @@ impl CandidateHashKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         CandidateHashKey {
-            candidate_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            candidate_hash: vector_as_u8_32_array(&vec[0..32]),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
@@ -194,9 +194,9 @@ impl MessageIdKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         MessageIdKey {
-            message_id: vector_as_u8_32_array(&vec[0..32].to_vec()),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            message_id: vector_as_u8_32_array(&vec[0..32]),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
@@ -219,9 +219,9 @@ impl ParaIdKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         ParaIdKey {
-            para_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+            para_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -244,9 +244,9 @@ impl PoolIdKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         PoolIdKey {
-            pool_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+            pool_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -269,9 +269,9 @@ impl RefIndexKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         RefIndexKey {
-            ref_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+            ref_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -294,9 +294,9 @@ impl RegistrarIndexKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         RegistrarIndexKey {
-            registrar_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+            registrar_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -319,9 +319,9 @@ impl ProposalHashKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         ProposalHashKey {
-            proposal_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            proposal_hash: vector_as_u8_32_array(&vec[0..32]),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
@@ -344,9 +344,9 @@ impl ProposalIndexKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         ProposalIndexKey {
-            proposal_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4].to_vec())),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12].to_vec())),
+            proposal_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -369,26 +369,22 @@ impl TipHashKey {
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
         TipHashKey {
-            tip_hash: vector_as_u8_32_array(&vec[0..32].to_vec()),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36].to_vec())),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40].to_vec())),
+            tip_hash: vector_as_u8_32_array(&vec[0..32]),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
 
-pub fn vector_as_u8_32_array(vector: &Vec<u8>) -> [u8; 32] {
+pub fn vector_as_u8_32_array(vector: &[u8]) -> [u8; 32] {
     let mut arr = [0u8; 32];
-    for i in 0..32 {
-        arr[i] = vector[i];
-    }
+    arr[..32].copy_from_slice(&vector[..32]);
     arr
 }
 
-pub fn vector_as_u8_4_array(vector: &Vec<u8>) -> [u8; 4] {
+pub fn vector_as_u8_4_array(vector: &[u8]) -> [u8; 4] {
     let mut arr = [0u8; 4];
-    for i in 0..4 {
-        arr[i] = vector[i];
-    }
+    arr[..4].copy_from_slice(&vector[..4]);
     arr
 }
 

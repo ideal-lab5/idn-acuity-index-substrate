@@ -5,17 +5,17 @@ pub fn parachains_disputes_index_event(trees: Trees, block_number: u32, event_in
     match event.variant_name() {
         "DisputeInitiated" => {
             let event = event.as_event::<polkadot::paras_disputes::events::DisputeInitiated>()?.unwrap();
-            index_event_candidate_hash(trees.clone(), event.0.0.0, block_number, event_index);
+            index_event_candidate_hash(trees, event.0.0.0, block_number, event_index);
             Ok(())
         },
         "DisputeConcluded" => {
             let event = event.as_event::<polkadot::paras_disputes::events::DisputeConcluded>()?.unwrap();
-            index_event_candidate_hash(trees.clone(), event.0.0.0, block_number, event_index);
+            index_event_candidate_hash(trees, event.0.0.0, block_number, event_index);
             Ok(())
         },
         "DisputeTimedOut" => {
             let event = event.as_event::<polkadot::paras_disputes::events::DisputeTimedOut>()?.unwrap();
-            index_event_candidate_hash(trees.clone(), event.0.0.0, block_number, event_index);
+            index_event_candidate_hash(trees, event.0.0.0, block_number, event_index);
             Ok(())
         },
         _ => Ok(()),

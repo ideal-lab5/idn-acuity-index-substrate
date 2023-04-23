@@ -5,20 +5,19 @@ pub fn election_provider_multi_phase_index_event(trees: Trees, block_number: u32
     match event.variant_name() {
         "SolutionStored" => {
             let event = event.as_event::<polkadot::election_provider_multi_phase::events::SolutionStored>()?.unwrap();
-            match event.origin {
-                Some(account) => index_event_account_id(trees.clone(), account, block_number, event_index),
-                None => {},
+            if let Some(account) = event.origin {
+                index_event_account_id(trees, account, block_number, event_index);
             }
             Ok(())
         },
         "Rewarded" => {
             let event = event.as_event::<polkadot::election_provider_multi_phase::events::Rewarded>()?.unwrap();
-            index_event_account_id(trees.clone(), event.account, block_number, event_index);
+            index_event_account_id(trees, event.account, block_number, event_index);
             Ok(())
         },
         "Slashed" => {
             let event = event.as_event::<polkadot::election_provider_multi_phase::events::Slashed>()?.unwrap();
-            index_event_account_id(trees.clone(), event.account, block_number, event_index);
+            index_event_account_id(trees, event.account, block_number, event_index);
             Ok(())
         },
         _ => Ok(()),

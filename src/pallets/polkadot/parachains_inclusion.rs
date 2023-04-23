@@ -5,7 +5,7 @@ pub fn parachains_inclusion_index_event(trees: Trees, block_number: u32, event_i
     match event.variant_name() {
         "CandidateBacked" => {
             let event = event.as_event::<polkadot::parachains_inclusion::events::CandidateBacked>()?.unwrap();
-            index_event_account_id(trees.clone(), event.who, block_number, event_index);
+            index_event_account_id(trees, event.who, block_number, event_index);
             Ok(())
         },
         _ => Ok(()),

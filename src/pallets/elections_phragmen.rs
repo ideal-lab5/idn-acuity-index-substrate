@@ -12,22 +12,22 @@ pub fn elections_phragmen_index_event(trees: Trees, block_number: u32, event_ind
         },
         "MemberKicked" => {
             let event = event.as_event::<polkadot::phragmen_election::events::MemberKicked>()?.unwrap();
-            index_event_account_id(trees.clone(), event.member, block_number, event_index);
+            index_event_account_id(trees, event.member, block_number, event_index);
             Ok(())
         },
         "Renounced" => {
             let event = event.as_event::<polkadot::phragmen_election::events::Renounced>()?.unwrap();
-            index_event_account_id(trees.clone(), event.candidate, block_number, event_index);
+            index_event_account_id(trees, event.candidate, block_number, event_index);
             Ok(())
         },
         "CandidateSlashed" => {
             let event = event.as_event::<polkadot::phragmen_election::events::CandidateSlashed>()?.unwrap();
-            index_event_account_id(trees.clone(), event.candidate, block_number, event_index);
+            index_event_account_id(trees, event.candidate, block_number, event_index);
             Ok(())
         },
         "SeatHolderSlashed" => {
             let event = event.as_event::<polkadot::phragmen_election::events::SeatHolderSlashed>()?.unwrap();
-            index_event_account_id(trees.clone(), event.seat_holder, block_number, event_index);
+            index_event_account_id(trees, event.seat_holder, block_number, event_index);
             Ok(())
         },
         _ => Ok(()),

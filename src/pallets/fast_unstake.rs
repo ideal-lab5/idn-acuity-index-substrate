@@ -5,12 +5,12 @@ pub fn fast_unstake_index_event(trees: Trees, block_number: u32, event_index: u3
     match event.variant_name() {
         "Unstaked" => {
             let event = event.as_event::<polkadot::fast_unstake::events::Unstaked>()?.unwrap();
-            index_event_account_id(trees.clone(), event.stash, block_number, event_index);
+            index_event_account_id(trees, event.stash, block_number, event_index);
             Ok(())
         },
         "Slashed" => {
             let event = event.as_event::<polkadot::fast_unstake::events::Slashed>()?.unwrap();
-            index_event_account_id(trees.clone(), event.stash, block_number, event_index);
+            index_event_account_id(trees, event.stash, block_number, event_index);
             Ok(())
         },
         _ => Ok(()),
