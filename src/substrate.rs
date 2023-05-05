@@ -3,11 +3,12 @@ use subxt::{
     OnlineClient,
     PolkadotConfig,
     utils::AccountId32,
-    Error::Metadata,
+    metadata::Metadata,
     metadata::MetadataError::EventNotFound,
 };
 
 use futures::StreamExt;
+use std::time::SystemTime;
 
 use crate::shared::*;
 use crate::pallets::bags_list::*;
@@ -52,7 +53,7 @@ pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_numbe
 }
 
 pub fn index_event_account_index(trees: Trees, account_index: u32, block_number: u32, i: u32) {
-    println!("AccountIndex: {}", account_index);
+//    println!("AccountIndex: {}", account_index);
     // Generate key
     let key = AccountIndexKey {
         account_index,
@@ -64,7 +65,7 @@ pub fn index_event_account_index(trees: Trees, account_index: u32, block_number:
 }
 
 pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number: u32, i: u32) {
-    println!("AuctionIndex: {}", auction_index);
+//    println!("AuctionIndex: {}", auction_index);
     // Generate key
     let key = AuctionIndexKey {
         auction_index,
@@ -76,7 +77,7 @@ pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number:
 }
 
 pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u32, i: u32) {
-    println!("BountyIndex: {}", bounty_index);
+//    println!("BountyIndex: {}", bounty_index);
     // Generate key
     let key = BountyIndexKey {
         bounty_index,
@@ -88,7 +89,7 @@ pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u
 }
 
 pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_number: u32, i: u32) {
-    println!("CandidateHash: 0x{}", hex::encode(candidate_hash));
+//    println!("CandidateHash: 0x{}", hex::encode(candidate_hash));
     // Generate key
     let key = CandidateHashKey {
         candidate_hash,
@@ -100,7 +101,7 @@ pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_
 }
 
 pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: u32, i: u32) {
-    println!("MessageId: 0x{}", hex::encode(message_id));
+//    println!("MessageId: 0x{}", hex::encode(message_id));
     // Generate key
     let key = MessageIdKey {
         message_id,
@@ -112,7 +113,7 @@ pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: 
 }
 
 pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32) {
-    println!("ParaId: {}", para_id);
+//    println!("ParaId: {}", para_id);
     // Generate key
     let key = ParaIdKey {
         para_id,
@@ -124,7 +125,7 @@ pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32
 }
 
 pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32) {
-    println!("PoolId: {}", pool_id);
+//    println!("PoolId: {}", pool_id);
     // Generate key
     let key = PoolIdKey {
         pool_id,
@@ -136,7 +137,7 @@ pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32
 }
 
 pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32) {
-    println!("ProposalHash: 0x{}", hex::encode(proposal_hash));
+//    println!("ProposalHash: 0x{}", hex::encode(proposal_hash));
     // Generate key
     let key = ProposalHashKey {
         proposal_hash,
@@ -148,7 +149,7 @@ pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_nu
 }
 
 pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_number: u32, i: u32) {
-    println!("ProposalIndex: {}", proposal_index);
+//    println!("ProposalIndex: {}", proposal_index);
     // Generate key
     let key = ProposalIndexKey {
         proposal_index,
@@ -160,7 +161,7 @@ pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_numbe
 }
 
 pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i: u32) {
-    println!("RefIndex: {}", ref_index);
+//    println!("RefIndex: {}", ref_index);
     // Generate key
     let key = RefIndexKey {
         ref_index,
@@ -172,7 +173,7 @@ pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i:
 }
 
 pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_number: u32, i: u32) {
-    println!("RegistrarIndex: {}", registrar_index);
+//    println!("RegistrarIndex: {}", registrar_index);
     // Generate key
     let key = RegistrarIndexKey {
         registrar_index,
@@ -184,7 +185,7 @@ pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_num
 }
 
 pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32, i: u32) {
-    println!("TipHash: 0x{}", hex::encode(tip_hash));
+//    println!("TipHash: 0x{}", hex::encode(tip_hash));
     // Generate key
     let key = TipHashKey {
         tip_hash,
@@ -275,7 +276,7 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
                 Ok(evt) => {
                     index_event(trees.clone(), block_number, i.try_into().unwrap(), evt);
                 },
-                Err(error) => if let Metadata(EventNotFound(_, _)) = error {
+                Err(error) => if let subxt::Error::Metadata(EventNotFound(_, _)) = error {
                     println!(" ✨ Downloading new metadata.");
                     metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
                     continue 'blocks;
@@ -289,6 +290,58 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
         block_number = block.header().number;
         block_hash = block.hash();
     }
+}
+
+
+#[derive(Clone)]
+struct SubstrateBatch {
+    trees: Trees,
+    api: OnlineClient<PolkadotConfig>,
+    metadata: Metadata,
+}
+
+enum IndexBlockError {
+    BlockNotFound,
+    WrongMetadata(u32),
+}
+
+impl SubstrateBatch {
+    async fn new(trees: Trees, api: OnlineClient<PolkadotConfig>, block_number: u32) -> Self {
+        // Get the hash of the starting block.
+        let block_hash = api.rpc().block_hash(Some(block_number.into())).await.unwrap().unwrap();
+        // Download the metadata of the starting block.
+        let metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
+
+        SubstrateBatch {
+            trees,
+            api,
+            metadata,
+        }
+    }
+
+    async fn index_block(&self, block_number: u32) -> Result<(), IndexBlockError> {
+        
+        let block_hash = match self.api.rpc().block_hash(Some(block_number.into())).await.unwrap() {
+            Some(block_hash) => block_hash,
+            None => return Err(IndexBlockError::BlockNotFound),
+        };
+        
+        let events = subxt::events::Events::new_from_client(self.metadata.clone(), block_hash, self.api.clone()).await.unwrap();
+    
+        for (i, evt) in events.iter().enumerate() {
+            match evt {
+                Ok(evt) => {
+                    index_event(self.trees.clone(), block_number, i.try_into().unwrap(), evt);
+                },
+                Err(error) => if let subxt::Error::Metadata(EventNotFound(_, _)) = error {
+                    return Err(IndexBlockError::WrongMetadata(block_number));
+                }
+            }
+        }
+            
+        Ok(())
+    }
+    
 }
 
 pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, args: Args) {
@@ -312,42 +365,59 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
             }
         }
     };
+    // Determine the correct block to start batch indexing.
+    let async_blocks = match args.async_blocks {
+        Some(async_blocks) => async_blocks,
+        None => 128,
+    };
     // Record in database that batch indexing has not finished.
     trees.root.insert("batch_indexing_complete", &0_u8.to_be_bytes()).unwrap();
-    // Get the hash of the starting block.
-    let mut block_hash = api.rpc().block_hash(Some(block_number.into())).await.unwrap().unwrap();
-    // Download the metadata of the starting block.
-    let mut metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
 
-    'blocks: loop {
-        println!(" 📚 #{block_number}: 0x{}", hex::encode(block_hash.0));
+    let substrate_batch = SubstrateBatch::new(trees.clone(), api, block_number).await;
 
-        let events = subxt::events::Events::new_from_client(metadata.clone(), block_hash, api.clone()).await.unwrap();
+    let mut block_futures = Vec::new();
 
-        for (i, evt) in events.iter().enumerate() {
-            match evt {
-                Ok(evt) => {
-                    index_event(trees.clone(), block_number, i.try_into().unwrap(), evt);
-                },
-                Err(error) => if let Metadata(EventNotFound(_, _)) = error {
-                    println!(" 📚 Downloading new metadata.");
-                    metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
-                    continue 'blocks;
-                }
-            }
+    for n in 0..async_blocks {
+        block_futures.push(Box::pin(substrate_batch.index_block(block_number + n)));
+    }
+    
+    let mut last_batch_block = block_number;
+    block_number += async_blocks;
+    let mut now = SystemTime::now();
+
+    loop {
+        if block_futures.len() == 0 {
+            trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes()).unwrap();
+            println!(" 📚 Finished batch indexing.");
+            break;
         }
-
-        trees.root.insert("last_batch_block", &block_number.to_be_bytes()).unwrap();
-
-        // Increment the block number.
-        block_number += 1;
-        // Get the new block hash.
-        match api.rpc().block_hash(Some(block_number.into())).await.unwrap() {
-            Some(new_hash) => block_hash = new_hash,
-            None => {
-                trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes()).unwrap();
-                println!(" 📚 Finished batch indexing.");
-                break;
+        let result = futures::future::select_all(block_futures).await;
+        
+        block_futures = result.2;
+        
+        match result.0 {
+            Ok(()) => {
+                block_futures.push(Box::pin(substrate_batch.index_block(block_number)));
+                
+                if (block_number - async_blocks) > last_batch_block {
+                    last_batch_block = block_number - async_blocks;
+                    if last_batch_block % 100 == 0 {
+                        trees.root.insert("last_batch_block", &last_batch_block.to_be_bytes()).unwrap();        
+                        println!(" 📚 #{}, {:?} blocks/sec", last_batch_block, 100_000_000 / now.elapsed().unwrap().as_micros());
+                        now = SystemTime::now();
+                    }
+                }
+                
+                block_number += 1;
+            }
+            Err(error) => match error {
+                IndexBlockError::BlockNotFound => (),
+                IndexBlockError::WrongMetadata(_block_number) => {
+                    println!(" 📚 Downloading new metadata.");
+ //                   substrate_batches.push(SubstrateBatch::new(trees.clone(), api.clone(), block_number).await);
+                    
+//                    metadata = api.rpc().metadata(Some(block_hash)).await.unwrap();
+                }
             }
         }
     }

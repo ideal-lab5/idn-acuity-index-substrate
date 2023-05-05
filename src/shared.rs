@@ -27,6 +27,9 @@ pub struct Args {
    /// Block number to start indexing from.
    #[arg(short, long)]
    pub block_height: Option<u32>,
+   /// How many blocks to query at the same time [128]
+   #[arg(short, long)]
+   pub async_blocks: Option<u32>,
 }
 
 #[derive(Clone)]
