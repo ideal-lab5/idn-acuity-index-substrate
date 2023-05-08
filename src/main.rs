@@ -29,6 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = sled::open(path)?;
     let trees = Trees {
         root: db.clone(),
+        variant: db.open_tree("variant")?,
         // Each event parameter to be indexed has its own tree.
         account_id: db.open_tree("account_id")?,
         account_index: db.open_tree("account_index")?,

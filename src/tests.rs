@@ -24,6 +24,7 @@ fn init_db(name: &str) -> Trees {
     let db = sled::open(name).unwrap();
     Trees {
         root: db.clone(),
+        variant: db.open_tree("variant").unwrap(),
         account_id: db.open_tree("account_id").unwrap(),
         account_index: db.open_tree("account_index").unwrap(),
         auction_index: db.open_tree("auction_index").unwrap(),

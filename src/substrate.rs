@@ -197,6 +197,16 @@ pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32,
 }
 
 fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+    
+    // Generate key
+    let key = VariantKey {
+        pallet_index: event.pallet_index(),
+        variant_index: event.variant_index(),
+        block_number,
+        i: event_index,
+    }.serialize();
+    // Insert record.
+    trees.variant.insert(key, &[]).unwrap();
 
     let result = match event.pallet_name() {
         "Auctions" => auctions_index_event(trees, block_number, event_index, event),

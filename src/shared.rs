@@ -35,6 +35,7 @@ pub struct Args {
 #[derive(Clone)]
 pub struct Trees {
     pub root: sled::Db,
+    pub variant: Tree,
     pub account_id: Tree,
     pub account_index: Tree,
     pub auction_index: Tree,
@@ -51,8 +52,36 @@ pub struct Trees {
 }
 
 /**
- * Each tree has its own key format. Each key starts with the event parameter that is being indexed.
+ * Each tree has its own key format.
  */
+
+#[derive(PartialEq, Debug)]
+pub struct VariantKey {
+    pub pallet_index: u8,
+    pub variant_index: u8,
+    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
+    pub i: u32,
+}
+
+impl VariantKey {
+    pub fn serialize(&self) -> Vec<u8> {
+        [
+            self.pallet_index.to_be_bytes().to_vec(),
+            self.variant_index.to_be_bytes().to_vec(),
+            self.block_number.to_be_bytes().to_vec(),
+            self.i.to_be_bytes().to_vec(),
+        ].concat()
+    }
+
+    pub fn unserialize(vec: Vec<u8>) -> Self {
+        VariantKey {
+            pallet_index: vec[0],
+            variant_index: vec[1],
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
+        }
+    }
+}
 
 #[derive(PartialEq, Debug)]
 pub struct AccountIdKey {
@@ -390,6 +419,3 @@ pub fn vector_as_u8_4_array(vector: &[u8]) -> [u8; 4] {
     arr[..4].copy_from_slice(&vector[..4]);
     arr
 }
-
-
-
