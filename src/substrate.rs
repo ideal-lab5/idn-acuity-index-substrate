@@ -376,10 +376,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         }
     };
     // Determine the correct block to start batch indexing.
-    let async_blocks = match args.async_blocks {
-        Some(async_blocks) => async_blocks,
-        None => 128,
-    };
+    let async_blocks = args.async_blocks.unwrap_or(128);
     // Record in database that batch indexing has not finished.
     trees.root.insert("batch_indexing_complete", &0_u8.to_be_bytes()).unwrap();
 
@@ -396,7 +393,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
     let mut now = SystemTime::now();
 
     loop {
-        if block_futures.len() == 0 {
+        if block_futures.is_empty() {
             trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes()).unwrap();
             println!(" 📚 Finished batch indexing.");
             break;
