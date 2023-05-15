@@ -55,8 +55,9 @@ pub enum RequestMessage {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct EventFull {
+pub struct Event {
     pub block_number: u32,
+    pub i: u32,
 }
 
 #[derive(Serialize, Debug)]
@@ -70,7 +71,7 @@ pub enum ResponseMessage {
         batch_indexing_complete: bool,
     },
     Events {
-        events: Vec<EventFull>,
+        events: Vec<Event>,
     },
     Error,
 }
@@ -100,8 +101,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 let kv = kv.unwrap();
                 let key = AccountIdKey::unserialize(kv.0.to_vec());
 
-                events.push(EventFull {
+                events.push(Event {
                     block_number: key.block_number,
+                    i: key.i,
                 });
             }
 
@@ -114,8 +116,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 let kv = kv.unwrap();
                 let key = AccountIndexKey::unserialize(kv.0.to_vec());
 
-                events.push(EventFull {
+                events.push(Event {
                     block_number: key.block_number,
+                    i: key.i,
                 });
             }
 
@@ -128,8 +131,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 let kv = kv.unwrap();
                 let key = AuctionIndexKey::unserialize(kv.0.to_vec());
 
-                events.push(EventFull {
+                events.push(Event {
                     block_number: key.block_number,
+                    i: key.i,
                 });
             }
 
@@ -142,8 +146,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 let kv = kv.unwrap();
                 let key = BountyIndexKey::unserialize(kv.0.to_vec());
 
-                events.push(EventFull {
+                events.push(Event {
                     block_number: key.block_number,
+                    i: key.i,
                 });
             }
 
@@ -159,8 +164,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                             let kv = kv.unwrap();
                             let key = CandidateHashKey::unserialize(kv.0.to_vec());
 
-                            events.push(EventFull {
+                            events.push(Event {
                                 block_number: key.block_number,
+                                i: key.i,
                             });
                         }
                         ResponseMessage::Events { events }
@@ -180,8 +186,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                             let kv = kv.unwrap();
                             let key = MessageIdKey::unserialize(kv.0.to_vec());
 
-                            events.push(EventFull {
+                            events.push(Event {
                                 block_number: key.block_number,
+                                i: key.i,
                             });
                         }
                         ResponseMessage::Events { events }
@@ -198,8 +205,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 let kv = kv.unwrap();
                 let key = ParaIdKey::unserialize(kv.0.to_vec());
 
-                events.push(EventFull {
+                events.push(Event {
                     block_number: key.block_number,
+                    i: key.i,
                 });
             }
 
@@ -212,8 +220,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 let kv = kv.unwrap();
                 let key = PoolIdKey::unserialize(kv.0.to_vec());
 
-                events.push(EventFull {
+                events.push(Event {
                     block_number: key.block_number,
+                    i: key.i,
                 });
             }
 
@@ -229,8 +238,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                             let kv = kv.unwrap();
                             let key = ProposalHashKey::unserialize(kv.0.to_vec());
 
-                            events.push(EventFull {
+                            events.push(Event {
                                 block_number: key.block_number,
+                                i: key.i,
                             });
                         }
                         ResponseMessage::Events { events }
@@ -247,8 +257,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 let kv = kv.unwrap();
                 let key = ProposalIndexKey::unserialize(kv.0.to_vec());
 
-                events.push(EventFull {
+                events.push(Event {
                     block_number: key.block_number,
+                    i: key.i,
                 });
             }
 
@@ -261,8 +272,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 let kv = kv.unwrap();
                 let key = RefIndexKey::unserialize(kv.0.to_vec());
 
-                events.push(EventFull {
+                events.push(Event {
                     block_number: key.block_number,
+                    i: key.i,
                 });
             }
 
@@ -275,8 +287,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 let kv = kv.unwrap();
                 let key = RegistrarIndexKey::unserialize(kv.0.to_vec());
 
-                events.push(EventFull {
+                events.push(Event {
                     block_number: key.block_number,
+                    i: key.i,
                 });
             }
 
@@ -292,8 +305,9 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                             let kv = kv.unwrap();
                             let key = TipHashKey::unserialize(kv.0.to_vec());
 
-                            events.push(EventFull {
+                            events.push(Event {
                                 block_number: key.block_number,
+                                i: key.i,
                             });
                         }
                         ResponseMessage::Events { events }
