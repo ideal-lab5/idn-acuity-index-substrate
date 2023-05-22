@@ -1,7 +1,10 @@
 
 use clap::Parser;
 
-use tokio::join;
+use tokio::{
+    join,
+    sync::mpsc,
+};
 
 mod shared;
 mod substrate;
@@ -74,11 +77,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TipHash: 0x729c6a740112abfc8cd143771f1f88518c3906e86f601a6c6a312fe7f7babf33
     index_block(api.clone(), trees.clone(), 10146463).await;
 
+        // Create the channel for the websockets threads to send subscribe messages to the head thread.
+    let (sub_tx, sub_rx) = mpsc::channel(100);
+    
     // Start Substrate tasks.
-    let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone()));
+    let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone(), sub_rx));
     let substrate_batch = tokio::spawn(substrate_batch(api, trees.clone(), args));
     // Spawn websockets task.
-    let websockets_task = tokio::spawn(websockets_listen(trees.clone()));
+    let websockets_task = tokio::spawn(websockets_listen(trees.clone(), sub_tx));
     // Wait to exit.
     let _result = join!(substrate_head, substrate_batch, websockets_task);
     Ok(())

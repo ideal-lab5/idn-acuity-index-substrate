@@ -7,8 +7,17 @@ use subxt::{
     metadata::MetadataError::EventNotFound,
 };
 
-use futures::StreamExt;
-use std::time::SystemTime;
+use futures::{
+    StreamExt,
+};
+use std::{
+    collections::HashMap,
+    time::SystemTime,
+};
+
+use tokio::sync:: {
+    mpsc::Sender,
+};
 
 use crate::shared::*;
 use crate::pallets::bags_list::*;
@@ -266,7 +275,11 @@ pub async fn index_block(api: OnlineClient<PolkadotConfig>, trees: Trees, block_
     }
 }
 
-pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
+use tokio::sync::mpsc::Receiver;
+
+pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut sub_rx: Receiver<SubscribeMessage>) {
+    let mut sub_map: HashMap<Key, Vec<Sender<ResponseMessage>>> = HashMap::new();
+    
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
 
@@ -296,9 +309,20 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees) {
 
         trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
 
-        let block = blocks_sub.next().await.unwrap().unwrap();
-        block_number = block.header().number;
-        block_hash = block.hash();
+        loop {
+            tokio::select! {
+                block = blocks_sub.next() => {
+                    let block = block.unwrap().unwrap();
+                    block_number = block.header().number;
+                    block_hash = block.hash();
+                    continue 'blocks;
+                }
+                msg = sub_rx.recv() => {
+                    let msg = msg.unwrap();
+                    sub_map.entry(msg.key);
+                }
+            }
+        }
     }
 }
 

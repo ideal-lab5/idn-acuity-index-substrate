@@ -8,6 +8,8 @@ use subxt::{
 
 use std::str::FromStr;
 
+use tokio::sync::mpsc;
+
 #[test]
 fn test_account_id_key() {
     let key1: AccountIdKey = AccountIdKey {
@@ -66,12 +68,18 @@ async fn test_process_msg_account_id() {
     index_event_account_id(trees.clone(), account_id.clone(), 8, 5);
     index_event_account_id(trees.clone(), account_id.clone(), 10, 5);
 
-    let msg = RequestMessage::EventsByAccountId {account_id};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::AccountId(AccountId32Hash(account_id.0))};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::AccountId(response_account_id),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(AccountId32Hash(account_id.0), response_account_id);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -114,12 +122,18 @@ async fn test_process_msg_account_index() {
     index_event_account_index(trees.clone(), account_index, 8, 5);
     index_event_account_index(trees.clone(), account_index, 10, 5);
 
-    let msg = RequestMessage::EventsByAccountIndex {account_index};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::AccountIndex(account_index)};
+    let (tx, rx) = mpsc::channel(100);    
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::AccountIndex(response_account_index),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(account_index, response_account_index);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -162,12 +176,18 @@ async fn test_process_msg_auction_index() {
     index_event_auction_index(trees.clone(), auction_index, 8, 5);
     index_event_auction_index(trees.clone(), auction_index, 10, 5);
 
-    let msg = RequestMessage::EventsByAuctionIndex {auction_index};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::AuctionIndex(auction_index)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::AuctionIndex(response_auction_index),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(auction_index, response_auction_index);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -210,12 +230,18 @@ async fn test_process_msg_bounty_index() {
     index_event_bounty_index(trees.clone(), bounty_index, 8, 5);
     index_event_bounty_index(trees.clone(), bounty_index, 10, 5);
 
-    let msg = RequestMessage::EventsByBountyIndex {bounty_index};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::BountyIndex(bounty_index)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::BountyIndex(response_bounty_index),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(bounty_index, response_bounty_index);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -253,19 +279,23 @@ fn test_index_event_candidate_hash() {
 #[tokio::test]
 async fn test_process_msg_candidate_hash() {
     let trees = init_db("target/debug/test_process_msg_candidate_hash");
-    let candidate_hash = [8; 32];
-    index_event_candidate_hash(trees.clone(), candidate_hash, 4, 5);
-    index_event_candidate_hash(trees.clone(), candidate_hash, 8, 5);
-    index_event_candidate_hash(trees.clone(), candidate_hash, 10, 5);
+    let candidate_hash = Bytes32([8; 32]);
+    index_event_candidate_hash(trees.clone(), candidate_hash.0, 4, 5);
+    index_event_candidate_hash(trees.clone(), candidate_hash.0, 8, 5);
+    index_event_candidate_hash(trees.clone(), candidate_hash.0, 10, 5);
 
-    let mut candidate_hash_string = "0x".to_owned();
-    candidate_hash_string.push_str(&hex::encode(candidate_hash));
-    let msg = RequestMessage::EventsByCandidateHash {candidate_hash: candidate_hash_string};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::CandidateHash(candidate_hash)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::CandidateHash(response_candidate_hash),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(candidate_hash, response_candidate_hash);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -303,19 +333,23 @@ fn test_index_event_message_id() {
 #[tokio::test]
 async fn test_process_msg_message_id() {
     let trees = init_db("target/debug/test_process_msg_message_id");
-    let message_id = [8; 32];
-    index_event_message_id(trees.clone(), message_id, 4, 5);
-    index_event_message_id(trees.clone(), message_id, 8, 5);
-    index_event_message_id(trees.clone(), message_id, 10, 5);
+    let message_id = Bytes32([8; 32]);
+    index_event_message_id(trees.clone(), message_id.0, 4, 5);
+    index_event_message_id(trees.clone(), message_id.0, 8, 5);
+    index_event_message_id(trees.clone(), message_id.0, 10, 5);
 
-    let mut message_id_string = "0x".to_owned();
-    message_id_string.push_str(&hex::encode(message_id));
-    let msg = RequestMessage::EventsByMessageId {message_id: message_id_string};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::MessageId(message_id)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::MessageId(response_message_id),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(message_id, response_message_id);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -358,12 +392,18 @@ async fn test_process_msg_para_id() {
     index_event_para_id(trees.clone(), para_id, 8, 5);
     index_event_para_id(trees.clone(), para_id, 10, 5);
 
-    let msg = RequestMessage::EventsByParaId {para_id};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::ParaId(para_id)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::ParaId(response_para_id),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(para_id, response_para_id);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -406,12 +446,18 @@ async fn test_process_msg_pool_id() {
     index_event_pool_id(trees.clone(), pool_id, 8, 5);
     index_event_pool_id(trees.clone(), pool_id, 10, 5);
 
-    let msg = RequestMessage::EventsByPoolId {pool_id};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::PoolId(pool_id)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::PoolId(response_pool_id),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(pool_id, response_pool_id);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -454,12 +500,18 @@ async fn test_process_msg_ref_index() {
     index_event_ref_index(trees.clone(), ref_index, 8, 5);
     index_event_ref_index(trees.clone(), ref_index, 10, 5);
 
-    let msg = RequestMessage::EventsByRefIndex {ref_index};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::RefIndex(ref_index)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::RefIndex(response_ref_index),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(ref_index, response_ref_index);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -502,12 +554,18 @@ async fn test_process_msg_registrar_index() {
     index_event_registrar_index(trees.clone(), registrar_index, 8, 5);
     index_event_registrar_index(trees.clone(), registrar_index, 10, 5);
 
-    let msg = RequestMessage::EventsByRegistrarIndex {registrar_index};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::RegistrarIndex(registrar_index)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::RegistrarIndex(response_registrar_index),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(registrar_index, response_registrar_index);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -545,19 +603,23 @@ fn test_index_event_proposal_hash() {
 #[tokio::test]
 async fn test_process_msg_proposal_hash() {
     let trees = init_db("target/debug/test_process_msg_proposal_hash");
-    let proposal_hash = [8; 32];
-    index_event_proposal_hash(trees.clone(), proposal_hash, 4, 5);
-    index_event_proposal_hash(trees.clone(), proposal_hash, 8, 5);
-    index_event_proposal_hash(trees.clone(), proposal_hash, 10, 5);
+    let proposal_hash = Bytes32([8; 32]);
+    index_event_proposal_hash(trees.clone(), proposal_hash.0, 4, 5);
+    index_event_proposal_hash(trees.clone(), proposal_hash.0, 8, 5);
+    index_event_proposal_hash(trees.clone(), proposal_hash.0, 10, 5);
 
-    let mut proposal_hash_string = "0x".to_owned();
-    proposal_hash_string.push_str(&hex::encode(proposal_hash));
-    let msg = RequestMessage::EventsByProposalHash {proposal_hash: proposal_hash_string};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::ProposalHash(proposal_hash)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::ProposalHash(response_proposal_hash),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(proposal_hash, response_proposal_hash);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -600,12 +662,18 @@ async fn test_process_msg_proposal_index() {
     index_event_proposal_index(trees.clone(), proposal_index, 8, 5);
     index_event_proposal_index(trees.clone(), proposal_index, 10, 5);
 
-    let msg = RequestMessage::EventsByProposalIndex {proposal_index};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::ProposalIndex(proposal_index)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::ProposalIndex(response_proposal_index),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(proposal_index, response_proposal_index);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -643,19 +711,23 @@ fn test_index_event_tip_hash() {
 #[tokio::test]
 async fn test_process_msg_tip_hash() {
     let trees = init_db("target/debug/test_process_msg_tip_hash");
-    let tip_hash = [8; 32];
-    index_event_tip_hash(trees.clone(), tip_hash, 4, 5);
-    index_event_tip_hash(trees.clone(), tip_hash, 8, 5);
-    index_event_tip_hash(trees.clone(), tip_hash, 10, 5);
+    let tip_hash = Bytes32([8; 32]);
+    index_event_tip_hash(trees.clone(), tip_hash.0, 4, 5);
+    index_event_tip_hash(trees.clone(), tip_hash.0, 8, 5);
+    index_event_tip_hash(trees.clone(), tip_hash.0, 10, 5);
 
-    let mut tip_hash_string = "0x".to_owned();
-    tip_hash_string.push_str(&hex::encode(tip_hash));
-    let msg = RequestMessage::EventsByTipHash {tip_hash: tip_hash_string};
-    let response = process_msg(&trees, msg).await;
+    let msg = RequestMessage::GetEvents { key: Key::TipHash(tip_hash)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
-    let ResponseMessage::Events {events} = response else {
+    let ResponseMessage::Events {
+        key: Key::TipHash(response_tip_hash),
+        events,
+    } = response else {
         panic!("Wrong response message.");
     };
+    assert_eq!(tip_hash, response_tip_hash);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 4);
     assert_eq!(events[1].block_number, 8);
@@ -680,7 +752,9 @@ async fn test_process_msg_status() {
     trees.root.insert("last_head_block", &845433_u32.to_be_bytes()).unwrap();
     trees.root.insert("last_batch_block", &8445_u32.to_be_bytes()).unwrap();
     let msg = RequestMessage::Status;
-    let response = process_msg(&trees, msg).await;
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
 
     if let ResponseMessage::Status {last_head_block, last_batch_block, batch_indexing_complete} = response {
         assert_eq!(last_head_block, 845433);

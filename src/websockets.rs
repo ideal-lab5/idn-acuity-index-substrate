@@ -1,82 +1,14 @@
 use std::{
     net::SocketAddr,
 };
-use serde::{Serialize, Deserialize};
 use tokio::net::{TcpListener, TcpStream};
 use futures::{StreamExt, SinkExt};
-use subxt::utils::AccountId32;
+
+use tokio::sync::mpsc;
 
 use crate::shared::*;
 
-#[derive(Deserialize, Debug, Clone)]
-#[serde(tag = "type")]
-pub enum RequestMessage {
-    Status,
-    EventsByAccountId {
-        account_id: AccountId32,
-    },
-    EventsByAccountIndex {
-        account_index: u32,
-    },
-    EventsByAuctionIndex {
-        auction_index: u32,
-    },
-    EventsByBountyIndex {
-        bounty_index: u32,
-    },
-    EventsByCandidateHash {
-        candidate_hash: String,
-    },
-    EventsByMessageId {
-        message_id: String,
-    },
-    EventsByParaId {
-        para_id: u32,
-    },
-    EventsByPoolId {
-        pool_id: u32,
-    },
-    EventsByProposalHash {
-        proposal_hash: String,
-    },
-    EventsByProposalIndex {
-        proposal_index: u32,
-    },
-    EventsByRefIndex {
-        ref_index: u32,
-    },
-    EventsByRegistrarIndex {
-        registrar_index: u32,
-    },
-    EventsByTipHash {
-        tip_hash: String,
-    },
-}
-
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Event {
-    pub block_number: u32,
-    pub i: u32,
-}
-
-#[derive(Serialize, Debug)]
-#[serde(tag = "type", content = "data")]
-#[serde(rename_all = "camelCase")]
-pub enum ResponseMessage {
-    #[serde(rename_all = "camelCase")]
-    Status {
-        last_head_block: u32,
-        last_batch_block: u32,
-        batch_indexing_complete: bool,
-    },
-    Events {
-        events: Vec<Event>,
-    },
-    Error,
-}
-
-pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage {
+pub async fn process_msg(trees: &Trees, msg: RequestMessage, sub_tx: Sender<SubscribeMessage>, sub_response_tx: Sender<ResponseMessage>) -> ResponseMessage {
     match msg {
         RequestMessage::Status => {
             ResponseMessage::Status {
@@ -94,233 +26,256 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage) -> ResponseMessage 
                 },
             }
         },
-        RequestMessage::EventsByAccountId { account_id } => {
-            let mut events = Vec::new();
-
-            for kv in trees.account_id.scan_prefix(account_id) {
-                let kv = kv.unwrap();
-                let key = AccountIdKey::unserialize(kv.0.to_vec());
-
-                events.push(Event {
-                    block_number: key.block_number,
-                    i: key.i,
-                });
-            }
-
-            ResponseMessage::Events { events }
-        },
-        RequestMessage::EventsByAccountIndex { account_index } => {
-            let mut events = Vec::new();
-
-            for kv in trees.account_index.scan_prefix(account_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = AccountIndexKey::unserialize(kv.0.to_vec());
-
-                events.push(Event {
-                    block_number: key.block_number,
-                    i: key.i,
-                });
-            }
-
-            ResponseMessage::Events { events }
-        },
-        RequestMessage::EventsByAuctionIndex { auction_index } => {
-            let mut events = Vec::new();
-
-            for kv in trees.auction_index.scan_prefix(auction_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = AuctionIndexKey::unserialize(kv.0.to_vec());
-
-                events.push(Event {
-                    block_number: key.block_number,
-                    i: key.i,
-                });
-            }
-
-            ResponseMessage::Events { events }
-        },
-        RequestMessage::EventsByBountyIndex { bounty_index } => {
-            let mut events = Vec::new();
-
-            for kv in trees.bounty_index.scan_prefix(bounty_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = BountyIndexKey::unserialize(kv.0.to_vec());
-
-                events.push(Event {
-                    block_number: key.block_number,
-                    i: key.i,
-                });
-            }
-
-            ResponseMessage::Events { events }
-        },
-        RequestMessage::EventsByCandidateHash { candidate_hash } => {
-            match candidate_hash.get(2..66) {
-                Some(candidate_hash) => match hex::decode(candidate_hash) {
-                    Ok(candidate_hash) => {
-                        let mut events = Vec::new();
-
-                        for kv in trees.candidate_hash.scan_prefix(candidate_hash) {
-                            let kv = kv.unwrap();
-                            let key = CandidateHashKey::unserialize(kv.0.to_vec());
-
-                            events.push(Event {
-                                block_number: key.block_number,
-                                i: key.i,
-                            });
-                        }
-                        ResponseMessage::Events { events }
-                    },
-                    Err(_) => ResponseMessage::Error,
+        RequestMessage::GetEvents { key } => {
+            match key {
+                Key::AccountId(account_id) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.account_id.scan_prefix(account_id.clone()) {
+                        let kv = kv.unwrap();
+                        let key = AccountIdKey::unserialize(kv.0.to_vec());
+        
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+        
+                    ResponseMessage::Events {
+                        key: Key::AccountId(account_id),
+                        events
+                    }
                 },
-                None => ResponseMessage::Error,
-            }
-        },
-        RequestMessage::EventsByMessageId { message_id } => {
-            match message_id.get(2..66) {
-                Some(message_id) => match hex::decode(message_id) {
-                    Ok(message_id) => {
-                        let mut events = Vec::new();
-
-                        for kv in trees.message_id.scan_prefix(message_id) {
-                            let kv = kv.unwrap();
-                            let key = MessageIdKey::unserialize(kv.0.to_vec());
-
-                            events.push(Event {
-                                block_number: key.block_number,
-                                i: key.i,
-                            });
-                        }
-                        ResponseMessage::Events { events }
-                    },
-                    Err(_) => ResponseMessage::Error,
+                Key::AccountIndex(account_index) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.account_index.scan_prefix(account_index.to_be_bytes()) {
+                        let kv = kv.unwrap();
+                        let key = AccountIndexKey::unserialize(kv.0.to_vec());
+        
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+        
+                    ResponseMessage::Events {
+                        key: Key::AccountIndex(account_index),
+                        events
+                    }
                 },
-                None => ResponseMessage::Error,
-            }
-        },
-        RequestMessage::EventsByParaId { para_id } => {
-            let mut events = Vec::new();
-
-            for kv in trees.para_id.scan_prefix(para_id.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = ParaIdKey::unserialize(kv.0.to_vec());
-
-                events.push(Event {
-                    block_number: key.block_number,
-                    i: key.i,
-                });
-            }
-
-            ResponseMessage::Events { events }
-        },
-        RequestMessage::EventsByPoolId { pool_id } => {
-            let mut events = Vec::new();
-
-            for kv in trees.pool_id.scan_prefix(pool_id.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = PoolIdKey::unserialize(kv.0.to_vec());
-
-                events.push(Event {
-                    block_number: key.block_number,
-                    i: key.i,
-                });
-            }
-
-            ResponseMessage::Events { events }
-        },
-        RequestMessage::EventsByProposalHash { proposal_hash } => {
-            match proposal_hash.get(2..66) {
-                Some(proposal_hash) => match hex::decode(proposal_hash) {
-                    Ok(proposal_hash) => {
-                        let mut events = Vec::new();
-
-                        for kv in trees.proposal_hash.scan_prefix(proposal_hash) {
-                            let kv = kv.unwrap();
-                            let key = ProposalHashKey::unserialize(kv.0.to_vec());
-
-                            events.push(Event {
-                                block_number: key.block_number,
-                                i: key.i,
-                            });
-                        }
-                        ResponseMessage::Events { events }
-                    },
-                    Err(_) => ResponseMessage::Error,
+                Key::AuctionIndex(auction_index) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.auction_index.scan_prefix(auction_index.to_be_bytes()) {
+                        let kv = kv.unwrap();
+                        let key = AuctionIndexKey::unserialize(kv.0.to_vec());
+        
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+        
+                    ResponseMessage::Events {
+                        key: Key::AuctionIndex(auction_index),
+                        events
+                    }
                 },
-                None => ResponseMessage::Error,
-            }
-        },
-        RequestMessage::EventsByProposalIndex { proposal_index } => {
-            let mut events = Vec::new();
-
-            for kv in trees.proposal_index.scan_prefix(proposal_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = ProposalIndexKey::unserialize(kv.0.to_vec());
-
-                events.push(Event {
-                    block_number: key.block_number,
-                    i: key.i,
-                });
-            }
-
-            ResponseMessage::Events { events }
-        },
-        RequestMessage::EventsByRefIndex { ref_index } => {
-            let mut events = Vec::new();
-
-            for kv in trees.ref_index.scan_prefix(ref_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = RefIndexKey::unserialize(kv.0.to_vec());
-
-                events.push(Event {
-                    block_number: key.block_number,
-                    i: key.i,
-                });
-            }
-
-            ResponseMessage::Events { events }
-        },
-        RequestMessage::EventsByRegistrarIndex { registrar_index } => {
-            let mut events = Vec::new();
-
-            for kv in trees.registrar_index.scan_prefix(registrar_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = RegistrarIndexKey::unserialize(kv.0.to_vec());
-
-                events.push(Event {
-                    block_number: key.block_number,
-                    i: key.i,
-                });
-            }
-
-            ResponseMessage::Events { events }
-        },
-        RequestMessage::EventsByTipHash { tip_hash } => {
-            match tip_hash.get(2..66) {
-                Some(tip_hash) => match hex::decode(tip_hash) {
-                    Ok(tip_hash) => {
-                        let mut events = Vec::new();
-
-                        for kv in trees.tip_hash.scan_prefix(tip_hash) {
-                            let kv = kv.unwrap();
-                            let key = TipHashKey::unserialize(kv.0.to_vec());
-
-                            events.push(Event {
-                                block_number: key.block_number,
-                                i: key.i,
-                            });
-                        }
-                        ResponseMessage::Events { events }
-                    },
-                    Err(_) => ResponseMessage::Error,
+                Key::BountyIndex(bounty_index) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.bounty_index.scan_prefix(bounty_index.to_be_bytes()) {
+                        let kv = kv.unwrap();
+                        let key = BountyIndexKey::unserialize(kv.0.to_vec());
+        
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+        
+                    ResponseMessage::Events {
+                        key: Key::BountyIndex(bounty_index),
+                        events
+                    }
                 },
-                None => ResponseMessage::Error,
+                Key::CandidateHash(candidate_hash) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.candidate_hash.scan_prefix(&candidate_hash) {
+                        let kv = kv.unwrap();
+                        let key = CandidateHashKey::unserialize(kv.0.to_vec());
+    
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+
+                    ResponseMessage::Events {
+                        key: Key::CandidateHash(candidate_hash),
+                        events
+                    }
+                },
+                Key::MessageId(message_id) => {
+                    let mut events = Vec::new();
+
+                    for kv in trees.message_id.scan_prefix(&message_id) {
+                        let kv = kv.unwrap();
+                        let key = MessageIdKey::unserialize(kv.0.to_vec());
+
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+
+                    ResponseMessage::Events {
+                        key: Key::MessageId(message_id),
+                        events
+                    }
+                },
+                Key::ParaId(para_id) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.para_id.scan_prefix(para_id.to_be_bytes()) {
+                        let kv = kv.unwrap();
+                        let key = ParaIdKey::unserialize(kv.0.to_vec());
+        
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+        
+                    ResponseMessage::Events {
+                        key: Key::ParaId(para_id),
+                        events
+                    }
+                },
+                Key::PoolId(pool_id) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.pool_id.scan_prefix(pool_id.to_be_bytes()) {
+                        let kv = kv.unwrap();
+                        let key = PoolIdKey::unserialize(kv.0.to_vec());
+        
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+        
+                    ResponseMessage::Events {
+                        key: Key::PoolId(pool_id),
+                        events
+                    }
+                },
+                Key::ProposalHash(proposal_hash) => {
+                    let mut events = Vec::new();
+
+                    for kv in trees.proposal_hash.scan_prefix(&proposal_hash) {
+                        let kv = kv.unwrap();
+                        let key = ProposalHashKey::unserialize(kv.0.to_vec());
+
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+
+                    ResponseMessage::Events {
+                        key: Key::ProposalHash(proposal_hash),
+                        events
+                    }
+                },
+                Key::ProposalIndex(proposal_index) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.proposal_index.scan_prefix(proposal_index.to_be_bytes()) {
+                        let kv = kv.unwrap();
+                        let key = ProposalIndexKey::unserialize(kv.0.to_vec());
+        
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+        
+                    ResponseMessage::Events {
+                        key: Key::ProposalIndex(proposal_index),
+                        events
+                    }
+                },
+                Key::RefIndex(ref_index) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.ref_index.scan_prefix(ref_index.to_be_bytes()) {
+                        let kv = kv.unwrap();
+                        let key = RefIndexKey::unserialize(kv.0.to_vec());
+        
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+        
+                    ResponseMessage::Events {
+                        key: Key::RefIndex(ref_index),
+                        events
+                    }
+                },
+                Key::RegistrarIndex(registrar_index) => {
+                    let mut events = Vec::new();
+        
+                    for kv in trees.registrar_index.scan_prefix(registrar_index.to_be_bytes()) {
+                        let kv = kv.unwrap();
+                        let key = RegistrarIndexKey::unserialize(kv.0.to_vec());
+        
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+        
+                    ResponseMessage::Events {
+                        key: Key::RegistrarIndex(registrar_index),
+                        events
+                    }
+                },
+                Key::TipHash(tip_hash) => {
+                    let mut events = Vec::new();
+
+                    for kv in trees.tip_hash.scan_prefix(&tip_hash) {
+                        let kv = kv.unwrap();
+                        let key = TipHashKey::unserialize(kv.0.to_vec());
+
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+
+                    ResponseMessage::Events {
+                        key: Key::TipHash(tip_hash),
+                        events
+                    }
+                },
             }
+        },
+        RequestMessage::SubscribeEvents { key } => {
+            let msg = SubscribeMessage {
+                key,
+                sub_response_tx,
+            };
+            sub_tx.send(msg).await;
+            ResponseMessage::Subscribed
         },
     }
 }
 
-async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees) {
+async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees, sub_tx: Sender<SubscribeMessage>) {
     println!("Incoming TCP connection from: {}", addr);
 
     let ws_stream = tokio_tungstenite::accept_async(raw_stream)
@@ -329,6 +284,8 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees
     println!("WebSocket connection established: {}", addr);
 
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
+    
+    let (sub_events_tx, sub_events_rx) = mpsc::channel(100);
 
     loop {
         tokio::select! {
@@ -336,7 +293,7 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees
                 let msg = msg.unwrap();
                 if msg.is_text() || msg.is_binary() {
                     if let Ok(request_json) = serde_json::from_str(msg.to_text().unwrap()) {
-                        let response_msg = process_msg(&trees, request_json).await;
+                        let response_msg = process_msg(&trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await;
                         let response_json = serde_json::to_string(&response_msg).unwrap();
                         ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(response_json)).await.unwrap();
                     }
@@ -346,8 +303,9 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees
     }
 }
 
+use tokio::sync::mpsc::Sender;
 
-pub async fn websockets_listen(trees: Trees) {
+pub async fn websockets_listen(trees: Trees, tx: Sender<SubscribeMessage>) {
     let addr = "0.0.0.0:8172".to_string();
 
     // Create the event loop and TCP listener we'll accept connections on.
@@ -357,6 +315,6 @@ pub async fn websockets_listen(trees: Trees) {
 
     // Let's spawn the handling of each connection in a separate task.
     while let Ok((stream, addr)) = listener.accept().await {
-        tokio::spawn(handle_connection(stream, addr, trees.clone()));
+        tokio::spawn(handle_connection(stream, addr, trees.clone(), tx.clone()));
     }
 }
