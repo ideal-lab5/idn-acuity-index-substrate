@@ -4,7 +4,6 @@ use subxt::{
     PolkadotConfig,
     utils::AccountId32,
     metadata::Metadata,
-    metadata::MetadataError::EventNotFound,
 };
 
 use futures::{
@@ -301,11 +300,7 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut
                 Ok(evt) => {
                     index_event(trees.clone(), block_number, i.try_into().unwrap(), evt);
                 },
-                Err(error) => if let subxt::Error::Metadata(EventNotFound(_, _)) = error {
-                    println!(" ✨ Downloading new metadata.");
-                    metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
-                    continue 'blocks;
-                }
+                Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
         }
 
@@ -356,7 +351,7 @@ impl SubstrateBatch {
         };
         // Get the runtime version of the block.
         let runtime_version = self.api.rpc().runtime_version(Some(block_hash)).await.unwrap();
-        
+
         let metadata;
         {
             let metadata_map = metadata_map_lock.read().await;
@@ -379,9 +374,7 @@ impl SubstrateBatch {
                 Ok(evt) => {
                     index_event(self.trees.clone(), block_number, i.try_into().unwrap(), evt);
                 },
-                Err(error) => if let subxt::Error::Metadata(EventNotFound(_, _)) = error {
-                    return Err(IndexBlockError::WrongMetadata(block_number));
-                }
+                Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
         }
             
