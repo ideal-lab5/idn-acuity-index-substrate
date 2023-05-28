@@ -35,6 +35,7 @@ fn init_db(name: &str) -> Trees {
         message_id: db.open_tree("para_id").unwrap(),
         para_id: db.open_tree("para_id").unwrap(),
         pool_id: db.open_tree("bounty_index").unwrap(),
+        preimage_hash: db.open_tree("preimage_hash").unwrap(),
         proposal_hash: db.open_tree("proposal_hash").unwrap(),
         proposal_index: db.open_tree("proposal_index").unwrap(),
         ref_index: db.open_tree("ref_index").unwrap(),
@@ -573,14 +574,68 @@ async fn test_process_msg_registrar_index() {
 }
 
 #[test]
-fn test_proposal_hash_key() {
-    let key1: ProposalHashKey = ProposalHashKey {
-        proposal_hash: [8; 32],
+fn test_preimage_hash_key() {
+    let key1 = HashKey {
+        hash: [8; 32],
         block_number: 4,
         i: 5,
     };
 
-    let key2 = ProposalHashKey::unserialize(key1.serialize());
+    let key2 = HashKey::unserialize(key1.serialize());
+    assert_eq!(key1, key2);
+}
+
+#[test]
+fn test_index_event_preimage_hash() {
+    let trees = init_db("target/debug/test_preimage_hash");
+    index_event_preimage_hash(trees.clone(), [8; 32], 4, 5);
+
+    let key1 = HashKey {
+        hash: [8; 32],
+        block_number: 4,
+        i: 5,
+    };
+
+    let k = trees.preimage_hash.scan_prefix([8; 32].to_vec()).keys().next().unwrap();
+    let key2 = HashKey::unserialize(k.unwrap().to_vec());
+    assert_eq!(key1, key2);
+}
+
+#[tokio::test]
+async fn test_process_msg_preimage_hash() {
+    let trees = init_db("target/debug/test_process_msg_preimage_hash");
+    let preimage_hash = Bytes32([8; 32]);
+    index_event_preimage_hash(trees.clone(), preimage_hash.0, 4, 5);
+    index_event_preimage_hash(trees.clone(), preimage_hash.0, 8, 5);
+    index_event_preimage_hash(trees.clone(), preimage_hash.0, 10, 5);
+
+    let msg = RequestMessage::GetEvents { key: Key::PreimageHash(preimage_hash)};
+    let (tx, rx) = mpsc::channel(100);
+    let (response_tx, response_rx) = mpsc::channel(100);
+    let response = process_msg(&trees, msg, tx, response_tx).await;
+
+    let ResponseMessage::Events {
+        key: Key::PreimageHash(response_preimage_hash),
+        events,
+    } = response else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(preimage_hash, response_preimage_hash);
+    assert_eq!(events.len(), 3);
+    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[1].block_number, 8);
+    assert_eq!(events[2].block_number, 10);
+}
+
+#[test]
+fn test_proposal_hash_key() {
+    let key1 = HashKey {
+        hash: [8; 32],
+        block_number: 4,
+        i: 5,
+    };
+
+    let key2 = HashKey::unserialize(key1.serialize());
     assert_eq!(key1, key2);
 }
 
@@ -589,14 +644,14 @@ fn test_index_event_proposal_hash() {
     let trees = init_db("target/debug/test_proposal_hash");
     index_event_proposal_hash(trees.clone(), [8; 32], 4, 5);
 
-    let key1 = ProposalHashKey {
-        proposal_hash: [8; 32],
+    let key1 = HashKey {
+        hash: [8; 32],
         block_number: 4,
         i: 5,
     };
 
     let k = trees.proposal_hash.scan_prefix([8; 32].to_vec()).keys().next().unwrap();
-    let key2 = ProposalHashKey::unserialize(k.unwrap().to_vec());
+    let key2 = HashKey::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
 

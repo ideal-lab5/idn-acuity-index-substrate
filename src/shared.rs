@@ -44,6 +44,7 @@ pub struct Trees {
     pub message_id: Tree,
     pub para_id: Tree,
     pub pool_id: Tree,
+    pub preimage_hash: Tree,
     pub proposal_hash: Tree,
     pub proposal_index: Tree,
     pub ref_index: Tree,
@@ -334,24 +335,24 @@ impl RegistrarIndexKey {
 }
 
 #[derive(PartialEq, Debug)]
-pub struct ProposalHashKey {
-    pub proposal_hash: [u8; 32],
+pub struct HashKey {
+    pub hash: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
     pub i: u32,
 }
 
-impl ProposalHashKey {
+impl HashKey {
     pub fn serialize(&self) -> Vec<u8> {
         [
-            self.proposal_hash.to_vec(),
+            self.hash.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
         ].concat()
     }
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
-        ProposalHashKey {
-            proposal_hash: vector_as_u8_32_array(&vec[0..32]),
+        HashKey {
+            hash: vector_as_u8_32_array(&vec[0..32]),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
@@ -570,6 +571,7 @@ pub enum Key {
     MessageId(Bytes32),
     ParaId(u32),
     PoolId(u32),
+    PreimageHash(Bytes32),
     ProposalHash(Bytes32),
     ProposalIndex(u32),
     RefIndex(u32),

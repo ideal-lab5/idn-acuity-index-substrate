@@ -35,6 +35,7 @@ use crate::pallets::identity::*;
 use crate::pallets::indices::*;
 use crate::pallets::multisig::*;
 use crate::pallets::nomination_pools::*;
+use crate::pallets::preimage::*;
 use crate::pallets::proxy::*;
 use crate::pallets::system::*;
 use crate::pallets::tips::*;
@@ -146,11 +147,23 @@ pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32
     trees.pool_id.insert(key, &[]).unwrap();
 }
 
+pub fn index_event_preimage_hash(trees: Trees, preimage_hash: [u8; 32], block_number: u32, i: u32) {
+    println!("PreimageHash: 0x{}", hex::encode(preimage_hash));
+    // Generate key
+    let key = HashKey {
+        hash: preimage_hash,
+        block_number,
+        i,
+    }.serialize();
+    // Insert record.
+    trees.preimage_hash.insert(key, &[]).unwrap();
+}
+
 pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32) {
     println!("ProposalHash: 0x{}", hex::encode(proposal_hash));
     // Generate key
-    let key = ProposalHashKey {
-        proposal_hash,
+    let key = HashKey {
+        hash: proposal_hash,
         block_number,
         i,
     }.serialize();
@@ -240,6 +253,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "Ump" => parachains_ump_index_event(trees, block_number, event_index, event),
         "ParasDisputes" => parachains_disputes_index_event(trees, block_number, event_index, event),
         "PhragmenElection" => elections_phragmen_index_event(trees, block_number, event_index, event),
+        "Preimage" => preimage_index_event(trees, block_number, event_index, event),
         "Proxy" => proxy_index_event(trees, block_number, event_index, event),
         "Registrar" => paras_registrar_index_event(trees, block_number, event_index, event),
         "Slots" => slots_index_event(trees, block_number, event_index, event),

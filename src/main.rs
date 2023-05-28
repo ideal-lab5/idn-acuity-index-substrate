@@ -42,6 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         message_id: db.open_tree("para_id")?,
         para_id: db.open_tree("para_id")?,
         pool_id: db.open_tree("bounty_index")?,
+        preimage_hash: db.open_tree("preimage_hash")?,
         proposal_hash: db.open_tree("proposal_hash")?,
         proposal_index: db.open_tree("proposal_index")?,
         ref_index: db.open_tree("ref_index")?,

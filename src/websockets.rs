@@ -9,6 +9,7 @@ use tokio::sync::mpsc;
 use crate::shared::*;
 
 pub async fn process_msg(trees: &Trees, msg: RequestMessage, sub_tx: Sender<SubscribeMessage>, sub_response_tx: Sender<ResponseMessage>) -> ResponseMessage {
+    println!("{:?}", msg);
     match msg {
         RequestMessage::Status => {
             ResponseMessage::Status {
@@ -172,12 +173,30 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage, sub_tx: Sender<Subs
                         events
                     }
                 },
+                Key::PreimageHash(preimage_hash) => {
+                    let mut events = Vec::new();
+
+                    for kv in trees.preimage_hash.scan_prefix(&preimage_hash) {
+                        let kv = kv.unwrap();
+                        let key = HashKey::unserialize(kv.0.to_vec());
+
+                        events.push(Event {
+                            block_number: key.block_number,
+                            i: key.i,
+                        });
+                    }
+
+                    ResponseMessage::Events {
+                        key: Key::PreimageHash(preimage_hash),
+                        events
+                    }
+                },
                 Key::ProposalHash(proposal_hash) => {
                     let mut events = Vec::new();
 
                     for kv in trees.proposal_hash.scan_prefix(&proposal_hash) {
                         let kv = kv.unwrap();
-                        let key = ProposalHashKey::unserialize(kv.0.to_vec());
+                        let key = HashKey::unserialize(kv.0.to_vec());
 
                         events.push(Event {
                             block_number: key.block_number,
@@ -284,7 +303,7 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees
     println!("WebSocket connection established: {}", addr);
 
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
-    
+
     let (sub_events_tx, sub_events_rx) = mpsc::channel(100);
 
     loop {
@@ -292,10 +311,13 @@ async fn handle_connection(raw_stream: TcpStream, addr: SocketAddr, trees: Trees
             Some(msg) = ws_receiver.next() => {
                 let msg = msg.unwrap();
                 if msg.is_text() || msg.is_binary() {
-                    if let Ok(request_json) = serde_json::from_str(msg.to_text().unwrap()) {
-                        let response_msg = process_msg(&trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await;
-                        let response_json = serde_json::to_string(&response_msg).unwrap();
-                        ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(response_json)).await.unwrap();
+                    match serde_json::from_str(msg.to_text().unwrap()) {
+                        Ok(request_json) => {
+                            let response_msg = process_msg(&trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await;
+                            let response_json = serde_json::to_string(&response_msg).unwrap();
+                            ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(response_json)).await.unwrap();
+                        },
+                        Err(error) => println!("{}", error),
                     }
                 }
             }

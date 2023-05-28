@@ -13,6 +13,7 @@ pub mod identity;
 pub mod indices;
 pub mod multisig;
 pub mod nomination_pools;
+pub mod preimage;
 pub mod proxy;
 pub mod system;
 pub mod tips;
