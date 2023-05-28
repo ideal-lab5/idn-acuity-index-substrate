@@ -46,7 +46,13 @@ pub fn democracy_index_event(trees: Trees, block_number: u32, event_index: u32, 
         },
         "Vetoed" => {
             let event = event.as_event::<polkadot::democracy::events::Vetoed>()?.unwrap();
-            index_event_account_id(trees, event.who, block_number, event_index);
+            index_event_account_id(trees.clone(), event.who, block_number, event_index);
+            index_event_proposal_hash(trees, event.proposal_hash.into(), block_number, event_index);
+            Ok(())
+        },
+        "Blacklisted" => {
+            let event = event.as_event::<polkadot::democracy::events::Blacklisted>()?.unwrap();
+            index_event_proposal_hash(trees, event.proposal_hash.into(), block_number, event_index);
             Ok(())
         },
         "Voted" => {
