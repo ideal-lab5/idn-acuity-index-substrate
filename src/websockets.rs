@@ -32,7 +32,7 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage, sub_tx: Sender<Subs
                 Key::AccountId(account_id) => {
                     let mut events = Vec::new();
         
-                    for kv in trees.account_id.scan_prefix(account_id.clone()) {
+                    for kv in trees.account_id.scan_prefix(account_id) {
                         let kv = kv.unwrap();
                         let key = AccountIdKey::unserialize(kv.0.to_vec());
         
@@ -104,7 +104,7 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage, sub_tx: Sender<Subs
                 Key::CandidateHash(candidate_hash) => {
                     let mut events = Vec::new();
         
-                    for kv in trees.candidate_hash.scan_prefix(&candidate_hash) {
+                    for kv in trees.candidate_hash.scan_prefix(candidate_hash) {
                         let kv = kv.unwrap();
                         let key = CandidateHashKey::unserialize(kv.0.to_vec());
     
@@ -140,7 +140,7 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage, sub_tx: Sender<Subs
                 Key::MessageId(message_id) => {
                     let mut events = Vec::new();
 
-                    for kv in trees.message_id.scan_prefix(&message_id) {
+                    for kv in trees.message_id.scan_prefix(message_id) {
                         let kv = kv.unwrap();
                         let key = MessageIdKey::unserialize(kv.0.to_vec());
 
@@ -194,7 +194,7 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage, sub_tx: Sender<Subs
                 Key::PreimageHash(preimage_hash) => {
                     let mut events = Vec::new();
 
-                    for kv in trees.preimage_hash.scan_prefix(&preimage_hash) {
+                    for kv in trees.preimage_hash.scan_prefix(preimage_hash) {
                         let kv = kv.unwrap();
                         let key = HashKey::unserialize(kv.0.to_vec());
 
@@ -212,7 +212,7 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage, sub_tx: Sender<Subs
                 Key::ProposalHash(proposal_hash) => {
                     let mut events = Vec::new();
 
-                    for kv in trees.proposal_hash.scan_prefix(&proposal_hash) {
+                    for kv in trees.proposal_hash.scan_prefix(proposal_hash) {
                         let kv = kv.unwrap();
                         let key = HashKey::unserialize(kv.0.to_vec());
 
@@ -284,7 +284,7 @@ pub async fn process_msg(trees: &Trees, msg: RequestMessage, sub_tx: Sender<Subs
                 Key::TipHash(tip_hash) => {
                     let mut events = Vec::new();
 
-                    for kv in trees.tip_hash.scan_prefix(&tip_hash) {
+                    for kv in trees.tip_hash.scan_prefix(tip_hash) {
                         let kv = kv.unwrap();
                         let key = TipHashKey::unserialize(kv.0.to_vec());
 

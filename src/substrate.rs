@@ -378,7 +378,7 @@ enum IndexBlockError {
 }
 
 impl SubstrateBatch {
-    async fn new(trees: Trees, api: OnlineClient<PolkadotConfig>, block_number: u32) -> Self {
+    async fn new(trees: Trees, api: OnlineClient<PolkadotConfig>) -> Self {
         SubstrateBatch {
             trees,
             api,
@@ -464,7 +464,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         metadata_map.insert(runtime_version.spec_version, metadata);
     }
     
-    let substrate_batch = SubstrateBatch::new(trees.clone(), api, block_number).await;
+    let substrate_batch = SubstrateBatch::new(trees.clone(), api).await;
 
     let mut block_futures = Vec::new();
 
