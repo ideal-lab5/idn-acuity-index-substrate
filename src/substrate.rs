@@ -37,6 +37,7 @@ use crate::pallets::multisig::*;
 use crate::pallets::nomination_pools::*;
 use crate::pallets::preimage::*;
 use crate::pallets::proxy::*;
+use crate::pallets::session::*;
 use crate::pallets::staking::*;
 use crate::pallets::system::*;
 use crate::pallets::tips::*;
@@ -281,6 +282,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "Preimage" => preimage_index_event(trees, block_number, event_index, event),
         "Proxy" => proxy_index_event(trees, block_number, event_index, event),
         "Registrar" => paras_registrar_index_event(trees, block_number, event_index, event),
+        "Session" => session_index_event(trees, block_number, event_index, event),
         "Slots" => slots_index_event(trees, block_number, event_index, event),
         "Staking" => staking_index_event(trees, block_number, event_index, event),
         "System" => system_index_event(trees, block_number, event_index, event),

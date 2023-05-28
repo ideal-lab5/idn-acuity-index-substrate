@@ -15,6 +15,7 @@ pub mod multisig;
 pub mod nomination_pools;
 pub mod preimage;
 pub mod proxy;
+pub mod session;
 pub mod staking;
 pub mod system;
 pub mod tips;
