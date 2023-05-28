@@ -25,7 +25,8 @@ pub fn parachains_paras_index_event(trees: Trees, block_number: u32, event_index
         },
         "ActionQueued" => {
             let event = event.as_event::<polkadot::paras::events::ActionQueued>()?.unwrap();
-            index_event_para_id(trees, event.0.0, block_number, event_index);
+            index_event_para_id(trees.clone(), event.0.0, block_number, event_index);
+            index_event_session_index(trees, event.1, block_number, event_index);
             Ok(())
         },
         "PvfCheckStarted" => {
