@@ -24,7 +24,8 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
         "Unbonded" => {
             let event = event.as_event::<polkadot::nomination_pools::events::Unbonded>()?.unwrap();
             index_event_account_id(trees.clone(), event.member, block_number, event_index);
-            index_event_pool_id(trees, event.pool_id, block_number, event_index);
+            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index);
+            index_event_era_index(trees, event.era, block_number, event_index);
             Ok(())
         },
         "Withdrawn" => {
@@ -69,7 +70,8 @@ pub fn nomination_pools_index_event(trees: Trees, block_number: u32, event_index
         },
         "UnbondingPoolSlashed" => {
             let event = event.as_event::<polkadot::nomination_pools::events::UnbondingPoolSlashed>()?.unwrap();
-            index_event_pool_id(trees, event.pool_id, block_number, event_index);
+            index_event_pool_id(trees.clone(), event.pool_id, block_number, event_index);
+            index_event_era_index(trees, event.era, block_number, event_index);
             Ok(())
         },
 /*
