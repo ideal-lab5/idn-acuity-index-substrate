@@ -39,6 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         auction_index: db.open_tree("auction_index")?,
         bounty_index: db.open_tree("bounty_index")?,
         candidate_hash: db.open_tree("candiate_hash")?,
+        era_index: db.open_tree("era_index")?,
         message_id: db.open_tree("para_id")?,
         para_id: db.open_tree("para_id")?,
         pool_id: db.open_tree("bounty_index")?,
@@ -47,6 +48,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         proposal_index: db.open_tree("proposal_index")?,
         ref_index: db.open_tree("ref_index")?,
         registrar_index: db.open_tree("registrar_index")?,
+        session_index: db.open_tree("session_index")?,
         tip_hash: db.open_tree("tip_hash")?,
     };
     println!("Opened database.");

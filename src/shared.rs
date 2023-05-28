@@ -41,6 +41,7 @@ pub struct Trees {
     pub auction_index: Tree,
     pub bounty_index: Tree,
     pub candidate_hash: Tree,
+    pub era_index: Tree,
     pub message_id: Tree,
     pub para_id: Tree,
     pub pool_id: Tree,
@@ -49,6 +50,7 @@ pub struct Trees {
     pub proposal_index: Tree,
     pub ref_index: Tree,
     pub registrar_index: Tree,
+    pub session_index: Tree,
     pub tip_hash: Tree,
 }
 
@@ -110,74 +112,24 @@ impl AccountIdKey {
 }
 
 #[derive(PartialEq, Debug)]
-pub struct AccountIndexKey {
-    pub account_index: u32,
+pub struct U32Key {
+    pub key: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
     pub i: u32,
 }
 
-impl AccountIndexKey {
+impl U32Key {
     pub fn serialize(&self) -> Vec<u8> {
         [
-            self.account_index.to_be_bytes().to_vec(),
+            self.key.to_be_bytes().to_vec(),
             self.block_number.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
         ].concat()
     }
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
-        AccountIndexKey {
-            account_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct AuctionIndexKey {
-    pub auction_index: u32,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
-}
-
-impl AuctionIndexKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.auction_index.to_be_bytes().to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
-        ].concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        AuctionIndexKey {
-            auction_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct BountyIndexKey {
-    pub bounty_index: u32,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
-}
-
-impl BountyIndexKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.bounty_index.to_be_bytes().to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
-        ].concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        BountyIndexKey {
-            bounty_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
+        U32Key {
+            key: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
@@ -235,106 +187,6 @@ impl MessageIdKey {
 }
 
 #[derive(PartialEq, Debug)]
-pub struct ParaIdKey {
-    pub para_id: u32,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
-}
-
-impl ParaIdKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.para_id.to_be_bytes().to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
-        ].concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        ParaIdKey {
-            para_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct PoolIdKey {
-    pub pool_id: u32,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
-}
-
-impl PoolIdKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.pool_id.to_be_bytes().to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
-        ].concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        PoolIdKey {
-            pool_id: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct RefIndexKey {
-    pub ref_index: u32,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
-}
-
-impl RefIndexKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.ref_index.to_be_bytes().to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
-        ].concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        RefIndexKey {
-            ref_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct RegistrarIndexKey {
-    pub registrar_index: u32,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
-}
-
-impl RegistrarIndexKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.registrar_index.to_be_bytes().to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
-        ].concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        RegistrarIndexKey {
-            registrar_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
 pub struct HashKey {
     pub hash: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
@@ -355,31 +207,6 @@ impl HashKey {
             hash: vector_as_u8_32_array(&vec[0..32]),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
             i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct ProposalIndexKey {
-    pub proposal_index: u32,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
-}
-
-impl ProposalIndexKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.proposal_index.to_be_bytes().to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
-        ].concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        ProposalIndexKey {
-            proposal_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -568,6 +395,7 @@ pub enum Key {
     AuctionIndex(u32),
     BountyIndex(u32),
     CandidateHash(Bytes32),
+    EraIndex(u32),
     MessageId(Bytes32),
     ParaId(u32),
     PoolId(u32),
