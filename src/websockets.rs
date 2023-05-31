@@ -58,12 +58,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
     match key {
         Key::Variant(pallet_id, variant_id) => {
             let mut events = Vec::new();
+            let mut iter = trees.variant.scan_prefix([pallet_id, variant_id]).keys();
             
-            let prefix = [pallet_id, variant_id];
-            
-            for kv in trees.variant.scan_prefix(prefix) {
-                let kv = kv.unwrap();
-                let key = VariantKey::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = VariantKey::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -78,17 +76,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::AccountId(account_id) => {
             let mut events = Vec::new();
+            let mut iter = trees.account_id.scan_prefix(account_id).keys();
 
-            for kv in trees.account_id.scan_prefix(account_id) {
-                let kv = kv.unwrap();
-                let key = AccountIdKey::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = AccountIdKey::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
                     i: key.i,
                 });
             }
-
+            
             ResponseMessage::Events {
                 key: Key::AccountId(account_id),
                 events
@@ -96,10 +94,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::AccountIndex(account_index) => {
             let mut events = Vec::new();
+            let mut iter = trees.account_index.scan_prefix(account_index.to_be_bytes()).keys();
 
-            for kv in trees.account_index.scan_prefix(account_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = U32Key::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -114,10 +112,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::AuctionIndex(auction_index) => {
             let mut events = Vec::new();
+            let mut iter = trees.auction_index.scan_prefix(auction_index.to_be_bytes()).keys();
 
-            for kv in trees.auction_index.scan_prefix(auction_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = U32Key::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -132,10 +130,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::BountyIndex(bounty_index) => {
             let mut events = Vec::new();
+            let mut iter = trees.bounty_index.scan_prefix(bounty_index.to_be_bytes()).keys();
 
-            for kv in trees.bounty_index.scan_prefix(bounty_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = U32Key::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -150,10 +148,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::CandidateHash(candidate_hash) => {
             let mut events = Vec::new();
+            let mut iter = trees.candidate_hash.scan_prefix(candidate_hash).keys();
 
-            for kv in trees.candidate_hash.scan_prefix(candidate_hash) {
-                let kv = kv.unwrap();
-                let key = CandidateHashKey::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = CandidateHashKey::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -168,10 +166,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::EraIndex(era_index) => {
             let mut events = Vec::new();
+            let mut iter = trees.era_index.scan_prefix(era_index.to_be_bytes()).keys();
 
-            for kv in trees.era_index.scan_prefix(era_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = U32Key::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -186,10 +184,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::MessageId(message_id) => {
             let mut events = Vec::new();
+            let mut iter = trees.message_id.scan_prefix(message_id).keys();
 
-            for kv in trees.message_id.scan_prefix(message_id) {
-                let kv = kv.unwrap();
-                let key = MessageIdKey::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = MessageIdKey::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -204,10 +202,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::ParaId(para_id) => {
             let mut events = Vec::new();
+            let mut iter = trees.para_id.scan_prefix(para_id.to_be_bytes()).keys();
 
-            for kv in trees.para_id.scan_prefix(para_id.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = U32Key::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -222,10 +220,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::PoolId(pool_id) => {
             let mut events = Vec::new();
+            let mut iter = trees.pool_id.scan_prefix(pool_id.to_be_bytes()).keys();
 
-            for kv in trees.pool_id.scan_prefix(pool_id.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = U32Key::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -240,10 +238,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::PreimageHash(preimage_hash) => {
             let mut events = Vec::new();
+            let mut iter = trees.preimage_hash.scan_prefix(preimage_hash).keys();
 
-            for kv in trees.preimage_hash.scan_prefix(preimage_hash) {
-                let kv = kv.unwrap();
-                let key = HashKey::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = HashKey::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -258,10 +256,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::ProposalHash(proposal_hash) => {
             let mut events = Vec::new();
+            let mut iter = trees.proposal_hash.scan_prefix(proposal_hash).keys();
 
-            for kv in trees.proposal_hash.scan_prefix(proposal_hash) {
-                let kv = kv.unwrap();
-                let key = HashKey::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = HashKey::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -276,10 +274,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::ProposalIndex(proposal_index) => {
             let mut events = Vec::new();
+            let mut iter = trees.proposal_index.scan_prefix(proposal_index.to_be_bytes()).keys();
 
-            for kv in trees.proposal_index.scan_prefix(proposal_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = U32Key::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -294,10 +292,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::RefIndex(ref_index) => {
             let mut events = Vec::new();
+            let mut iter = trees.ref_index.scan_prefix(ref_index.to_be_bytes()).keys();
 
-            for kv in trees.ref_index.scan_prefix(ref_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = U32Key::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -312,10 +310,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::RegistrarIndex(registrar_index) => {
             let mut events = Vec::new();
+            let mut iter = trees.registrar_index.scan_prefix(registrar_index.to_be_bytes()).keys();
 
-            for kv in trees.registrar_index.scan_prefix(registrar_index.to_be_bytes()) {
-                let kv = kv.unwrap();
-                let key = U32Key::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
@@ -330,10 +328,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         },
         Key::TipHash(tip_hash) => {
             let mut events = Vec::new();
+            let mut iter = trees.tip_hash.scan_prefix(tip_hash).keys();
 
-            for kv in trees.tip_hash.scan_prefix(tip_hash) {
-                let kv = kv.unwrap();
-                let key = TipHashKey::unserialize(kv.0.to_vec());
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = TipHashKey::unserialize(key.to_vec());
 
                 events.push(Event {
                     block_number: key.block_number,
