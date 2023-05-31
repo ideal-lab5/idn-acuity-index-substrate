@@ -79,9 +79,9 @@ async fn test_process_msg_account_id() {
     };
     assert_eq!(AccountId32Hash(account_id.0), response_account_id);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -130,9 +130,9 @@ async fn test_process_msg_account_index() {
     };
     assert_eq!(account_index, response_account_index);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -169,9 +169,9 @@ async fn test_process_msg_auction_index() {
     };
     assert_eq!(auction_index, response_auction_index);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -208,9 +208,9 @@ async fn test_process_msg_bounty_index() {
     };
     assert_eq!(bounty_index, response_bounty_index);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -259,9 +259,9 @@ async fn test_process_msg_candidate_hash() {
     };
     assert_eq!(candidate_hash, response_candidate_hash);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -310,9 +310,9 @@ async fn test_process_msg_message_id() {
     };
     assert_eq!(message_id, response_message_id);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -349,9 +349,9 @@ async fn test_process_msg_para_id() {
     };
     assert_eq!(para_id, response_para_id);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -388,9 +388,9 @@ async fn test_process_msg_pool_id() {
     };
     assert_eq!(pool_id, response_pool_id);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -427,9 +427,9 @@ async fn test_process_msg_ref_index() {
     };
     assert_eq!(ref_index, response_ref_index);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -466,9 +466,9 @@ async fn test_process_msg_registrar_index() {
     };
     assert_eq!(registrar_index, response_registrar_index);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -517,9 +517,9 @@ async fn test_process_msg_preimage_hash() {
     };
     assert_eq!(preimage_hash, response_preimage_hash);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -568,9 +568,9 @@ async fn test_process_msg_proposal_hash() {
     };
     assert_eq!(proposal_hash, response_proposal_hash);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -607,9 +607,9 @@ async fn test_process_msg_proposal_index() {
     };
     assert_eq!(proposal_index, response_proposal_index);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
@@ -658,9 +658,9 @@ async fn test_process_msg_tip_hash() {
     };
     assert_eq!(tip_hash, response_tip_hash);
     assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 4);
+    assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 10);
+    assert_eq!(events[2].block_number, 4);
 }
 
 #[test]
