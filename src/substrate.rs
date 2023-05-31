@@ -245,7 +245,7 @@ pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32,
     trees.tip_hash.insert(key, &[]).unwrap();
 }
 
-fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) {
+fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) {
     
     // Generate key
     let key = VariantKey {

@@ -8,8 +8,6 @@ use subxt::{
 
 use std::str::FromStr;
 
-use tokio::sync::mpsc;
-
 #[test]
 fn test_account_id_key() {
     let key1: AccountIdKey = AccountIdKey {
@@ -71,10 +69,7 @@ async fn test_process_msg_account_id() {
     index_event_account_id(trees.clone(), account_id.clone(), 8, 5);
     index_event_account_id(trees.clone(), account_id.clone(), 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::AccountId(AccountId32Hash(account_id.0))};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::AccountId(AccountId32Hash(account_id.0)));
 
     let ResponseMessage::Events {
         key: Key::AccountId(response_account_id),
@@ -125,10 +120,7 @@ async fn test_process_msg_account_index() {
     index_event_account_index(trees.clone(), account_index, 8, 5);
     index_event_account_index(trees.clone(), account_index, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::AccountIndex(account_index)};
-    let (tx, rx) = mpsc::channel(100);    
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::AccountIndex(account_index));
 
     let ResponseMessage::Events {
         key: Key::AccountIndex(response_account_index),
@@ -167,10 +159,7 @@ async fn test_process_msg_auction_index() {
     index_event_auction_index(trees.clone(), auction_index, 8, 5);
     index_event_auction_index(trees.clone(), auction_index, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::AuctionIndex(auction_index)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees,Key::AuctionIndex(auction_index));
 
     let ResponseMessage::Events {
         key: Key::AuctionIndex(response_auction_index),
@@ -209,10 +198,7 @@ async fn test_process_msg_bounty_index() {
     index_event_bounty_index(trees.clone(), bounty_index, 8, 5);
     index_event_bounty_index(trees.clone(), bounty_index, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::BountyIndex(bounty_index)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::BountyIndex(bounty_index));
 
     let ResponseMessage::Events {
         key: Key::BountyIndex(response_bounty_index),
@@ -263,10 +249,7 @@ async fn test_process_msg_candidate_hash() {
     index_event_candidate_hash(trees.clone(), candidate_hash.0, 8, 5);
     index_event_candidate_hash(trees.clone(), candidate_hash.0, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::CandidateHash(candidate_hash)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::CandidateHash(candidate_hash));
 
     let ResponseMessage::Events {
         key: Key::CandidateHash(response_candidate_hash),
@@ -317,10 +300,7 @@ async fn test_process_msg_message_id() {
     index_event_message_id(trees.clone(), message_id.0, 8, 5);
     index_event_message_id(trees.clone(), message_id.0, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::MessageId(message_id)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::MessageId(message_id));
 
     let ResponseMessage::Events {
         key: Key::MessageId(response_message_id),
@@ -359,10 +339,7 @@ async fn test_process_msg_para_id() {
     index_event_para_id(trees.clone(), para_id, 8, 5);
     index_event_para_id(trees.clone(), para_id, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::ParaId(para_id)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::ParaId(para_id));
 
     let ResponseMessage::Events {
         key: Key::ParaId(response_para_id),
@@ -401,10 +378,7 @@ async fn test_process_msg_pool_id() {
     index_event_pool_id(trees.clone(), pool_id, 8, 5);
     index_event_pool_id(trees.clone(), pool_id, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::PoolId(pool_id)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::PoolId(pool_id));
 
     let ResponseMessage::Events {
         key: Key::PoolId(response_pool_id),
@@ -443,10 +417,7 @@ async fn test_process_msg_ref_index() {
     index_event_ref_index(trees.clone(), ref_index, 8, 5);
     index_event_ref_index(trees.clone(), ref_index, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::RefIndex(ref_index)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::RefIndex(ref_index));
 
     let ResponseMessage::Events {
         key: Key::RefIndex(response_ref_index),
@@ -485,10 +456,7 @@ async fn test_process_msg_registrar_index() {
     index_event_registrar_index(trees.clone(), registrar_index, 8, 5);
     index_event_registrar_index(trees.clone(), registrar_index, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::RegistrarIndex(registrar_index)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::RegistrarIndex(registrar_index));
 
     let ResponseMessage::Events {
         key: Key::RegistrarIndex(response_registrar_index),
@@ -539,10 +507,7 @@ async fn test_process_msg_preimage_hash() {
     index_event_preimage_hash(trees.clone(), preimage_hash.0, 8, 5);
     index_event_preimage_hash(trees.clone(), preimage_hash.0, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::PreimageHash(preimage_hash)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::PreimageHash(preimage_hash));
 
     let ResponseMessage::Events {
         key: Key::PreimageHash(response_preimage_hash),
@@ -593,10 +558,7 @@ async fn test_process_msg_proposal_hash() {
     index_event_proposal_hash(trees.clone(), proposal_hash.0, 8, 5);
     index_event_proposal_hash(trees.clone(), proposal_hash.0, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::ProposalHash(proposal_hash)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::ProposalHash(proposal_hash));
 
     let ResponseMessage::Events {
         key: Key::ProposalHash(response_proposal_hash),
@@ -635,10 +597,7 @@ async fn test_process_msg_proposal_index() {
     index_event_proposal_index(trees.clone(), proposal_index, 8, 5);
     index_event_proposal_index(trees.clone(), proposal_index, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::ProposalIndex(proposal_index)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::ProposalIndex(proposal_index));
 
     let ResponseMessage::Events {
         key: Key::ProposalIndex(response_proposal_index),
@@ -689,10 +648,7 @@ async fn test_process_msg_tip_hash() {
     index_event_tip_hash(trees.clone(), tip_hash.0, 8, 5);
     index_event_tip_hash(trees.clone(), tip_hash.0, 10, 5);
 
-    let msg = RequestMessage::GetEvents { key: Key::TipHash(tip_hash)};
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_get_events(&trees, Key::TipHash(tip_hash));
 
     let ResponseMessage::Events {
         key: Key::TipHash(response_tip_hash),
@@ -724,10 +680,7 @@ async fn test_process_msg_status() {
     let trees = init_db("target/debug/test_process_msg");
     trees.root.insert("last_head_block", &845433_u32.to_be_bytes()).unwrap();
     trees.root.insert("last_batch_block", &8445_u32.to_be_bytes()).unwrap();
-    let msg = RequestMessage::Status;
-    let (tx, rx) = mpsc::channel(100);
-    let (response_tx, response_rx) = mpsc::channel(100);
-    let response = process_msg(&trees, msg, tx, response_tx).await;
+    let response = process_msg_status(&trees);
 
     if let ResponseMessage::Status {last_head_block, last_batch_block, batch_indexing_complete} = response {
         assert_eq!(last_head_block, 845433);

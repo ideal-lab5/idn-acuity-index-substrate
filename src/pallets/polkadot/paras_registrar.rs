@@ -1,7 +1,8 @@
+use subxt::PolkadotConfig;
 use crate::shared::*;
 use crate::substrate::*;
 
-pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails) -> Result<(), subxt::Error> {
+pub fn paras_registrar_index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) -> Result<(), subxt::Error> {
     match event.variant_name() {
         "Registered" => {
             let event = event.as_event::<polkadot::registrar::events::Registered>()?.unwrap();

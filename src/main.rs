@@ -85,9 +85,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Start Substrate tasks.
     let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone(), sub_rx));
-    let substrate_batch = tokio::spawn(substrate_batch(api, trees.clone(), args));
+    let substrate_batch = tokio::spawn(substrate_batch(api.clone(), trees.clone(), args));
     // Spawn websockets task.
-    let websockets_task = tokio::spawn(websockets_listen(trees.clone(), sub_tx));
+    let websockets_task = tokio::spawn(websockets_listen(api, trees.clone(), sub_tx));
     // Wait to exit.
     let _result = join!(substrate_head, substrate_batch, websockets_task);
     Ok(())

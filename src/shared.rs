@@ -80,8 +80,8 @@ impl VariantKey {
         VariantKey {
             pallet_index: vec[0],
             variant_index: vec[1],
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
+            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[2..6])),
+            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[6..10])),
         }
     }
 }
@@ -405,6 +405,7 @@ pub enum Key {
     RefIndex(u32),
     RegistrarIndex(u32),
     TipHash(Bytes32),
+    Variant(u8, u8),
 }
 
 use tokio::sync::mpsc::Sender;
@@ -413,6 +414,7 @@ use tokio::sync::mpsc::Sender;
 #[serde(tag = "type")]
 pub enum RequestMessage { 
     Status,
+    Variants,
     GetEvents {
         key: Key,
     },
@@ -429,6 +431,19 @@ pub struct Event {
 }
 
 #[derive(Serialize, Debug)]
+pub struct EventMeta {
+    pub index: u8,
+    pub name: String,
+}
+
+#[derive(Serialize, Debug)]
+pub struct PalletMeta {
+    pub index: u8,
+    pub name: String,
+    pub events: Vec<EventMeta>,
+}
+
+#[derive(Serialize, Debug)]
 #[serde(tag = "type", content = "data")]
 #[serde(rename_all = "camelCase")]
 pub enum ResponseMessage {
@@ -438,6 +453,7 @@ pub enum ResponseMessage {
         last_batch_block: u32,
         batch_indexing_complete: bool,
     },
+    Variants(Vec<PalletMeta>),
     Events {
         key: Key,
         events: Vec<Event>,
