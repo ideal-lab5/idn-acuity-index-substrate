@@ -26,7 +26,7 @@ use crate::pallets::balances::*;
 use crate::pallets::bounties::*;
 use crate::pallets::child_bounties::*;
 use crate::pallets::claims::*;
-use crate::pallets::collective::*;
+use crate::pallets::council::*;
 use crate::pallets::democracy::*;
 use crate::pallets::election_provider_multi_phase::*;
 use crate::pallets::elections_phragmen::*;
@@ -40,6 +40,7 @@ use crate::pallets::proxy::*;
 use crate::pallets::session::*;
 use crate::pallets::staking::*;
 use crate::pallets::system::*;
+use crate::pallets::technical_committee::*;
 use crate::pallets::tips::*;
 use crate::pallets::transaction_payment::*;
 use crate::pallets::treasury::*;
@@ -259,13 +260,12 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
 
     let result = match event.pallet_name() {
         "Auctions" => auctions_index_event(trees, block_number, event_index, event),
-        "VoterList" => bags_list_index_event(trees, block_number, event_index, event),
         "Balances" => balance_index_event(trees, block_number, event_index, event),
         "Bounties" => bounties_index_event(trees, block_number, event_index, event),
         "ChildBounties" => child_bounties_index_event(trees, block_number, event_index, event),
         "Claims" => claims_index_event(trees, block_number, event_index, event),
-        "Council" => collective_index_event(trees, block_number, event_index, event),
-        "TechnicalCommittee" => collective_index_event(trees, block_number, event_index, event),
+        "Council" => council_index_event(trees, block_number, event_index, event),
+        "TechnicalCommittee" => technical_committee_index_event(trees, block_number, event_index, event),
         "Crowdloan" => crowdloan_index_event(trees, block_number, event_index, event),
         "Democracy" => democracy_index_event(trees, block_number, event_index, event),
         "ElectionProviderMultiPhase" => election_provider_multi_phase_index_event(trees, block_number, event_index, event),
@@ -290,6 +290,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
         "TransactionPayment" => transaction_payment_index_event(trees, block_number, event_index, event),
         "Treasury" => treasury_index_event(trees, block_number, event_index, event),
         "Vesting" => vesting_index_event(trees, block_number, event_index, event),
+        "VoterList" => bags_list_index_event(trees, block_number, event_index, event),
         _ => Ok(()),
     };
 
