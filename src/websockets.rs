@@ -67,6 +67,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -85,6 +87,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
             
             ResponseMessage::Events {
@@ -103,6 +107,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -121,6 +127,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -139,6 +147,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -157,6 +167,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -175,6 +187,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -193,6 +207,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -211,6 +227,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -229,6 +247,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -247,6 +267,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -265,6 +287,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -283,6 +307,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -301,6 +327,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -319,6 +347,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
@@ -337,6 +367,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
+                
+                if events.len() == 1000 { break; }
             }
 
             ResponseMessage::Events {
