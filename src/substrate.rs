@@ -12,7 +12,6 @@ use futures::{
 use std::{
     collections::HashMap,
     time::SystemTime,
-    sync::Arc,
 };
 
 use tokio::sync:: {
@@ -67,7 +66,6 @@ pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_numbe
 }
 
 pub fn index_event_account_index(trees: Trees, account_index: u32, block_number: u32, i: u32) {
-    println!("AccountIndex: {}", account_index);
     // Generate key
     let key = U32Key {
         key: account_index,
@@ -79,7 +77,6 @@ pub fn index_event_account_index(trees: Trees, account_index: u32, block_number:
 }
 
 pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number: u32, i: u32) {
-    println!("AuctionIndex: {}", auction_index);
     // Generate key
     let key = U32Key {
         key: auction_index,
@@ -91,7 +88,6 @@ pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number:
 }
 
 pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u32, i: u32) {
-    println!("BountyIndex: {}", bounty_index);
     // Generate key
     let key = U32Key {
         key: bounty_index,
@@ -103,7 +99,6 @@ pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u
 }
 
 pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_number: u32, i: u32) {
-    println!("CandidateHash: 0x{}", hex::encode(candidate_hash));
     // Generate key
     let key = CandidateHashKey {
         candidate_hash,
@@ -115,7 +110,6 @@ pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_
 }
 
 pub fn index_event_era_index(trees: Trees, era_index: u32, block_number: u32, i: u32) {
-    println!("EraIndex: {}", era_index);
     // Generate key
     let key = U32Key {
         key: era_index,
@@ -127,7 +121,6 @@ pub fn index_event_era_index(trees: Trees, era_index: u32, block_number: u32, i:
 }
 
 pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: u32, i: u32) {
-    println!("MessageId: 0x{}", hex::encode(message_id));
     // Generate key
     let key = MessageIdKey {
         message_id,
@@ -139,7 +132,6 @@ pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: 
 }
 
 pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32) {
-    println!("ParaId: {}", para_id);
     // Generate key
     let key = U32Key {
         key: para_id,
@@ -151,7 +143,6 @@ pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32
 }
 
 pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32) {
-    println!("PoolId: {}", pool_id);
     // Generate key
     let key = U32Key {
         key: pool_id,
@@ -163,7 +154,6 @@ pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32
 }
 
 pub fn index_event_preimage_hash(trees: Trees, preimage_hash: [u8; 32], block_number: u32, i: u32) {
-    println!("PreimageHash: 0x{}", hex::encode(preimage_hash));
     // Generate key
     let key = HashKey {
         hash: preimage_hash,
@@ -175,7 +165,6 @@ pub fn index_event_preimage_hash(trees: Trees, preimage_hash: [u8; 32], block_nu
 }
 
 pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32) {
-    println!("ProposalHash: 0x{}", hex::encode(proposal_hash));
     // Generate key
     let key = HashKey {
         hash: proposal_hash,
@@ -187,7 +176,6 @@ pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_nu
 }
 
 pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_number: u32, i: u32) {
-    println!("ProposalIndex: {}", proposal_index);
     // Generate key
     let key = U32Key {
         key: proposal_index,
@@ -199,7 +187,6 @@ pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_numbe
 }
 
 pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i: u32) {
-    println!("RefIndex: {}", ref_index);
     // Generate key
     let key = U32Key {
         key: ref_index,
@@ -211,7 +198,6 @@ pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i:
 }
 
 pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_number: u32, i: u32) {
-    println!("RegistrarIndex: {}", registrar_index);
     // Generate key
     let key = U32Key {
         key: registrar_index,
@@ -223,7 +209,6 @@ pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_num
 }
 
 pub fn index_event_session_index(trees: Trees, session_index: u32, block_number: u32, i: u32) {
-    println!("SessionIndex: {}", session_index);
     // Generate key
     let key = U32Key {
         key: session_index,
@@ -235,7 +220,6 @@ pub fn index_event_session_index(trees: Trees, session_index: u32, block_number:
 }
 
 pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32, i: u32) {
-    println!("TipHash: 0x{}", hex::encode(tip_hash));
     // Generate key
     let key = TipHashKey {
         tip_hash,
@@ -258,7 +242,10 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
     // Insert record.
     trees.variant.insert(key, &[]).unwrap();
 
-    let result = match event.pallet_name() {
+    let pallet_name = event.pallet_name().to_owned();
+//    let variant_name = event.variant_name().to_owned();
+
+    let result = match pallet_name.as_str() {
         "Auctions" => auctions_index_event(trees, block_number, event_index, event),
         "Balances" => balance_index_event(trees, block_number, event_index, event),
         "Bounties" => bounties_index_event(trees, block_number, event_index, event),
@@ -297,7 +284,7 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
     match result  {
         Ok(()) => (),
         Err(error) => {
-            println!("{}", error);
+        //    println!("Block: {}, pallet: {}, variant: {}, error: {}", block_number, pallet_name, variant_name, error);
         }
     };
 }
@@ -331,7 +318,7 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut
     let mut block_number = block.header().number;
     let mut block_hash = block.hash();
     // Download the metadata of the starting block.
-    let mut metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
+    let metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
 
     'blocks: loop {
         println!(" ✨ #{block_number}: 0x{}", hex::encode(block_hash.0));
@@ -367,15 +354,14 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut
 }
 
 
-#[derive(Clone)]
 struct SubstrateBatch {
     trees: Trees,
     api: OnlineClient<PolkadotConfig>,
+    metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
 }
 
 enum IndexBlockError {
     BlockNotFound,
-    WrongMetadata(u32),
 }
 
 impl SubstrateBatch {
@@ -383,10 +369,11 @@ impl SubstrateBatch {
         SubstrateBatch {
             trees,
             api,
+            metadata_map_lock: RwLock::new(HashMap::new()),
         }
     }
 
-    async fn index_block(&self, block_number: u32, metadata_map_lock: Arc<RwLock<HashMap<u32, Metadata>>>) -> Result<(), IndexBlockError> {
+    async fn index_block(&self, block_number: u32) -> Result<(), IndexBlockError> {
         
         let block_hash = match self.api.rpc().block_hash(Some(block_number.into())).await.unwrap() {
             Some(block_hash) => block_hash,
@@ -395,20 +382,28 @@ impl SubstrateBatch {
         // Get the runtime version of the block.
         let runtime_version = self.api.rpc().runtime_version(Some(block_hash)).await.unwrap();
 
-        let metadata;
-        {
-            let metadata_map = metadata_map_lock.read().await;
-            metadata = match metadata_map.get(&runtime_version.spec_version) {
-                Some(metadata) => metadata.clone(),
-                None => {
-                    drop(metadata_map);
-                    let metadata = self.api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
-                    let mut metadata_map  = metadata_map_lock.write().await;
-                    metadata_map.insert(runtime_version.spec_version, metadata.clone());
-                    metadata
-                },
-            }
-        }
+        let metadata_map = self.metadata_map_lock.read().await;
+        let metadata = match metadata_map.get(&runtime_version.spec_version) {
+            Some(metadata) => {
+                let metadata = metadata.clone();
+                drop(metadata_map);
+                metadata
+            },
+            None => {
+                drop(metadata_map);
+                let mut metadata_map  = self.metadata_map_lock.write().await;
+
+                match metadata_map.get(&runtime_version.spec_version) {
+                    Some(metadata) => metadata.clone(),
+                    None => {
+                        println!("Downloading metadata for spec version {}", runtime_version.spec_version);
+                        let metadata = self.api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
+                        metadata_map.insert(runtime_version.spec_version, metadata.clone());
+                        metadata
+                    },
+                }
+            },
+        };
             
         let events = subxt::events::Events::new_from_client(metadata, block_hash, self.api.clone()).await.unwrap();
     
@@ -452,25 +447,12 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
     // Record in database that batch indexing has not finished.
     trees.root.insert("batch_indexing_complete", &0_u8.to_be_bytes()).unwrap();
 
-    let metadata_map_lock: Arc<RwLock<HashMap<u32, Metadata>>> = Arc::new(RwLock::new(HashMap::new()));
-    // Get the hash of the starting block.
-    let block_hash = api.rpc().block_hash(Some(block_number.into())).await.unwrap().unwrap();
-    // Get the runtime version of the starting block.
-    let runtime_version = api.rpc().runtime_version(Some(block_hash)).await.unwrap();
-    // Download the metadata of the starting block.
-//        let metadata = api.rpc().metadata_at_version(runtime_version.spec_version).await.unwrap();
-    let metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
-    {
-        let mut metadata_map = metadata_map_lock.write().await;
-        metadata_map.insert(runtime_version.spec_version, metadata);
-    }
-    
     let substrate_batch = SubstrateBatch::new(trees.clone(), api).await;
 
     let mut block_futures = Vec::new();
 
     for n in 0..async_blocks {
-        block_futures.push(Box::pin(substrate_batch.index_block(block_number + n, Arc::clone(&metadata_map_lock))));
+        block_futures.push(Box::pin(substrate_batch.index_block(block_number + n)));
     }
     
     let mut last_batch_block = block_number;
@@ -489,7 +471,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         
         match result.0 {
             Ok(()) => {
-                block_futures.push(Box::pin(substrate_batch.index_block(block_number, Arc::clone(&metadata_map_lock))));
+                block_futures.push(Box::pin(substrate_batch.index_block(block_number)));
                 
                 if (block_number - async_blocks) > last_batch_block {
                     last_batch_block = block_number - async_blocks;
@@ -504,12 +486,6 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
             }
             Err(error) => match error {
                 IndexBlockError::BlockNotFound => (),
-                IndexBlockError::WrongMetadata(_block_number) => {
-                    println!(" 📚 Downloading new metadata.");
- //                   substrate_batches.push(SubstrateBatch::new(trees.clone(), api.clone(), block_number).await);
-                    
-//                    metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
-                }
             }
         }
     }
