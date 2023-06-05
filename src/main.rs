@@ -65,10 +65,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     index_block(api.clone(), trees.clone(), 15104642).await;
     // CandidateHash: 0x6a1cd467afb69aa2b23866538b1160a60d96228587c5d7efc1d3c1ce4e3efb63
     index_block(api.clone(), trees.clone(), 10059744).await;
+    // EraIndex: 1076
+    index_block(api.clone(), trees.clone(), 15825858).await;
     // MessageId: 0xc656c0814b4174d3fbae7b0dd3ae63a94ac858b9120f8dc13027d2ee89f54a46
     index_block(api.clone(), trees.clone(), 15100192).await;
     // PoolId: 12
     index_block(api.clone(), trees.clone(), 15180584).await;
+    // PreimageHash: 0xdb2b6cb38c2f6704ed067da2e9001bc57314be4f0117f664a93c0d18610110c5
+    index_block(api.clone(), trees.clone(), 15764612).await;
     // ProposalHash: 0x7c403355a3747fea8a84968a7a83b7f5d2b26ea0b5d63b317ae65c1b091cf07b
     index_block(api.clone(), trees.clone(), 10025666).await;
     // ProposalIndex: 103
@@ -77,6 +81,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     index_block(api.clone(), trees.clone(), 15100839).await;
     // RegistrarIndex: 1
     index_block(api.clone(), trees.clone(), 10027254).await;
+    // SessionIndex: 6552
+    index_block(api.clone(), trees.clone(), 15649648).await;
     // TipHash: 0x729c6a740112abfc8cd143771f1f88518c3906e86f601a6c6a312fe7f7babf33
     index_block(api.clone(), trees.clone(), 10146463).await;
 
