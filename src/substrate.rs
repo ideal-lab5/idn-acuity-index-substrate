@@ -289,23 +289,6 @@ fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::
     };
 }
 
-pub async fn index_block(api: OnlineClient<PolkadotConfig>, trees: Trees, block_number: u32) {
-    // Get block hash.
-    let block_hash = api.rpc().block_hash(Some(block_number.into())).await.unwrap().unwrap();
-    // Download the metadata of the starting block.
-    let metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
-
-    println!(" 📚 #{block_number}: 0x{}", hex::encode(block_hash.0));
-
-    let events = subxt::events::Events::new_from_client(metadata, block_hash, api).await.unwrap();
-
-    for (i, evt) in events.iter().enumerate() {
-        if let Ok(evt) = evt {
-            index_event(trees.clone(), block_number, i.try_into().unwrap(), evt);
-        }
-    }
-}
-
 use tokio::sync::mpsc::Receiver;
 
 pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut sub_rx: Receiver<SubscribeMessage>) {
@@ -368,6 +351,7 @@ struct SubstrateBatch {
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
 }
 
+#[derive(Debug)]
 enum IndexBlockError {
     BlockNotFound,
 }
@@ -456,6 +440,35 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
     trees.root.insert("batch_indexing_complete", &0_u8.to_be_bytes()).unwrap();
 
     let substrate_batch = SubstrateBatch::new(trees.clone(), api).await;
+
+    // AccountIndex: 9494
+    substrate_batch.index_block(10013701).await.unwrap();
+    // AuctionIndex: 15, ParaId: 2013
+    substrate_batch.index_block(10018925).await.unwrap();
+    // BountyIndex: 11
+    substrate_batch.index_block(15104642).await.unwrap();
+    // CandidateHash: 0x6a1cd467afb69aa2b23866538b1160a60d96228587c5d7efc1d3c1ce4e3efb63
+    substrate_batch.index_block(10059744).await.unwrap();
+    // EraIndex: 1076
+    substrate_batch.index_block(15825858).await.unwrap();
+    // MessageId: 0xc656c0814b4174d3fbae7b0dd3ae63a94ac858b9120f8dc13027d2ee89f54a46
+    substrate_batch.index_block(15100192).await.unwrap();
+    // PoolId: 12
+    substrate_batch.index_block(15180584).await.unwrap();
+    // PreimageHash: 0xdb2b6cb38c2f6704ed067da2e9001bc57314be4f0117f664a93c0d18610110c5
+    substrate_batch.index_block(15764612).await.unwrap();
+    // ProposalHash: 0x7c403355a3747fea8a84968a7a83b7f5d2b26ea0b5d63b317ae65c1b091cf07b
+    substrate_batch.index_block(10025666).await.unwrap();
+    // ProposalIndex: 103
+    substrate_batch.index_block(10022400).await.unwrap();
+    // RefIndex: 114
+    substrate_batch.index_block(15100839).await.unwrap();
+    // RegistrarIndex: 1
+    substrate_batch.index_block(10027254).await.unwrap();
+    // SessionIndex: 6552
+    substrate_batch.index_block(15649648).await.unwrap();
+    // TipHash: 0x729c6a740112abfc8cd143771f1f88518c3906e86f601a6c6a312fe7f7babf33
+    substrate_batch.index_block(10146463).await.unwrap();
 
     let mut block_futures = Vec::new();
 
