@@ -54,241 +54,6 @@ use crate::pallets::polkadot::parachains_ump::*;
 use crate::pallets::polkadot::paras_registrar::*;
 use crate::pallets::polkadot::slots::*;
 
-pub fn index_event_account_id(trees: Trees, account_id: AccountId32, block_number: u32, i: u32) {
-    // Generate key
-    let key = AccountIdKey {
-        account_id,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.account_id.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_account_index(trees: Trees, account_index: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: account_index,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.account_index.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_auction_index(trees: Trees, auction_index: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: auction_index,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.auction_index.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_bounty_index(trees: Trees, bounty_index: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: bounty_index,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.bounty_index.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_candidate_hash(trees: Trees, candidate_hash: [u8; 32], block_number: u32, i: u32) {
-    // Generate key
-    let key = CandidateHashKey {
-        candidate_hash,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.candidate_hash.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_era_index(trees: Trees, era_index: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: era_index,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.era_index.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_message_id(trees: Trees, message_id: [u8; 32], block_number: u32, i: u32) {
-    // Generate key
-    let key = MessageIdKey {
-        message_id,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.message_id.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_para_id(trees: Trees, para_id: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: para_id,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.para_id.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_pool_id(trees: Trees, pool_id: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: pool_id,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.pool_id.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_preimage_hash(trees: Trees, preimage_hash: [u8; 32], block_number: u32, i: u32) {
-    // Generate key
-    let key = HashKey {
-        hash: preimage_hash,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.preimage_hash.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_proposal_hash(trees: Trees, proposal_hash: [u8; 32], block_number: u32, i: u32) {
-    // Generate key
-    let key = HashKey {
-        hash: proposal_hash,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.proposal_hash.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_proposal_index(trees: Trees, proposal_index: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: proposal_index,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.proposal_index.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_ref_index(trees: Trees, ref_index: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: ref_index,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.ref_index.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_registrar_index(trees: Trees, registrar_index: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: registrar_index,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.registrar_index.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_session_index(trees: Trees, session_index: u32, block_number: u32, i: u32) {
-    // Generate key
-    let key = U32Key {
-        key: session_index,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.session_index.insert(key, &[]).unwrap();
-}
-
-pub fn index_event_tip_hash(trees: Trees, tip_hash: [u8; 32], block_number: u32, i: u32) {
-    // Generate key
-    let key = TipHashKey {
-        tip_hash,
-        block_number,
-        i,
-    }.serialize();
-    // Insert record.
-    trees.tip_hash.insert(key, &[]).unwrap();
-}
-
-fn index_event(trees: Trees, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) {
-    
-    // Generate key
-    let key = VariantKey {
-        pallet_index: event.pallet_index(),
-        variant_index: event.variant_index(),
-        block_number,
-        i: event_index,
-    }.serialize();
-    // Insert record.
-    trees.variant.insert(key, &[]).unwrap();
-
-    let pallet_name = event.pallet_name().to_owned();
-//    let variant_name = event.variant_name().to_owned();
-
-    let result = match pallet_name.as_str() {
-        "Auctions" => auctions_index_event(trees, block_number, event_index, event),
-        "Balances" => balance_index_event(trees, block_number, event_index, event),
-        "Bounties" => bounties_index_event(trees, block_number, event_index, event),
-        "ChildBounties" => child_bounties_index_event(trees, block_number, event_index, event),
-        "Claims" => claims_index_event(trees, block_number, event_index, event),
-        "Council" => council_index_event(trees, block_number, event_index, event),
-        "TechnicalCommittee" => technical_committee_index_event(trees, block_number, event_index, event),
-        "Crowdloan" => crowdloan_index_event(trees, block_number, event_index, event),
-        "Democracy" => democracy_index_event(trees, block_number, event_index, event),
-        "ElectionProviderMultiPhase" => election_provider_multi_phase_index_event(trees, block_number, event_index, event),
-        "FastUnstake" => fast_unstake_index_event(trees, block_number, event_index, event),
-        "Hrmp" => parachains_hrmp_index_event(trees, block_number, event_index, event),
-        "Identity" => identity_index_event(trees, block_number, event_index, event),
-        "Indices" => indices_index_event(trees, block_number, event_index, event),
-        "Multisig" => multisig_index_event(trees, block_number, event_index, event),
-        "NominationPools" => nomination_pools_index_event(trees, block_number, event_index, event),
-        "Paras" => parachains_paras_index_event(trees, block_number, event_index, event),
-        "Ump" => parachains_ump_index_event(trees, block_number, event_index, event),
-        "ParasDisputes" => parachains_disputes_index_event(trees, block_number, event_index, event),
-        "PhragmenElection" => elections_phragmen_index_event(trees, block_number, event_index, event),
-        "Preimage" => preimage_index_event(trees, block_number, event_index, event),
-        "Proxy" => proxy_index_event(trees, block_number, event_index, event),
-        "Registrar" => paras_registrar_index_event(trees, block_number, event_index, event),
-        "Session" => session_index_event(trees, block_number, event_index, event),
-        "Slots" => slots_index_event(trees, block_number, event_index, event),
-        "Staking" => staking_index_event(trees, block_number, event_index, event),
-        "System" => system_index_event(trees, block_number, event_index, event),
-        "Tips" => tips_index_event(trees, block_number, event_index, event),
-        "TransactionPayment" => transaction_payment_index_event(trees, block_number, event_index, event),
-        "Treasury" => treasury_index_event(trees, block_number, event_index, event),
-        "Vesting" => vesting_index_event(trees, block_number, event_index, event),
-        "VoterList" => bags_list_index_event(trees, block_number, event_index, event),
-        _ => Ok(()),
-    };
-
-    match result  {
-        Ok(()) => (),
-        Err(error) => {
-        //    println!("Block: {}, pallet: {}, variant: {}, error: {}", block_number, pallet_name, variant_name, error);
-        }
-    };
-}
-
 use tokio::sync::mpsc::Receiver;
 
 pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut sub_rx: Receiver<SubscribeMessage>) {
@@ -323,8 +88,7 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut
     }
 }
 
-
-struct Indexer {
+pub struct Indexer {
     trees: Trees,
     api: OnlineClient<PolkadotConfig>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
@@ -381,7 +145,7 @@ impl Indexer {
         for (i, evt) in events.iter().enumerate() {
             match evt {
                 Ok(evt) => {
-                    index_event(self.trees.clone(), block_number, i.try_into().unwrap(), evt);
+                    self.index_event(block_number, i.try_into().unwrap(), evt);
                 },
                 Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
@@ -390,6 +154,241 @@ impl Indexer {
         Ok(())
     }
     
+    fn index_event(&self, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) {
+        
+        // Generate key
+        let key = VariantKey {
+            pallet_index: event.pallet_index(),
+            variant_index: event.variant_index(),
+            block_number,
+            i: event_index,
+        }.serialize();
+        // Insert record.
+        self.trees.variant.insert(key, &[]).unwrap();
+    
+        let pallet_name = event.pallet_name().to_owned();
+    //    let variant_name = event.variant_name().to_owned();
+    
+        let result = match pallet_name.as_str() {
+            "Auctions" => auctions_index_event(self, block_number, event_index, event),
+            "Balances" => balance_index_event(self, block_number, event_index, event),
+            "Bounties" => bounties_index_event(self, block_number, event_index, event),
+            "ChildBounties" => child_bounties_index_event(self, block_number, event_index, event),
+            "Claims" => claims_index_event(self, block_number, event_index, event),
+            "Council" => council_index_event(self, block_number, event_index, event),
+            "TechnicalCommittee" => technical_committee_index_event(self, block_number, event_index, event),
+            "Crowdloan" => crowdloan_index_event(self, block_number, event_index, event),
+            "Democracy" => democracy_index_event(self, block_number, event_index, event),
+            "ElectionProviderMultiPhase" => election_provider_multi_phase_index_event(self, block_number, event_index, event),
+            "FastUnstake" => fast_unstake_index_event(self, block_number, event_index, event),
+            "Hrmp" => parachains_hrmp_index_event(self, block_number, event_index, event),
+            "Identity" => identity_index_event(self, block_number, event_index, event),
+            "Indices" => indices_index_event(self, block_number, event_index, event),
+            "Multisig" => multisig_index_event(self, block_number, event_index, event),
+            "NominationPools" => nomination_pools_index_event(self, block_number, event_index, event),
+            "Paras" => parachains_paras_index_event(self, block_number, event_index, event),
+            "Ump" => parachains_ump_index_event(self, block_number, event_index, event),
+            "ParasDisputes" => parachains_disputes_index_event(self, block_number, event_index, event),
+            "PhragmenElection" => elections_phragmen_index_event(self, block_number, event_index, event),
+            "Preimage" => preimage_index_event(self, block_number, event_index, event),
+            "Proxy" => proxy_index_event(self, block_number, event_index, event),
+            "Registrar" => paras_registrar_index_event(self, block_number, event_index, event),
+            "Session" => session_index_event(self, block_number, event_index, event),
+            "Slots" => slots_index_event(self, block_number, event_index, event),
+            "Staking" => staking_index_event(self, block_number, event_index, event),
+            "System" => system_index_event(self, block_number, event_index, event),
+            "Tips" => tips_index_event(self, block_number, event_index, event),
+            "TransactionPayment" => transaction_payment_index_event(self, block_number, event_index, event),
+            "Treasury" => treasury_index_event(self, block_number, event_index, event),
+            "Vesting" => vesting_index_event(self, block_number, event_index, event),
+            "VoterList" => bags_list_index_event(self, block_number, event_index, event),
+            _ => Ok(()),
+        };
+    
+        match result  {
+            Ok(()) => (),
+            Err(error) => {
+            //    println!("Block: {}, pallet: {}, variant: {}, error: {}", block_number, pallet_name, variant_name, error);
+            }
+        };
+    }
+    
+    pub fn index_event_account_id(&self, account_id: AccountId32, block_number: u32, i: u32) {
+        // Generate key
+        let key = AccountIdKey {
+            account_id,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.account_id.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_account_index(&self, account_index: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: account_index,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.account_index.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_auction_index(&self, auction_index: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: auction_index,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.auction_index.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_bounty_index(&self, bounty_index: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: bounty_index,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.bounty_index.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_candidate_hash(&self, candidate_hash: [u8; 32], block_number: u32, i: u32) {
+        // Generate key
+        let key = CandidateHashKey {
+            candidate_hash,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.candidate_hash.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_era_index(&self, era_index: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: era_index,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.era_index.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_message_id(&self, message_id: [u8; 32], block_number: u32, i: u32) {
+        // Generate key
+        let key = MessageIdKey {
+            message_id,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.message_id.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_para_id(&self, para_id: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: para_id,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.para_id.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_pool_id(&self, pool_id: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: pool_id,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.pool_id.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_preimage_hash(&self, preimage_hash: [u8; 32], block_number: u32, i: u32) {
+        // Generate key
+        let key = HashKey {
+            hash: preimage_hash,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.preimage_hash.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_proposal_hash(&self, proposal_hash: [u8; 32], block_number: u32, i: u32) {
+        // Generate key
+        let key = HashKey {
+            hash: proposal_hash,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.proposal_hash.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_proposal_index(&self, proposal_index: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: proposal_index,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.proposal_index.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_ref_index(&self, ref_index: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: ref_index,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.ref_index.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_registrar_index(&self, registrar_index: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: registrar_index,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.registrar_index.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_session_index(&self, session_index: u32, block_number: u32, i: u32) {
+        // Generate key
+        let key = U32Key {
+            key: session_index,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.session_index.insert(key, &[]).unwrap();
+    }
+    
+    pub fn index_event_tip_hash(&self, tip_hash: [u8; 32], block_number: u32, i: u32) {
+        // Generate key
+        let key = TipHashKey {
+            tip_hash,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.tip_hash.insert(key, &[]).unwrap();
+    }
+
 }
 
 pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, args: Args) {
