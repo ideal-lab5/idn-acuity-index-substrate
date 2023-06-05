@@ -293,59 +293,38 @@ use tokio::sync::mpsc::Receiver;
 
 pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut sub_rx: Receiver<SubscribeMessage>) {
     let mut sub_map: HashMap<Key, Vec<Sender<ResponseMessage>>> = HashMap::new();
-    
+    let indexer = Indexer::new(trees.clone(), api.clone()).await;
+
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
 
-    let block = blocks_sub.next().await.unwrap().unwrap();
-    let mut block_number = block.header().number;
-    let mut block_hash = block.hash();
-    // Download the metadata of the starting block.
-    let metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
-
-    'blocks: loop {
-        println!(" ✨ #{block_number}: 0x{}", hex::encode(block_hash.0));
-
-        let events = subxt::events::Events::new_from_client(metadata.clone(), block_hash, api.clone()).await.unwrap();
-
-        for (i, evt) in events.iter().enumerate() {
-            match evt {
-                Ok(evt) => {
-                    index_event(trees.clone(), block_number, i.try_into().unwrap(), evt);
-                },
-                Err(error) => println!("Block: {}, error: {}", block_number, error),
+    loop {
+        tokio::select! {
+            block = blocks_sub.next() => {
+                let block = block.unwrap().unwrap();
+                let block_number = block.header().number;
+                println!(" ✨ #{block_number}");
+                indexer.index_block(block_number).await.unwrap();
+                trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
             }
-        }
-
-        trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
-
-        loop {
-            tokio::select! {
-                block = blocks_sub.next() => {
-                    let block = block.unwrap().unwrap();
-                    block_number = block.header().number;
-                    block_hash = block.hash();
-                    continue 'blocks;
-                }
-                Some(msg) = sub_rx.recv() => {
-                    match sub_map.get_mut(&msg.key) {
-                        Some(txs) => {
-                            txs.push(msg.sub_response_tx);
-                        },
-                        None => {
-                            let mut txs = Vec::new();
-                            txs.push(msg.sub_response_tx);
-                            sub_map.insert(msg.key, txs);
-                        },
-                    };
-                }
+            Some(msg) = sub_rx.recv() => {
+                match sub_map.get_mut(&msg.key) {
+                    Some(txs) => {
+                        txs.push(msg.sub_response_tx);
+                    },
+                    None => {
+                        let mut txs = Vec::new();
+                        txs.push(msg.sub_response_tx);
+                        sub_map.insert(msg.key, txs);
+                    },
+                };
             }
         }
     }
 }
 
 
-struct SubstrateBatch {
+struct Indexer {
     trees: Trees,
     api: OnlineClient<PolkadotConfig>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
@@ -356,9 +335,9 @@ enum IndexBlockError {
     BlockNotFound,
 }
 
-impl SubstrateBatch {
+impl Indexer {
     async fn new(trees: Trees, api: OnlineClient<PolkadotConfig>) -> Self {
-        SubstrateBatch {
+        Indexer {
             trees,
             api,
             metadata_map_lock: RwLock::new(HashMap::new()),
@@ -439,7 +418,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
     // Record in database that batch indexing has not finished.
     trees.root.insert("batch_indexing_complete", &0_u8.to_be_bytes()).unwrap();
 
-    let substrate_batch = SubstrateBatch::new(trees.clone(), api).await;
+    let substrate_batch = Indexer::new(trees.clone(), api).await;
 
     // AccountIndex: 9494
     substrate_batch.index_block(10013701).await.unwrap();
