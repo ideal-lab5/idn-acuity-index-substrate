@@ -356,6 +356,26 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                 events
             }
         },
+        Key::SessionIndex(session_index) => {
+            let mut events = Vec::new();
+            let mut iter = trees.session_index.scan_prefix(session_index.to_be_bytes()).keys();
+
+            while let Some(Ok(key)) = iter.next_back() {
+                let key = U32Key::unserialize(key.to_vec());
+
+                events.push(Event {
+                    block_number: key.block_number,
+                    i: key.i,
+                });
+                
+                if events.len() == 1000 { break; }
+            }
+
+            ResponseMessage::Events {
+                key: Key::SessionIndex(session_index),
+                events
+            }
+        },
         Key::TipHash(tip_hash) => {
             let mut events = Vec::new();
             let mut iter = trees.tip_hash.scan_prefix(tip_hash).keys();

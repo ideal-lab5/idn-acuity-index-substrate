@@ -404,6 +404,7 @@ pub enum Key {
     ProposalIndex(u32),
     RefIndex(u32),
     RegistrarIndex(u32),
+    SessionIndex(u32),
     TipHash(Bytes32),
     Variant(u8, u8),
 }
