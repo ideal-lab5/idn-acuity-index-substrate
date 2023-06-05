@@ -463,6 +463,7 @@ pub enum ResponseMessage {
     Error,
 }
 
+#[derive(Debug)]
 pub struct SubscribeMessage {
     pub key: Key,
     pub sub_response_tx: Sender<ResponseMessage>,

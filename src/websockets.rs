@@ -416,7 +416,7 @@ pub async fn process_msg(api: &OnlineClient<PolkadotConfig>, trees: &Trees, msg:
                 key,
                 sub_response_tx,
             };
-            sub_tx.send(msg).await;
+            sub_tx.send(msg).await.unwrap();
             ResponseMessage::Subscribed
         },
     }
@@ -431,8 +431,8 @@ async fn handle_connection(api: OnlineClient<PolkadotConfig>, raw_stream: TcpStr
     println!("WebSocket connection established: {}", addr);
 
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
-
-    let (sub_events_tx, sub_events_rx) = mpsc::channel(100);
+    // Create the channel for the substrate thread to send event messages to this thread.
+    let (sub_events_tx, mut sub_events_rx) = mpsc::channel(100);
 
     loop {
         tokio::select! {
@@ -448,14 +448,18 @@ async fn handle_connection(api: OnlineClient<PolkadotConfig>, raw_stream: TcpStr
                         Err(error) => println!("{}", error),
                     }
                 }
-            }
+            },
+            Some(msg) = sub_events_rx.recv() => {
+                let response_json = serde_json::to_string(&msg).unwrap();
+                ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(response_json)).await.unwrap();
+            },
         }
     }
 }
 
 use tokio::sync::mpsc::Sender;
 
-pub async fn websockets_listen(api: OnlineClient<PolkadotConfig>, trees: Trees, tx: Sender<SubscribeMessage>) {
+pub async fn websockets_listen(api: OnlineClient<PolkadotConfig>, trees: Trees, sub_tx: Sender<SubscribeMessage>) {
     let addr = "0.0.0.0:8172".to_string();
 
     // Create the event loop and TCP listener we'll accept connections on.
@@ -465,6 +469,6 @@ pub async fn websockets_listen(api: OnlineClient<PolkadotConfig>, trees: Trees, 
 
     // Let's spawn the handling of each connection in a separate task.
     while let Ok((stream, addr)) = listener.accept().await {
-        tokio::spawn(handle_connection(api.clone(), stream, addr, trees.clone(), tx.clone()));
+        tokio::spawn(handle_connection(api.clone(), stream, addr, trees.clone(), sub_tx.clone()));
     }
 }

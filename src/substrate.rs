@@ -344,9 +344,17 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut
                     block_hash = block.hash();
                     continue 'blocks;
                 }
-                msg = sub_rx.recv() => {
-                    let msg = msg.unwrap();
-                    sub_map.entry(msg.key);
+                Some(msg) = sub_rx.recv() => {
+                    match sub_map.get_mut(&msg.key) {
+                        Some(txs) => {
+                            txs.push(msg.sub_response_tx);
+                        },
+                        None => {
+                            let mut txs = Vec::new();
+                            txs.push(msg.sub_response_tx);
+                            sub_map.insert(msg.key, txs);
+                        },
+                    };
                 }
             }
         }

@@ -86,7 +86,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TipHash: 0x729c6a740112abfc8cd143771f1f88518c3906e86f601a6c6a312fe7f7babf33
     index_block(api.clone(), trees.clone(), 10146463).await;
 
-        // Create the channel for the websockets threads to send subscribe messages to the head thread.
+    // Create the channel for the websockets threads to send subscribe messages to the head thread.
     let (sub_tx, sub_rx) = mpsc::channel(100);
     
     // Start Substrate tasks.
