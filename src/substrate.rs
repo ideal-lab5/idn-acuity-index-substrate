@@ -57,8 +57,7 @@ use crate::pallets::polkadot::slots::*;
 use tokio::sync::mpsc::Receiver;
 
 pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut sub_rx: Receiver<SubscribeMessage>) {
-    let mut sub_map: HashMap<Key, Vec<Sender<ResponseMessage>>> = HashMap::new();
-    let indexer = Indexer::new(trees.clone(), api.clone()).await;
+    let mut indexer = Indexer::new(trees.clone(), api.clone()).await;
 
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
@@ -73,14 +72,14 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut
                 trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
             }
             Some(msg) = sub_rx.recv() => {
-                match sub_map.get_mut(&msg.key) {
+                match indexer.sub_map.get_mut(&msg.key) {
                     Some(txs) => {
                         txs.push(msg.sub_response_tx);
                     },
                     None => {
                         let mut txs = Vec::new();
                         txs.push(msg.sub_response_tx);
-                        sub_map.insert(msg.key, txs);
+                        indexer.sub_map.insert(msg.key, txs);
                     },
                 };
             }
@@ -92,6 +91,7 @@ pub struct Indexer {
     trees: Trees,
     api: OnlineClient<PolkadotConfig>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
+    sub_map: HashMap<Key, Vec<Sender<ResponseMessage>>>,
 }
 
 #[derive(Debug)]
@@ -105,6 +105,7 @@ impl Indexer {
             trees,
             api,
             metadata_map_lock: RwLock::new(HashMap::new()),
+            sub_map: HashMap::new(),
         }
     }
 
@@ -145,7 +146,7 @@ impl Indexer {
         for (i, evt) in events.iter().enumerate() {
             match evt {
                 Ok(evt) => {
-                    self.index_event(block_number, i.try_into().unwrap(), evt);
+                    self.index_event(block_number, i.try_into().unwrap(), evt).await;
                 },
                 Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
@@ -154,7 +155,7 @@ impl Indexer {
         Ok(())
     }
     
-    fn index_event(&self, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) {
+    async fn index_event(&self, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) {
         
         // Generate key
         let key = VariantKey {
@@ -165,7 +166,25 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.variant.insert(key, &[]).unwrap();
-    
+
+        let search_key = Key::Variant(event.pallet_index(), event.variant_index());
+
+        match self.sub_map.get(&search_key) {
+            Some(txs) => {
+                let msg = ResponseMessage::Events {
+                    key: search_key,
+                    events: vec![Event{block_number, i: event_index}],
+                };
+                for tx in txs.iter() {
+                    match tx.send(msg.clone()).await {
+                        Ok(_) => (),
+                        Err(_) => (),
+                    }
+                }
+            }
+            None => (),
+        }
+
         let pallet_name = event.pallet_name().to_owned();
     //    let variant_name = event.variant_name().to_owned();
     
