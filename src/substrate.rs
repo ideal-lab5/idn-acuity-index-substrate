@@ -157,33 +157,7 @@ impl Indexer {
     
     async fn index_event(&self, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) {
         
-        // Generate key
-        let key = VariantKey {
-            pallet_index: event.pallet_index(),
-            variant_index: event.variant_index(),
-            block_number,
-            i: event_index,
-        }.serialize();
-        // Insert record.
-        self.trees.variant.insert(key, &[]).unwrap();
-
-        let search_key = Key::Variant(event.pallet_index(), event.variant_index());
-
-        match self.sub_map.get(&search_key) {
-            Some(txs) => {
-                let msg = ResponseMessage::Events {
-                    key: search_key,
-                    events: vec![Event{block_number, i: event_index}],
-                };
-                for tx in txs.iter() {
-                    match tx.send(msg.clone()).await {
-                        Ok(_) => (),
-                        Err(_) => (),
-                    }
-                }
-            }
-            None => (),
-        }
+        self.index_event_variant(event.pallet_index(), event.variant_index(), block_number, event_index).await;
 
         let pallet_name = event.pallet_name().to_owned();
     //    let variant_name = event.variant_name().to_owned();
@@ -232,6 +206,37 @@ impl Indexer {
         };
     }
     
+    pub async fn index_event_variant(&self, pallet_index: u8, variant_index: u8, block_number: u32, i: u32) {
+
+        // Generate key
+        let key = VariantKey {
+            pallet_index,
+            variant_index,
+            block_number,
+            i,
+        }.serialize();
+        // Insert record.
+        self.trees.variant.insert(key, &[]).unwrap();
+
+        let search_key = Key::Variant(pallet_index, variant_index);
+
+        match self.sub_map.get(&search_key) {
+            Some(txs) => {
+                let msg = ResponseMessage::Events {
+                    key: search_key,
+                    events: vec![Event{block_number, i}],
+                };
+                for tx in txs.iter() {
+                    match tx.send(msg.clone()).await {
+                        Ok(_) => (),
+                        Err(_) => (),
+                    }
+                }
+            }
+            None => (),
+        }
+    }
+
     pub fn index_event_account_id(&self, account_id: AccountId32, block_number: u32, i: u32) {
         // Generate key
         let key = AccountIdKey {
