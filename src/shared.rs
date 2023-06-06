@@ -382,7 +382,7 @@ impl<'de> Deserialize<'de> for Bytes32 {
         match String::deserialize(deserializer)?.get(2..66) {
             Some(message_id) => match hex::decode(message_id) {
                 Ok(message_id) => Ok(Bytes32(vector_as_u8_32_array(&message_id))),
-                Err(error) => Err(serde::de::Error::custom("error")),
+                Err(_error) => Err(serde::de::Error::custom("error")),
             },
             None => Err(serde::de::Error::custom("error")),
         }
@@ -460,7 +460,7 @@ pub enum ResponseMessage {
         events: Vec<Event>,
     },
     Subscribed,
-    Error,
+//    Error,
 }
 
 #[derive(Debug)]

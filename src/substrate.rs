@@ -56,7 +56,7 @@ use crate::pallets::polkadot::slots::*;
 
 
 pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut sub_rx: UnboundedReceiver<SubscribeMessage>) {
-    let mut indexer = Indexer::new(trees.clone(), api.clone()).await;
+    let mut indexer = Indexer::new(trees.clone(), api.clone());
 
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
@@ -88,21 +88,32 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut
 
 pub struct Indexer {
     trees: Trees,
-    api: OnlineClient<PolkadotConfig>,
+    api: Option<OnlineClient<PolkadotConfig>>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
     sub_map: HashMap<Key, Vec<UnboundedSender<ResponseMessage>>>,
 }
 
 #[derive(Debug)]
 enum IndexBlockError {
+    NoApi,
     BlockNotFound,
 }
 
 impl Indexer {
-    async fn new(trees: Trees, api: OnlineClient<PolkadotConfig>) -> Self {
+    fn new(trees: Trees, api: OnlineClient<PolkadotConfig>) -> Self {
         Indexer {
             trees,
-            api,
+            api: Some(api),
+            metadata_map_lock: RwLock::new(HashMap::new()),
+            sub_map: HashMap::new(),
+        }
+    }
+
+    #[cfg(test)]
+    pub fn new_test(trees: Trees) -> Self {
+        Indexer {
+            trees,
+            api: None,
             metadata_map_lock: RwLock::new(HashMap::new()),
             sub_map: HashMap::new(),
         }
@@ -110,12 +121,17 @@ impl Indexer {
 
     async fn index_block(&self, block_number: u32) -> Result<(), IndexBlockError> {
         
-        let block_hash = match self.api.rpc().block_hash(Some(block_number.into())).await.unwrap() {
+        let api = match &self.api {
+            Some(api) => api.clone(),
+            None => return Err(IndexBlockError::NoApi),
+        };
+        
+        let block_hash = match api.rpc().block_hash(Some(block_number.into())).await.unwrap() {
             Some(block_hash) => block_hash,
             None => return Err(IndexBlockError::BlockNotFound),
         };
         // Get the runtime version of the block.
-        let runtime_version = self.api.rpc().runtime_version(Some(block_hash)).await.unwrap();
+        let runtime_version = api.rpc().runtime_version(Some(block_hash)).await.unwrap();
 
         let metadata_map = self.metadata_map_lock.read().await;
         let metadata = match metadata_map.get(&runtime_version.spec_version) {
@@ -132,7 +148,7 @@ impl Indexer {
                     Some(metadata) => metadata.clone(),
                     None => {
                         println!("Downloading metadata for spec version {}", runtime_version.spec_version);
-                        let metadata = self.api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
+                        let metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
                         metadata_map.insert(runtime_version.spec_version, metadata.clone());
                         metadata
                     },
@@ -140,7 +156,7 @@ impl Indexer {
             },
         };
             
-        let events = subxt::events::Events::new_from_client(metadata, block_hash, self.api.clone()).await.unwrap();
+        let events = subxt::events::Events::new_from_client(metadata, block_hash, api.clone()).await.unwrap();
     
         for (i, evt) in events.iter().enumerate() {
             match evt {
@@ -199,7 +215,7 @@ impl Indexer {
     
         match result  {
             Ok(()) => (),
-            Err(error) => {
+            Err(_error) => {
             //    println!("Block: {}, pallet: {}, variant: {}, error: {}", block_number, pallet_name, variant_name, error);
             }
         };
@@ -491,7 +507,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
     // Record in database that batch indexing has not finished.
     trees.root.insert("batch_indexing_complete", &0_u8.to_be_bytes()).unwrap();
 
-    let substrate_batch = Indexer::new(trees.clone(), api).await;
+    let substrate_batch = Indexer::new(trees.clone(), api);
 
     // AccountIndex: 9494
     substrate_batch.index_block(10013701).await.unwrap();
@@ -558,7 +574,7 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
                 block_number += 1;
             }
             Err(error) => match error {
-                IndexBlockError::BlockNotFound => (),
+                _ => (),
             }
         }
     }
