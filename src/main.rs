@@ -58,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Connected to Substrate node.");
 
     // Create the channel for the websockets threads to send subscribe messages to the head thread.
-    let (sub_tx, sub_rx) = mpsc::channel(100);
+    let (sub_tx, sub_rx) = mpsc::unbounded_channel();
     
     // Start Substrate tasks.
     let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone(), sub_rx));

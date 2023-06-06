@@ -12,6 +12,8 @@ use sled::Tree;
 use parity_scale_codec::{Encode, Decode};
 use serde::{Serialize, Deserialize};
 
+use tokio::sync::mpsc::UnboundedSender;
+
 #[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub struct ParaId(pub u32);
 
@@ -409,8 +411,6 @@ pub enum Key {
     Variant(u8, u8),
 }
 
-use tokio::sync::mpsc::Sender;
-
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum RequestMessage { 
@@ -466,5 +466,5 @@ pub enum ResponseMessage {
 #[derive(Debug)]
 pub struct SubscribeMessage {
     pub key: Key,
-    pub sub_response_tx: Sender<ResponseMessage>,
+    pub sub_response_tx: UnboundedSender<ResponseMessage>,
 }

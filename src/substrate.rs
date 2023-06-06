@@ -15,7 +15,7 @@ use std::{
 };
 
 use tokio::sync:: {
-    mpsc::Sender,
+    mpsc:: { UnboundedSender, UnboundedReceiver },
     RwLock,
 };
 
@@ -54,9 +54,8 @@ use crate::pallets::polkadot::parachains_ump::*;
 use crate::pallets::polkadot::paras_registrar::*;
 use crate::pallets::polkadot::slots::*;
 
-use tokio::sync::mpsc::Receiver;
 
-pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut sub_rx: Receiver<SubscribeMessage>) {
+pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut sub_rx: UnboundedReceiver<SubscribeMessage>) {
     let mut indexer = Indexer::new(trees.clone(), api.clone()).await;
 
     // Subscribe to all finalized blocks:
@@ -91,7 +90,7 @@ pub struct Indexer {
     trees: Trees,
     api: OnlineClient<PolkadotConfig>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
-    sub_map: HashMap<Key, Vec<Sender<ResponseMessage>>>,
+    sub_map: HashMap<Key, Vec<UnboundedSender<ResponseMessage>>>,
 }
 
 #[derive(Debug)]
@@ -146,7 +145,7 @@ impl Indexer {
         for (i, evt) in events.iter().enumerate() {
             match evt {
                 Ok(evt) => {
-                    self.index_event(block_number, i.try_into().unwrap(), evt).await;
+                    self.index_event(block_number, i.try_into().unwrap(), evt);
                 },
                 Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
@@ -155,9 +154,9 @@ impl Indexer {
         Ok(())
     }
     
-    async fn index_event(&self, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) {
+    fn index_event(&self, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) {
         
-        self.index_event_variant(event.pallet_index(), event.variant_index(), block_number, event_index).await;
+        self.index_event_variant(event.pallet_index(), event.variant_index(), block_number, event_index);
 
         let pallet_name = event.pallet_name().to_owned();
     //    let variant_name = event.variant_name().to_owned();
@@ -206,7 +205,25 @@ impl Indexer {
         };
     }
     
-    pub async fn index_event_variant(&self, pallet_index: u8, variant_index: u8, block_number: u32, i: u32) {
+    pub fn notify_subscribers(&self, search_key: Key, event: Event) {
+        match self.sub_map.get(&search_key) {
+            Some(txs) => {
+                let msg = ResponseMessage::Events {
+                    key: search_key,
+                    events: vec![event],
+                };
+                for tx in txs.iter() {
+                    match tx.send(msg.clone()) {
+                        Ok(_) => (),
+                        Err(_) => (),
+                    }
+                }
+            }
+            None => (),
+        }
+    }
+    
+    pub fn index_event_variant(&self, pallet_index: u8, variant_index: u8, block_number: u32, i: u32) {
 
         // Generate key
         let key = VariantKey {
@@ -217,35 +234,23 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.variant.insert(key, &[]).unwrap();
-
+        // Notify subscribers.
         let search_key = Key::Variant(pallet_index, variant_index);
-
-        match self.sub_map.get(&search_key) {
-            Some(txs) => {
-                let msg = ResponseMessage::Events {
-                    key: search_key,
-                    events: vec![Event{block_number, i}],
-                };
-                for tx in txs.iter() {
-                    match tx.send(msg.clone()).await {
-                        Ok(_) => (),
-                        Err(_) => (),
-                    }
-                }
-            }
-            None => (),
-        }
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
 
     pub fn index_event_account_id(&self, account_id: AccountId32, block_number: u32, i: u32) {
         // Generate key
         let key = AccountIdKey {
-            account_id,
+            account_id: account_id.clone(),
             block_number,
             i,
         }.serialize();
         // Insert record.
         self.trees.account_id.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::AccountId(AccountId32Hash(account_id.0));
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_account_index(&self, account_index: u32, block_number: u32, i: u32) {
@@ -257,6 +262,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.account_index.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::AccountIndex(account_index);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_auction_index(&self, auction_index: u32, block_number: u32, i: u32) {
@@ -268,6 +276,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.auction_index.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::AuctionIndex(auction_index);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_bounty_index(&self, bounty_index: u32, block_number: u32, i: u32) {
@@ -279,6 +290,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.bounty_index.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::BountyIndex(bounty_index);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_candidate_hash(&self, candidate_hash: [u8; 32], block_number: u32, i: u32) {
@@ -290,6 +304,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.candidate_hash.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::CandidateHash(Bytes32(candidate_hash));
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_era_index(&self, era_index: u32, block_number: u32, i: u32) {
@@ -301,6 +318,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.era_index.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::EraIndex(era_index);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_message_id(&self, message_id: [u8; 32], block_number: u32, i: u32) {
@@ -312,6 +332,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.message_id.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::MessageId(Bytes32(message_id));
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_para_id(&self, para_id: u32, block_number: u32, i: u32) {
@@ -323,6 +346,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.para_id.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::ParaId(para_id);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_pool_id(&self, pool_id: u32, block_number: u32, i: u32) {
@@ -334,6 +360,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.pool_id.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::PoolId(pool_id);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_preimage_hash(&self, preimage_hash: [u8; 32], block_number: u32, i: u32) {
@@ -345,6 +374,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.preimage_hash.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::PreimageHash(Bytes32(preimage_hash));
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_proposal_hash(&self, proposal_hash: [u8; 32], block_number: u32, i: u32) {
@@ -356,6 +388,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.proposal_hash.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::ProposalHash(Bytes32(proposal_hash));
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_proposal_index(&self, proposal_index: u32, block_number: u32, i: u32) {
@@ -367,6 +402,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.proposal_index.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::ProposalIndex(proposal_index);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_ref_index(&self, ref_index: u32, block_number: u32, i: u32) {
@@ -378,6 +416,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.ref_index.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::RefIndex(ref_index);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_registrar_index(&self, registrar_index: u32, block_number: u32, i: u32) {
@@ -389,6 +430,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.registrar_index.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::RegistrarIndex(registrar_index);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_session_index(&self, session_index: u32, block_number: u32, i: u32) {
@@ -400,6 +444,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.session_index.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::SessionIndex(session_index);
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
     
     pub fn index_event_tip_hash(&self, tip_hash: [u8; 32], block_number: u32, i: u32) {
@@ -411,6 +458,9 @@ impl Indexer {
         }.serialize();
         // Insert record.
         self.trees.tip_hash.insert(key, &[]).unwrap();
+        // Notify subscribers.
+        let search_key = Key::TipHash(Bytes32(tip_hash));
+        self.notify_subscribers(search_key, Event{block_number, i});
     }
 
 }

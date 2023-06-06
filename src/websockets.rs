@@ -5,6 +5,7 @@ use tokio::net::{TcpListener, TcpStream};
 use futures::{StreamExt, SinkExt};
 
 use tokio::sync::mpsc;
+use tokio::sync::mpsc::UnboundedSender;
 
 use subxt::{
     OnlineClient,
@@ -399,7 +400,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
     }
 }
 
-pub async fn process_msg(api: &OnlineClient<PolkadotConfig>, trees: &Trees, msg: RequestMessage, sub_tx: Sender<SubscribeMessage>, sub_response_tx: Sender<ResponseMessage>) -> ResponseMessage {
+pub async fn process_msg(api: &OnlineClient<PolkadotConfig>, trees: &Trees, msg: RequestMessage, sub_tx: UnboundedSender<SubscribeMessage>, sub_response_tx: UnboundedSender<ResponseMessage>) -> ResponseMessage {
     println!("{:?}", msg);
     match msg {
         RequestMessage::Status => {
@@ -416,13 +417,13 @@ pub async fn process_msg(api: &OnlineClient<PolkadotConfig>, trees: &Trees, msg:
                 key,
                 sub_response_tx,
             };
-            sub_tx.send(msg).await.unwrap();
+            sub_tx.send(msg).unwrap();
             ResponseMessage::Subscribed
         },
     }
 }
 
-async fn handle_connection(api: OnlineClient<PolkadotConfig>, raw_stream: TcpStream, addr: SocketAddr, trees: Trees, sub_tx: Sender<SubscribeMessage>) {
+async fn handle_connection(api: OnlineClient<PolkadotConfig>, raw_stream: TcpStream, addr: SocketAddr, trees: Trees, sub_tx: UnboundedSender<SubscribeMessage>) {
     println!("Incoming TCP connection from: {}", addr);
 
     let ws_stream = tokio_tungstenite::accept_async(raw_stream)
@@ -432,7 +433,7 @@ async fn handle_connection(api: OnlineClient<PolkadotConfig>, raw_stream: TcpStr
 
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
     // Create the channel for the substrate thread to send event messages to this thread.
-    let (sub_events_tx, mut sub_events_rx) = mpsc::channel(100);
+    let (sub_events_tx, mut sub_events_rx) = mpsc::unbounded_channel();
 
     loop {
         tokio::select! {
@@ -457,9 +458,7 @@ async fn handle_connection(api: OnlineClient<PolkadotConfig>, raw_stream: TcpStr
     }
 }
 
-use tokio::sync::mpsc::Sender;
-
-pub async fn websockets_listen(api: OnlineClient<PolkadotConfig>, trees: Trees, sub_tx: Sender<SubscribeMessage>) {
+pub async fn websockets_listen(api: OnlineClient<PolkadotConfig>, trees: Trees, sub_tx: UnboundedSender<SubscribeMessage>) {
     let addr = "0.0.0.0:8172".to_string();
 
     // Create the event loop and TCP listener we'll accept connections on.
