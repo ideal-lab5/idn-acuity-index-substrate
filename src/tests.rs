@@ -8,18 +8,6 @@ use subxt::{
 
 use std::str::FromStr;
 
-#[test]
-fn test_account_id_key() {
-    let key1: AccountIdKey = AccountIdKey {
-        account_id: AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap(),
-        block_number: 4,
-        i: 5,
-    };
-
-    let key2 = AccountIdKey::unserialize(key1.serialize());
-    assert_eq!(key1, key2);
-}
-
 fn init_db(name: &str) -> Trees {
     let db = sled::open(name).unwrap();
     Trees {
@@ -42,6 +30,73 @@ fn init_db(name: &str) -> Trees {
         session_index: db.open_tree("session_index").unwrap(),
         tip_hash: db.open_tree("tip_hash").unwrap(),
     }
+}
+
+#[test]
+fn test_variant_key() {
+    let key1 = VariantKey {
+        pallet_index: 3,
+        variant_index: 65,
+        block_number: 4,
+        i: 5,
+    };
+
+    let key2 = VariantKey::unserialize(key1.serialize());
+    assert_eq!(key1, key2);
+}
+
+#[test]
+fn test_index_event_variant() {
+    let trees = init_db("target/debug/test_variant");
+    let indexer = Indexer::new_test(trees.clone());
+    indexer.index_event_variant(3, 65, 4, 5);
+
+    let key1 = VariantKey {
+        pallet_index: 3,
+        variant_index: 65,
+        block_number: 4,
+        i: 5,
+    };
+
+    let k = trees.variant.scan_prefix([3, 65]).keys().next().unwrap();
+    let key2 = VariantKey::unserialize(k.unwrap().to_vec());
+    assert_eq!(key1, key2);
+}
+
+#[tokio::test]
+async fn test_process_msg_variant() {
+    let trees = init_db("target/debug/test_process_msg_variant");
+    let indexer = Indexer::new_test(trees.clone());
+    indexer.index_event_variant(3, 65, 4, 5);
+    indexer.index_event_variant(3, 65, 8, 5);
+    indexer.index_event_variant(3, 65, 10, 5);
+
+    let response = process_msg_get_events(&trees, Key::Variant(3, 65));
+
+    let ResponseMessage::Events {
+        key: Key::Variant(pallet_id, variant_id),
+        events,
+    } = response else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(pallet_id, 3);
+    assert_eq!(variant_id, 65);
+    assert_eq!(events.len(), 3);
+    assert_eq!(events[0].block_number, 10);
+    assert_eq!(events[1].block_number, 8);
+    assert_eq!(events[2].block_number, 4);
+}
+
+#[test]
+fn test_account_id_key() {
+    let key1: AccountIdKey = AccountIdKey {
+        account_id: AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap(),
+        block_number: 4,
+        i: 5,
+    };
+
+    let key2 = AccountIdKey::unserialize(key1.serialize());
+    assert_eq!(key1, key2);
 }
 
 #[test]
@@ -275,6 +330,47 @@ async fn test_process_msg_candidate_hash() {
 }
 
 #[test]
+fn test_index_event_era_index() {
+    let trees = init_db("target/debug/test_era_index");
+    let indexer = Indexer::new_test(trees.clone());
+    indexer.index_event_era_index(8, 4, 5);
+
+    let key1 = U32Key {
+        key: 8,
+        block_number: 4,
+        i: 5,
+    };
+
+    let k = trees.era_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    assert_eq!(key1, key2);
+}
+
+#[tokio::test]
+async fn test_process_msg_era_index() {
+    let trees = init_db("target/debug/test_process_msg_era_index");
+    let indexer = Indexer::new_test(trees.clone());
+    let era_index = 88;
+    indexer.index_event_era_index(era_index, 4, 5);
+    indexer.index_event_era_index(era_index, 8, 5);
+    indexer.index_event_era_index(era_index, 10, 5);
+
+    let response = process_msg_get_events(&trees, Key::EraIndex(era_index));
+
+    let ResponseMessage::Events {
+        key: Key::EraIndex(response_era_index),
+        events,
+    } = response else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(era_index, response_era_index);
+    assert_eq!(events.len(), 3);
+    assert_eq!(events[0].block_number, 10);
+    assert_eq!(events[1].block_number, 8);
+    assert_eq!(events[2].block_number, 4);
+}
+
+#[test]
 fn test_message_id_key() {
     let key1: MessageIdKey = MessageIdKey {
         message_id: [8; 32],
@@ -403,88 +499,6 @@ async fn test_process_msg_pool_id() {
         panic!("Wrong response message.");
     };
     assert_eq!(pool_id, response_pool_id);
-    assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 10);
-    assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 4);
-}
-
-#[test]
-fn test_index_event_ref_index() {
-    let trees = init_db("target/debug/test_ref_index");
-    let indexer = Indexer::new_test(trees.clone());
-    indexer.index_event_ref_index(8, 4, 5);
-
-    let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        i: 5,
-    };
-
-    let k = trees.ref_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
-    assert_eq!(key1, key2);
-}
-
-#[tokio::test]
-async fn test_process_msg_ref_index() {
-    let trees = init_db("target/debug/test_process_msg_ref_index");
-    let indexer = Indexer::new_test(trees.clone());
-    let ref_index = 88;
-    indexer.index_event_ref_index(ref_index, 4, 5);
-    indexer.index_event_ref_index(ref_index, 8, 5);
-    indexer.index_event_ref_index(ref_index, 10, 5);
-
-    let response = process_msg_get_events(&trees, Key::RefIndex(ref_index));
-
-    let ResponseMessage::Events {
-        key: Key::RefIndex(response_ref_index),
-        events,
-    } = response else {
-        panic!("Wrong response message.");
-    };
-    assert_eq!(ref_index, response_ref_index);
-    assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 10);
-    assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 4);
-}
-
-#[test]
-fn test_index_event_registrar_index() {
-    let trees = init_db("target/debug/test_registrar_index");
-    let indexer = Indexer::new_test(trees.clone());
-    indexer.index_event_registrar_index(8, 4, 5);
-
-    let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        i: 5,
-    };
-
-    let k = trees.registrar_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
-    assert_eq!(key1, key2);
-}
-
-#[tokio::test]
-async fn test_process_msg_registrar_index() {
-    let trees = init_db("target/debug/test_process_msg_registrar_index");
-    let indexer = Indexer::new_test(trees.clone());
-    let registrar_index = 88;
-    indexer.index_event_registrar_index(registrar_index, 4, 5);
-    indexer.index_event_registrar_index(registrar_index, 8, 5);
-    indexer.index_event_registrar_index(registrar_index, 10, 5);
-
-    let response = process_msg_get_events(&trees, Key::RegistrarIndex(registrar_index));
-
-    let ResponseMessage::Events {
-        key: Key::RegistrarIndex(response_registrar_index),
-        events,
-    } = response else {
-        panic!("Wrong response message.");
-    };
-    assert_eq!(registrar_index, response_registrar_index);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
@@ -632,6 +646,129 @@ async fn test_process_msg_proposal_index() {
         panic!("Wrong response message.");
     };
     assert_eq!(proposal_index, response_proposal_index);
+    assert_eq!(events.len(), 3);
+    assert_eq!(events[0].block_number, 10);
+    assert_eq!(events[1].block_number, 8);
+    assert_eq!(events[2].block_number, 4);
+}
+
+#[test]
+fn test_index_event_ref_index() {
+    let trees = init_db("target/debug/test_ref_index");
+    let indexer = Indexer::new_test(trees.clone());
+    indexer.index_event_ref_index(8, 4, 5);
+
+    let key1 = U32Key {
+        key: 8,
+        block_number: 4,
+        i: 5,
+    };
+
+    let k = trees.ref_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    assert_eq!(key1, key2);
+}
+
+#[tokio::test]
+async fn test_process_msg_ref_index() {
+    let trees = init_db("target/debug/test_process_msg_ref_index");
+    let indexer = Indexer::new_test(trees.clone());
+    let ref_index = 88;
+    indexer.index_event_ref_index(ref_index, 4, 5);
+    indexer.index_event_ref_index(ref_index, 8, 5);
+    indexer.index_event_ref_index(ref_index, 10, 5);
+
+    let response = process_msg_get_events(&trees, Key::RefIndex(ref_index));
+
+    let ResponseMessage::Events {
+        key: Key::RefIndex(response_ref_index),
+        events,
+    } = response else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(ref_index, response_ref_index);
+    assert_eq!(events.len(), 3);
+    assert_eq!(events[0].block_number, 10);
+    assert_eq!(events[1].block_number, 8);
+    assert_eq!(events[2].block_number, 4);
+}
+
+#[test]
+fn test_index_event_registrar_index() {
+    let trees = init_db("target/debug/test_registrar_index");
+    let indexer = Indexer::new_test(trees.clone());
+    indexer.index_event_registrar_index(8, 4, 5);
+
+    let key1 = U32Key {
+        key: 8,
+        block_number: 4,
+        i: 5,
+    };
+
+    let k = trees.registrar_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    assert_eq!(key1, key2);
+}
+
+#[tokio::test]
+async fn test_process_msg_registrar_index() {
+    let trees = init_db("target/debug/test_process_msg_registrar_index");
+    let indexer = Indexer::new_test(trees.clone());
+    let registrar_index = 88;
+    indexer.index_event_registrar_index(registrar_index, 4, 5);
+    indexer.index_event_registrar_index(registrar_index, 8, 5);
+    indexer.index_event_registrar_index(registrar_index, 10, 5);
+
+    let response = process_msg_get_events(&trees, Key::RegistrarIndex(registrar_index));
+
+    let ResponseMessage::Events {
+        key: Key::RegistrarIndex(response_registrar_index),
+        events,
+    } = response else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(registrar_index, response_registrar_index);
+    assert_eq!(events.len(), 3);
+    assert_eq!(events[0].block_number, 10);
+    assert_eq!(events[1].block_number, 8);
+    assert_eq!(events[2].block_number, 4);
+}
+
+#[test]
+fn test_index_event_session_index() {
+    let trees = init_db("target/debug/test_session_index");
+    let indexer = Indexer::new_test(trees.clone());
+    indexer.index_event_session_index(8, 4, 5);
+
+    let key1 = U32Key {
+        key: 8,
+        block_number: 4,
+        i: 5,
+    };
+
+    let k = trees.session_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    assert_eq!(key1, key2);
+}
+
+#[tokio::test]
+async fn test_process_msg_session_index() {
+    let trees = init_db("target/debug/test_process_msg_session_index");
+    let indexer = Indexer::new_test(trees.clone());
+    let session_index = 88;
+    indexer.index_event_session_index(session_index, 4, 5);
+    indexer.index_event_session_index(session_index, 8, 5);
+    indexer.index_event_session_index(session_index, 10, 5);
+
+    let response = process_msg_get_events(&trees, Key::SessionIndex(session_index));
+
+    let ResponseMessage::Events {
+        key: Key::SessionIndex(response_session_index),
+        events,
+    } = response else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(session_index, response_session_index);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
