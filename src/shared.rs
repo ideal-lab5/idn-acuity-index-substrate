@@ -286,7 +286,7 @@ impl AsRef<[u8]> for AccountId32Hash {
 impl AccountId32Hash {
     // Return the ss58-check string for this key. Adapted from `sp_core::crypto`. We need this to
     // serialize our account appropriately but otherwise don't care.
-    fn to_ss58check(&self) -> String {
+    fn to_ss58check(self) -> String {
         // For serializing to a string to obtain the account nonce, we use the default substrate
         // prefix (since we have no way to otherwise pick one). It doesn't really matter, since when
         // it's deserialized back in system_accountNextIndex, we ignore this (so long as it's valid).

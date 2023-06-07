@@ -76,8 +76,7 @@ pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut
                         txs.push(msg.sub_response_tx);
                     },
                     None => {
-                        let mut txs = Vec::new();
-                        txs.push(msg.sub_response_tx);
+                        let txs = vec![msg.sub_response_tx];
                         indexer.sub_map.insert(msg.key, txs);
                     },
                 };
@@ -222,20 +221,14 @@ impl Indexer {
     }
     
     pub fn notify_subscribers(&self, search_key: Key, event: Event) {
-        match self.sub_map.get(&search_key) {
-            Some(txs) => {
-                let msg = ResponseMessage::Events {
-                    key: search_key,
-                    events: vec![event],
-                };
-                for tx in txs.iter() {
-                    match tx.send(msg.clone()) {
-                        Ok(_) => (),
-                        Err(_) => (),
-                    }
-                }
+        if let Some(txs) = self.sub_map.get(&search_key) {
+            let msg = ResponseMessage::Events {
+                key: search_key,
+                events: vec![event],
+            };
+            for tx in txs.iter() {
+                if tx.send(msg.clone()).is_ok() {}
             }
-            None => (),
         }
     }
     
@@ -558,25 +551,19 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         
         block_futures = result.2;
         
-        match result.0 {
-            Ok(()) => {
-                block_futures.push(Box::pin(substrate_batch.index_block(block_number)));
-                
-                if (block_number - async_blocks) > last_batch_block {
-                    last_batch_block = block_number - async_blocks;
-                    if last_batch_block % 100 == 0 {
-                        trees.root.insert("last_batch_block", &last_batch_block.to_be_bytes()).unwrap();        
-                        println!(" 📚 #{}, {:?} blocks/sec", last_batch_block, 100_000_000 / now.elapsed().unwrap().as_micros());
-                        now = SystemTime::now();
-                    }
+        if let Ok(()) = result.0 {
+            block_futures.push(Box::pin(substrate_batch.index_block(block_number)));
+
+            if (block_number - async_blocks) > last_batch_block {
+                last_batch_block = block_number - async_blocks;
+                if last_batch_block % 100 == 0 {
+                    trees.root.insert("last_batch_block", &last_batch_block.to_be_bytes()).unwrap();
+                    println!(" 📚 #{}, {:?} blocks/sec", last_batch_block, 100_000_000 / now.elapsed().unwrap().as_micros());
+                    now = SystemTime::now();
                 }
-                
-                block_number += 1;
             }
-            Err(error) => match error {
-                _ => (),
-            }
+
+            block_number += 1;
         }
     }
 }
-
