@@ -168,7 +168,7 @@ Observe that when searching for events, the details column is populated with inf
 
 Asynchrous block downloading - blocks will be downloaded as fast as possible for improved indexing speed.
 
-In the previous milestone the indexer downloaded blocks one at a time. Blocks indexed per second was in the single figures.
+In the previous milestone the indexer downloaded blocks one at a time. Blocks indexed per second was in the single digits.
 
 Now the indexer maintains up to 128 current requests. This results in approx 100x increase in block indexing rate.
 
