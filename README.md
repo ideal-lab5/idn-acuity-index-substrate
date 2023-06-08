@@ -122,15 +122,32 @@ Ensure that you have both the the indexer and dapp running, either by following 
 4. Click Search.
 5. Observe that as new balance transfers occur on Polkadot, they automatically appear in the results.
 
+#### Deliverable 2.3
 
-
-
-Observe that at block #13800016 new metadata will be downloaded because a runtime upgrade has occured.
+preimage_hash, era_index and  session_index are now indexed in addition to the keys in milestone 1.
 
 Using the dapp, test the following search queries and verify the results:
 
 ```
-AccountId: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2
+PreimageHash: 0xdb2b6cb38c2f6704ed067da2e9001bc57314be4f0117f664a93c0d18610110c5
+
+```
+
+```
+EraIndex: 1076
+15825858	fastUnstake	BatchChecked	A batch was partially checked for the given eras, but the process did not finish.
+eras: [ "1,076" ]
+```
+
+```
+SessionIndex: 6552
+15649648	session	NewSession	New session has happened. Note that the argument is the session index, not the block number as the type might suggest.
+sessionIndex: 6,552
+```
+
+```
+
+
 15104642, balances, Withdraw, who: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2, amount: 121000000
 15104642, balances, Transfer, from: 5EYCAe5ijiYfyeZ2JJEYsk8UzApweYacAt5zgjz1FMQbykPU, to: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2, value: 189304306673
 15104642, childBounties, Claimed, index: 11, childIndex: 187, payout: 189304306673, beneficiary: 5CszgdfkARHQAgr8rMVQV2v9trkgZ77ksuign4sinvYa66B2
