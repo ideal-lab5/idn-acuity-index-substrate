@@ -372,7 +372,9 @@ impl Serialize for Bytes32 {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_str(&hex::encode(self.0))
+        let mut hex_string = "0x".to_owned();
+        hex_string.push_str(&hex::encode(self.0));
+        serializer.serialize_str(&hex_string)
     }
 }
 
