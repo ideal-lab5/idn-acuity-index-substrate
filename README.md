@@ -108,7 +108,7 @@ Then run the image with the correct port mapping:
 docker run --rm -p 8172:8172 [image_hash]
 ```
 
-Now run the dockerfile for [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp/tree/milestone-2).
+Now run the dockerfile for [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp/tree/milestone-2#docker).
 
 ### Testing Guide
 
