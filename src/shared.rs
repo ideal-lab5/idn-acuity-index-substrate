@@ -250,30 +250,8 @@ pub fn vector_as_u8_4_array(vector: &[u8]) -> [u8; 4] {
     arr
 }
 
-/// An error obtained from trying to interpret an SS58 encoded string into an AccountId32
-#[derive(thiserror::Error, Clone, Copy, Eq, PartialEq, Debug)]
-#[allow(missing_docs)]
-pub enum FromSs58Error {
-    #[error("Base 58 requirement is violated")]
-    BadBase58,
-    #[error("Length is bad")]
-    BadLength,
-    #[error("Invalid checksum")]
-    InvalidChecksum,
-    #[error("Invalid SS58 prefix byte.")]
-    InvalidPrefix,
-}
-
-// We do this just to get a checksum to help verify the validity of the address in to_ss58check
-fn ss58hash(data: &[u8]) -> Vec<u8> {
-    use blake2::{Blake2b512, Digest};
-    const PREFIX: &[u8] = b"SS58PRE";
-    let mut ctx = Blake2b512::new();
-    ctx.update(PREFIX);
-    ctx.update(data);
-    ctx.finalize().to_vec()
-}
-
+// Direct copy of AccountId32 from subxt, but with Copy and Hash traits implemented.
+// https://github.com/paritytech/subxt/blob/master/subxt/src/utils/account_id.rs
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
 pub struct AccountId32Hash (pub [u8; 32]);
 
@@ -335,6 +313,30 @@ impl AccountId32Hash {
             .map_err(|_| FromSs58Error::BadLength)?;
         Ok(AccountId32Hash(result))
     }
+}
+
+/// An error obtained from trying to interpret an SS58 encoded string into an AccountId32
+#[derive(thiserror::Error, Clone, Copy, Eq, PartialEq, Debug)]
+#[allow(missing_docs)]
+pub enum FromSs58Error {
+    #[error("Base 58 requirement is violated")]
+    BadBase58,
+    #[error("Length is bad")]
+    BadLength,
+    #[error("Invalid checksum")]
+    InvalidChecksum,
+    #[error("Invalid SS58 prefix byte.")]
+    InvalidPrefix,
+}
+
+// We do this just to get a checksum to help verify the validity of the address in to_ss58check
+fn ss58hash(data: &[u8]) -> Vec<u8> {
+    use blake2::{Blake2b512, Digest};
+    const PREFIX: &[u8] = b"SS58PRE";
+    let mut ctx = Blake2b512::new();
+    ctx.update(PREFIX);
+    ctx.update(data);
+    ctx.finalize().to_vec()
 }
 
 impl Serialize for AccountId32Hash {
