@@ -62,7 +62,7 @@ Database entries will be key-only. No value will be stored. The blocknumber and 
 
 ### Tutorial
 
-Hybrid is still early in the development process. Currently it can index event parameters from many events in Polkadot: AccountId, AccountIndex, AuctionIndex, BountyIndex, CandidateHash, MessageId, ParaId, PoolId, ProposalHash, ProposalIndex, RefIndex, RegistrarIndex, TipHash.
+Hybrid is still early in the development process. Currently it can index event parameters from many events in Polkadot: AccountId, AccountIndex, AuctionIndex, BountyIndex, CandidateHash, EraIndex, MessageId, ParaId, PoolId, PreimageHash, ProposalHash, ProposalIndex, RefIndex, RegistrarIndex, SessionIndex, TipHash. Additionally, all events are indexed by event variant.
 
 #### Run tests
 
@@ -79,10 +79,8 @@ cargo build --release
 #### Run indexer
 
 ```
-./target/release/hybrid-indexer --url wss://rpc.polkadot.io:443 --block-height 13800000 
+./target/release/hybrid-indexer --block-height 15870000 
 ```
-
-All parameters that are indexed will be printed on the console, except AccountId.
 
 The earlist block that can be indexed on Polkadot is 7,229,126.
 
