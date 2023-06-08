@@ -157,3 +157,9 @@ All events are now indexed by their variant.
 3. Select NewAccount variant.
 4. Click Search.
 5. Observe that events with the selected variant are found.
+
+#### Deliverable 2.5
+
+Event contents are now loaded directly from the chain, rather than from the indexer.
+
+Observe that when searching for events, the details column is populated with information about the event.
