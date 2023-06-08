@@ -114,6 +114,17 @@ Now run the dockerfile for [hybrid-dapp](https://github.com/hybrid-explorer/hybr
 
 Ensure that you have both the the indexer and dapp running, either by following the above tutorial, or by following the Docker instructions.
 
+#### Deliverable 2.1 & 2.2
+
+1. Select Pallet / Variant search key.
+2. Select Balances pallet.
+3. Select Transfer variant.
+4. Click Search.
+5. Observe that as new balance transfers occur on Polkadot, they automatically appear in the results.
+
+
+
+
 Observe that at block #13800016 new metadata will be downloaded because a runtime upgrade has occured.
 
 Using the dapp, test the following search queries and verify the results:
