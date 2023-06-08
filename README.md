@@ -92,7 +92,7 @@ Head blocks are always indexed as they are finalized. Once batch indexing has ca
 
 #### Run the dapp
 
-Go to [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp/tree/milestone-1) and follow the tutorial to run the frontend to query the indexer.
+Go to [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp/tree/milestone-2) and follow the tutorial to run the frontend to query the indexer.
 
 ### Docker
 
@@ -108,7 +108,7 @@ Then run the image with the correct port mapping:
 docker run --rm -p 8172:8172 [image_hash]
 ```
 
-Now run the dockerfile for [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp/tree/milestone-1).
+Now run the dockerfile for [hybrid-dapp](https://github.com/hybrid-explorer/hybrid-dapp/tree/milestone-2).
 
 ### Testing Guide
 
