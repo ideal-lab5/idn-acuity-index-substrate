@@ -163,3 +163,22 @@ All events are now indexed by their variant.
 Event contents are now loaded directly from the chain, rather than from the indexer.
 
 Observe that when searching for events, the details column is populated with information about the event.
+
+#### Deliverable 2.6
+
+Asynchrous block downloading - blocks will be downloaded as fast as possible for improved indexing speed.
+
+In the previous milestone the indexer downloaded blocks one at a time. Blocks indexed per second was in the single figures.
+
+Now the indexer maintains up to 128 current requests. This results in approx 100x increase in block indexing rate.
+
+Observe that when batch indexing, the indexer reports blocks per second in the triple digits.
+```
+ 📚 #15870600, 155 blocks/sec
+ 📚 #15870700, 179 blocks/sec
+ 📚 #15870800, 136 blocks/sec
+ 📚 #15870900, 158 blocks/sec
+ 📚 #15871000, 284 blocks/sec
+ 📚 #15871100, 161 blocks/sec
+ 📚 #15871200, 168 blocks/sec
+```
