@@ -116,6 +116,8 @@ Ensure that you have both the the indexer and dapp running, either by following 
 
 #### Deliverable 2.1 & 2.2
 
+Event subscription API / Live dapp
+
 1. Select Pallet / Variant search key.
 2. Select Balances pallet.
 3. Select Transfer variant.
@@ -124,7 +126,7 @@ Ensure that you have both the the indexer and dapp running, either by following 
 
 #### Deliverable 2.3
 
-preimage_hash, era_index and  session_index are now indexed in addition to the keys in milestone 1.
+preimage_hash, era_index and session_index are now indexed in addition to the keys in milestone 1.
 
 Using the dapp, test the following search queries and verify the results:
 
@@ -145,3 +147,13 @@ SessionIndex: 6552
 15649648	session	NewSession	New session has happened. Note that the argument is the session index, not the block number as the type might suggest.
 sessionIndex: 6,552
 ```
+
+#### Deliverable 2.4
+
+All events are now indexed by their variant.
+
+1. Select Pallet / Variant search key.
+2. Select System pallet.
+3. Select NewAccount variant.
+4. Click Search.
+5. Observe that events with the selected variant are found.
