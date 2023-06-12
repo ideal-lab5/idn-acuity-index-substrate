@@ -89,7 +89,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
             
             ResponseMessage::Events {
@@ -109,7 +109,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -129,7 +129,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -149,7 +149,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -169,7 +169,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -189,7 +189,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -209,7 +209,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -229,7 +229,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -249,7 +249,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -269,7 +269,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -289,7 +289,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -309,7 +309,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -329,7 +329,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -349,7 +349,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -369,7 +369,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
@@ -389,7 +389,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     i: key.i,
                 });
                 
-                if events.len() == 1000 { break; }
+                if events.len() == 100 { break; }
             }
 
             ResponseMessage::Events {
