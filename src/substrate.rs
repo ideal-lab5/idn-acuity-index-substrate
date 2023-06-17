@@ -1,25 +1,13 @@
+use subxt::{metadata::Metadata, utils::AccountId32, OnlineClient, PolkadotConfig};
 
-use subxt::{
-    OnlineClient,
-    PolkadotConfig,
-    utils::AccountId32,
-    metadata::Metadata,
-};
+use futures::StreamExt;
+use std::{collections::HashMap, time::SystemTime};
 
-use futures::{
-    StreamExt,
-};
-use std::{
-    collections::HashMap,
-    time::SystemTime,
-};
-
-use tokio::sync:: {
-    mpsc:: { UnboundedSender, UnboundedReceiver },
+use tokio::sync::{
+    mpsc::{UnboundedReceiver, UnboundedSender},
     RwLock,
 };
 
-use crate::shared::*;
 use crate::pallets::bags_list::*;
 use crate::pallets::balances::*;
 use crate::pallets::bounties::*;
@@ -44,6 +32,7 @@ use crate::pallets::tips::*;
 use crate::pallets::transaction_payment::*;
 use crate::pallets::treasury::*;
 use crate::pallets::vesting::*;
+use crate::shared::*;
 
 use crate::pallets::polkadot::auctions::*;
 use crate::pallets::polkadot::crowdloan::*;
@@ -54,8 +43,11 @@ use crate::pallets::polkadot::parachains_ump::*;
 use crate::pallets::polkadot::paras_registrar::*;
 use crate::pallets::polkadot::slots::*;
 
-
-pub async fn substrate_head(api: OnlineClient<PolkadotConfig>, trees: Trees, mut sub_rx: UnboundedReceiver<SubscribeMessage>) {
+pub async fn substrate_head(
+    api: OnlineClient<PolkadotConfig>,
+    trees: Trees,
+    mut sub_rx: UnboundedReceiver<SubscribeMessage>,
+) {
     let mut indexer = Indexer::new(trees.clone(), api.clone());
 
     // Subscribe to all finalized blocks:
@@ -119,13 +111,17 @@ impl Indexer {
     }
 
     async fn index_block(&self, block_number: u32) -> Result<(), IndexBlockError> {
-        
         let api = match &self.api {
             Some(api) => api.clone(),
             None => return Err(IndexBlockError::NoApi),
         };
-        
-        let block_hash = match api.rpc().block_hash(Some(block_number.into())).await.unwrap() {
+
+        let block_hash = match api
+            .rpc()
+            .block_hash(Some(block_number.into()))
+            .await
+            .unwrap()
+        {
             Some(block_hash) => block_hash,
             None => return Err(IndexBlockError::BlockNotFound),
         };
@@ -138,44 +134,58 @@ impl Indexer {
                 let metadata = metadata.clone();
                 drop(metadata_map);
                 metadata
-            },
+            }
             None => {
                 drop(metadata_map);
-                let mut metadata_map  = self.metadata_map_lock.write().await;
+                let mut metadata_map = self.metadata_map_lock.write().await;
 
                 match metadata_map.get(&runtime_version.spec_version) {
                     Some(metadata) => metadata.clone(),
                     None => {
-                        println!("Downloading metadata for spec version {}", runtime_version.spec_version);
+                        println!(
+                            "Downloading metadata for spec version {}",
+                            runtime_version.spec_version
+                        );
                         let metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
                         metadata_map.insert(runtime_version.spec_version, metadata.clone());
                         metadata
-                    },
+                    }
                 }
-            },
+            }
         };
-            
-        let events = subxt::events::Events::new_from_client(metadata, block_hash, api.clone()).await.unwrap();
-    
+
+        let events = subxt::events::Events::new_from_client(metadata, block_hash, api.clone())
+            .await
+            .unwrap();
+
         for (i, evt) in events.iter().enumerate() {
             match evt {
                 Ok(evt) => {
                     self.index_event(block_number, i.try_into().unwrap(), evt);
-                },
+                }
                 Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
         }
-            
+
         Ok(())
     }
-    
-    fn index_event(&self, block_number: u32, event_index: u32, event: subxt::events::EventDetails<PolkadotConfig>) {
-        
-        self.index_event_variant(event.pallet_index(), event.variant_index(), block_number, event_index);
+
+    fn index_event(
+        &self,
+        block_number: u32,
+        event_index: u32,
+        event: subxt::events::EventDetails<PolkadotConfig>,
+    ) {
+        self.index_event_variant(
+            event.pallet_index(),
+            event.variant_index(),
+            block_number,
+            event_index,
+        );
 
         let pallet_name = event.pallet_name().to_owned();
-    //    let variant_name = event.variant_name().to_owned();
-    
+        //    let variant_name = event.variant_name().to_owned();
+
         let result = match pallet_name.as_str() {
             "Auctions" => auctions_index_event(self, block_number, event_index, event),
             "Balances" => balance_index_event(self, block_number, event_index, event),
@@ -183,20 +193,30 @@ impl Indexer {
             "ChildBounties" => child_bounties_index_event(self, block_number, event_index, event),
             "Claims" => claims_index_event(self, block_number, event_index, event),
             "Council" => council_index_event(self, block_number, event_index, event),
-            "TechnicalCommittee" => technical_committee_index_event(self, block_number, event_index, event),
+            "TechnicalCommittee" => {
+                technical_committee_index_event(self, block_number, event_index, event)
+            }
             "Crowdloan" => crowdloan_index_event(self, block_number, event_index, event),
             "Democracy" => democracy_index_event(self, block_number, event_index, event),
-            "ElectionProviderMultiPhase" => election_provider_multi_phase_index_event(self, block_number, event_index, event),
+            "ElectionProviderMultiPhase" => {
+                election_provider_multi_phase_index_event(self, block_number, event_index, event)
+            }
             "FastUnstake" => fast_unstake_index_event(self, block_number, event_index, event),
             "Hrmp" => parachains_hrmp_index_event(self, block_number, event_index, event),
             "Identity" => identity_index_event(self, block_number, event_index, event),
             "Indices" => indices_index_event(self, block_number, event_index, event),
             "Multisig" => multisig_index_event(self, block_number, event_index, event),
-            "NominationPools" => nomination_pools_index_event(self, block_number, event_index, event),
+            "NominationPools" => {
+                nomination_pools_index_event(self, block_number, event_index, event)
+            }
             "Paras" => parachains_paras_index_event(self, block_number, event_index, event),
             "Ump" => parachains_ump_index_event(self, block_number, event_index, event),
-            "ParasDisputes" => parachains_disputes_index_event(self, block_number, event_index, event),
-            "PhragmenElection" => elections_phragmen_index_event(self, block_number, event_index, event),
+            "ParasDisputes" => {
+                parachains_disputes_index_event(self, block_number, event_index, event)
+            }
+            "PhragmenElection" => {
+                elections_phragmen_index_event(self, block_number, event_index, event)
+            }
             "Preimage" => preimage_index_event(self, block_number, event_index, event),
             "Proxy" => proxy_index_event(self, block_number, event_index, event),
             "Registrar" => paras_registrar_index_event(self, block_number, event_index, event),
@@ -205,21 +225,23 @@ impl Indexer {
             "Staking" => staking_index_event(self, block_number, event_index, event),
             "System" => system_index_event(self, block_number, event_index, event),
             "Tips" => tips_index_event(self, block_number, event_index, event),
-            "TransactionPayment" => transaction_payment_index_event(self, block_number, event_index, event),
+            "TransactionPayment" => {
+                transaction_payment_index_event(self, block_number, event_index, event)
+            }
             "Treasury" => treasury_index_event(self, block_number, event_index, event),
             "Vesting" => vesting_index_event(self, block_number, event_index, event),
             "VoterList" => bags_list_index_event(self, block_number, event_index, event),
             _ => Ok(()),
         };
-    
-        match result  {
+
+        match result {
             Ok(()) => (),
             Err(_error) => {
-            //    println!("Block: {}, pallet: {}, variant: {}, error: {}", block_number, pallet_name, variant_name, error);
+                //    println!("Block: {}, pallet: {}, variant: {}, error: {}", block_number, pallet_name, variant_name, error);
             }
         };
     }
-    
+
     pub fn notify_subscribers(&self, search_key: Key, event: Event) {
         if let Some(txs) = self.sub_map.get(&search_key) {
             let msg = ResponseMessage::Events {
@@ -231,21 +253,27 @@ impl Indexer {
             }
         }
     }
-    
-    pub fn index_event_variant(&self, pallet_index: u8, variant_index: u8, block_number: u32, i: u32) {
 
+    pub fn index_event_variant(
+        &self,
+        pallet_index: u8,
+        variant_index: u8,
+        block_number: u32,
+        i: u32,
+    ) {
         // Generate key
         let key = VariantKey {
             pallet_index,
             variant_index,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.variant.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::Variant(pallet_index, variant_index);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
 
     pub fn index_event_account_id(&self, account_id: AccountId32, block_number: u32, i: u32) {
@@ -254,224 +282,239 @@ impl Indexer {
             account_id: account_id.clone(),
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.account_id.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::AccountId(AccountId32Hash(account_id.0));
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_account_index(&self, account_index: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: account_index,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.account_index.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::AccountIndex(account_index);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_auction_index(&self, auction_index: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: auction_index,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.auction_index.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::AuctionIndex(auction_index);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_bounty_index(&self, bounty_index: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: bounty_index,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.bounty_index.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::BountyIndex(bounty_index);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_candidate_hash(&self, candidate_hash: [u8; 32], block_number: u32, i: u32) {
         // Generate key
         let key = CandidateHashKey {
             candidate_hash,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.candidate_hash.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::CandidateHash(Bytes32(candidate_hash));
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_era_index(&self, era_index: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: era_index,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.era_index.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::EraIndex(era_index);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_message_id(&self, message_id: [u8; 32], block_number: u32, i: u32) {
         // Generate key
         let key = MessageIdKey {
             message_id,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.message_id.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::MessageId(Bytes32(message_id));
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_para_id(&self, para_id: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: para_id,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.para_id.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::ParaId(para_id);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_pool_id(&self, pool_id: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: pool_id,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.pool_id.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::PoolId(pool_id);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_preimage_hash(&self, preimage_hash: [u8; 32], block_number: u32, i: u32) {
         // Generate key
         let key = HashKey {
             hash: preimage_hash,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.preimage_hash.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::PreimageHash(Bytes32(preimage_hash));
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_proposal_hash(&self, proposal_hash: [u8; 32], block_number: u32, i: u32) {
         // Generate key
         let key = HashKey {
             hash: proposal_hash,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.proposal_hash.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::ProposalHash(Bytes32(proposal_hash));
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_proposal_index(&self, proposal_index: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: proposal_index,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.proposal_index.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::ProposalIndex(proposal_index);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_ref_index(&self, ref_index: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: ref_index,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.ref_index.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::RefIndex(ref_index);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_registrar_index(&self, registrar_index: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: registrar_index,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.registrar_index.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::RegistrarIndex(registrar_index);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_session_index(&self, session_index: u32, block_number: u32, i: u32) {
         // Generate key
         let key = U32Key {
             key: session_index,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.session_index.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::SessionIndex(session_index);
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-    
+
     pub fn index_event_tip_hash(&self, tip_hash: [u8; 32], block_number: u32, i: u32) {
         // Generate key
         let key = TipHashKey {
             tip_hash,
             block_number,
             i,
-        }.serialize();
+        }
+        .serialize();
         // Insert record.
         self.trees.tip_hash.insert(key, &[]).unwrap();
         // Notify subscribers.
         let search_key = Key::TipHash(Bytes32(tip_hash));
-        self.notify_subscribers(search_key, Event{block_number, i});
+        self.notify_subscribers(search_key, Event { block_number, i });
     }
-
 }
 
 pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, args: Args) {
@@ -480,25 +523,27 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         Some(block_height) => block_height,
         None => {
             match match trees.root.get("batch_indexing_complete").unwrap() {
-                    Some(value) => value.to_vec()[0] == 1,
-                    None => false,
-                }
-            {
+                Some(value) => value.to_vec()[0] == 1,
+                None => false,
+            } {
                 true => match trees.root.get("last_head_block").unwrap() {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
                     None => 0,
-                }
+                },
                 false => match trees.root.get("last_batch_block").unwrap() {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
                     None => 0,
-                }
+                },
             }
         }
     };
     // Determine the correct block to start batch indexing.
     let async_blocks = args.async_blocks.unwrap_or(128);
     // Record in database that batch indexing has not finished.
-    trees.root.insert("batch_indexing_complete", &0_u8.to_be_bytes()).unwrap();
+    trees
+        .root
+        .insert("batch_indexing_complete", &0_u8.to_be_bytes())
+        .unwrap();
 
     let substrate_batch = Indexer::new(trees.clone(), api);
 
@@ -536,29 +581,39 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
     for n in 0..async_blocks {
         block_futures.push(Box::pin(substrate_batch.index_block(block_number + n)));
     }
-    
+
     let mut last_batch_block = block_number;
     block_number += async_blocks;
     let mut now = SystemTime::now();
 
     loop {
         if block_futures.is_empty() {
-            trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes()).unwrap();
+            trees
+                .root
+                .insert("batch_indexing_complete", &1_u8.to_be_bytes())
+                .unwrap();
             println!(" 📚 Finished batch indexing.");
             break;
         }
         let result = futures::future::select_all(block_futures).await;
-        
+
         block_futures = result.2;
-        
+
         if let Ok(()) = result.0 {
             block_futures.push(Box::pin(substrate_batch.index_block(block_number)));
 
             if (block_number - async_blocks) > last_batch_block {
                 last_batch_block = block_number - async_blocks;
                 if last_batch_block % 100 == 0 {
-                    trees.root.insert("last_batch_block", &last_batch_block.to_be_bytes()).unwrap();
-                    println!(" 📚 #{}, {:?} blocks/sec", last_batch_block, 100_000_000 / now.elapsed().unwrap().as_micros());
+                    trees
+                        .root
+                        .insert("last_batch_block", &last_batch_block.to_be_bytes())
+                        .unwrap();
+                    println!(
+                        " 📚 #{}, {:?} blocks/sec",
+                        last_batch_block,
+                        100_000_000 / now.elapsed().unwrap().as_micros()
+                    );
                     now = SystemTime::now();
                 }
             }

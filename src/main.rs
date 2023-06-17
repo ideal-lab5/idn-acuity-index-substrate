@@ -1,24 +1,17 @@
-
 use clap::Parser;
 
-use tokio::{
-    join,
-    sync::mpsc,
-};
+use tokio::{join, sync::mpsc};
 
+mod pallets;
 mod shared;
 mod substrate;
 mod websockets;
-mod pallets;
 
 use crate::shared::*;
 use substrate::*;
 use websockets::websockets_listen;
 
-use subxt::{
-    OnlineClient,
-    PolkadotConfig,
-};
+use subxt::{OnlineClient, PolkadotConfig};
 
 #[cfg(test)]
 mod tests;
@@ -53,13 +46,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     println!("Opened database.");
     // Determine url of Substrate node to connect to.
-    let url = args.url.clone().unwrap_or_else(|| "wss://rpc.polkadot.io:443".to_string());
+    let url = args
+        .url
+        .clone()
+        .unwrap_or_else(|| "wss://rpc.polkadot.io:443".to_string());
     let api = OnlineClient::<PolkadotConfig>::from_url(url).await.unwrap();
     println!("Connected to Substrate node.");
 
     // Create the channel for the websockets threads to send subscribe messages to the head thread.
     let (sub_tx, sub_rx) = mpsc::unbounded_channel();
-    
+
     // Start Substrate tasks.
     let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone(), sub_rx));
     let substrate_batch = tokio::spawn(substrate_batch(api.clone(), trees.clone(), args));

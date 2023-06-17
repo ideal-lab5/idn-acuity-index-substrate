@@ -1,16 +1,11 @@
 use clap::Parser;
 
-use subxt::{
-    Config,
-    SubstrateConfig,
-    config::Header,
-    utils::AccountId32,
-};
+use subxt::{config::Header, utils::AccountId32, Config, SubstrateConfig};
 
 use sled::Tree;
 
-use parity_scale_codec::{Encode, Decode};
-use serde::{Serialize, Deserialize};
+use parity_scale_codec::{Decode, Encode};
+use serde::{Deserialize, Serialize};
 
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -23,15 +18,15 @@ pub mod polkadot {}
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
-   /// URL of Substrate node to connect to.
-   #[arg(short, long)]
-   pub url: Option<String>,
-   /// Block number to start indexing from.
-   #[arg(short, long)]
-   pub block_height: Option<u32>,
-   /// How many blocks to query at the same time [128]
-   #[arg(short, long)]
-   pub async_blocks: Option<u32>,
+    /// URL of Substrate node to connect to.
+    #[arg(short, long)]
+    pub url: Option<String>,
+    /// Block number to start indexing from.
+    #[arg(short, long)]
+    pub block_height: Option<u32>,
+    /// How many blocks to query at the same time [128]
+    #[arg(short, long)]
+    pub async_blocks: Option<u32>,
 }
 
 #[derive(Clone)]
@@ -75,7 +70,8 @@ impl VariantKey {
             self.variant_index.to_be_bytes().to_vec(),
             self.block_number.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
-        ].concat()
+        ]
+        .concat()
     }
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
@@ -101,7 +97,8 @@ impl AccountIdKey {
             self.account_id.0.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
-        ].concat()
+        ]
+        .concat()
     }
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
@@ -126,7 +123,8 @@ impl U32Key {
             self.key.to_be_bytes().to_vec(),
             self.block_number.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
-        ].concat()
+        ]
+        .concat()
     }
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
@@ -151,7 +149,8 @@ impl CandidateHashKey {
             self.candidate_hash.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
-        ].concat()
+        ]
+        .concat()
     }
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
@@ -176,7 +175,8 @@ impl MessageIdKey {
             self.message_id.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
-        ].concat()
+        ]
+        .concat()
     }
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
@@ -201,7 +201,8 @@ impl HashKey {
             self.hash.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
-        ].concat()
+        ]
+        .concat()
     }
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
@@ -226,7 +227,8 @@ impl TipHashKey {
             self.tip_hash.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
             self.i.to_be_bytes().to_vec(),
-        ].concat()
+        ]
+        .concat()
     }
 
     pub fn unserialize(vec: Vec<u8>) -> Self {
@@ -253,7 +255,7 @@ pub fn vector_as_u8_4_array(vector: &[u8]) -> [u8; 4] {
 // Direct copy of AccountId32 from subxt, but with Copy and Hash traits implemented.
 // https://github.com/paritytech/subxt/blob/master/subxt/src/utils/account_id.rs
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
-pub struct AccountId32Hash (pub [u8; 32]);
+pub struct AccountId32Hash(pub [u8; 32]);
 
 impl AsRef<[u8]> for AccountId32Hash {
     fn as_ref(&self) -> &[u8] {
@@ -359,7 +361,7 @@ impl<'de> Deserialize<'de> for AccountId32Hash {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
-pub struct Bytes32 (pub [u8; 32]);
+pub struct Bytes32(pub [u8; 32]);
 
 impl AsRef<[u8]> for Bytes32 {
     fn as_ref(&self) -> &[u8] {
@@ -417,15 +419,11 @@ pub enum Key {
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
-pub enum RequestMessage { 
+pub enum RequestMessage {
     Status,
     Variants,
-    GetEvents {
-        key: Key,
-    },
-    SubscribeEvents {
-        key: Key,
-    },
+    GetEvents { key: Key },
+    SubscribeEvents { key: Key },
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -464,7 +462,7 @@ pub enum ResponseMessage {
         events: Vec<Event>,
     },
     Subscribed,
-//    Error,
+    //    Error,
 }
 
 #[derive(Debug)]

@@ -2,9 +2,7 @@ use crate::shared::*;
 use crate::substrate::*;
 use crate::websockets::*;
 
-use subxt::{
-    utils::AccountId32,
-};
+use subxt::utils::AccountId32;
 
 use std::str::FromStr;
 
@@ -90,7 +88,8 @@ async fn test_process_msg_variant() {
 #[test]
 fn test_account_id_key() {
     let key1: AccountIdKey = AccountIdKey {
-        account_id: AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap(),
+        account_id: AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+            .unwrap(),
         block_number: 4,
         i: 5,
     };
@@ -103,7 +102,8 @@ fn test_account_id_key() {
 fn test_index_event_account_id() {
     let trees = init_db("target/debug/test_account_id");
     let indexer = Indexer::new_test(trees.clone());
-    let account_id = AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap();
+    let account_id =
+        AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap();
     indexer.index_event_account_id(account_id.clone(), 4, 5);
 
     let key1 = AccountIdKey {
@@ -112,7 +112,12 @@ fn test_index_event_account_id() {
         i: 5,
     };
 
-    let k = trees.account_id.scan_prefix(account_id).keys().next().unwrap();
+    let k = trees
+        .account_id
+        .scan_prefix(account_id)
+        .keys()
+        .next()
+        .unwrap();
     let key2 = AccountIdKey::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -121,7 +126,8 @@ fn test_index_event_account_id() {
 async fn test_process_msg_account_id() {
     let trees = init_db("target/debug/test_process_msg_account_id");
     let indexer = Indexer::new_test(trees.clone());
-    let account_id = AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap();
+    let account_id =
+        AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap();
     indexer.index_event_account_id(account_id.clone(), 4, 5);
     indexer.index_event_account_id(account_id.clone(), 8, 5);
     indexer.index_event_account_id(account_id.clone(), 10, 5);
@@ -165,7 +171,12 @@ fn test_index_event_account_index() {
         i: 5,
     };
 
-    let k = trees.account_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .account_index
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -206,7 +217,12 @@ fn test_index_event_auction_index() {
         i: 5,
     };
 
-    let k = trees.auction_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .auction_index
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -220,7 +236,7 @@ async fn test_process_msg_auction_index() {
     indexer.index_event_auction_index(auction_index, 8, 5);
     indexer.index_event_auction_index(auction_index, 10, 5);
 
-    let response = process_msg_get_events(&trees,Key::AuctionIndex(auction_index));
+    let response = process_msg_get_events(&trees, Key::AuctionIndex(auction_index));
 
     let ResponseMessage::Events {
         key: Key::AuctionIndex(response_auction_index),
@@ -247,7 +263,12 @@ fn test_index_event_bounty_index() {
         i: 5,
     };
 
-    let k = trees.bounty_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .bounty_index
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -300,7 +321,12 @@ fn test_index_event_candidate_hash() {
         i: 5,
     };
 
-    let k = trees.candidate_hash.scan_prefix([8; 32].to_vec()).keys().next().unwrap();
+    let k = trees
+        .candidate_hash
+        .scan_prefix([8; 32].to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = CandidateHashKey::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -341,7 +367,12 @@ fn test_index_event_era_index() {
         i: 5,
     };
 
-    let k = trees.era_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .era_index
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -394,7 +425,12 @@ fn test_index_event_message_id() {
         i: 5,
     };
 
-    let k = trees.message_id.scan_prefix([8; 32].to_vec()).keys().next().unwrap();
+    let k = trees
+        .message_id
+        .scan_prefix([8; 32].to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = MessageIdKey::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -435,7 +471,12 @@ fn test_index_event_para_id() {
         i: 5,
     };
 
-    let k = trees.para_id.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .para_id
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -476,7 +517,12 @@ fn test_index_event_pool_id() {
         i: 5,
     };
 
-    let k = trees.pool_id.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .pool_id
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -529,7 +575,12 @@ fn test_index_event_preimage_hash() {
         i: 5,
     };
 
-    let k = trees.preimage_hash.scan_prefix([8; 32].to_vec()).keys().next().unwrap();
+    let k = trees
+        .preimage_hash
+        .scan_prefix([8; 32].to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = HashKey::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -582,7 +633,12 @@ fn test_index_event_proposal_hash() {
         i: 5,
     };
 
-    let k = trees.proposal_hash.scan_prefix([8; 32].to_vec()).keys().next().unwrap();
+    let k = trees
+        .proposal_hash
+        .scan_prefix([8; 32].to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = HashKey::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -623,7 +679,12 @@ fn test_index_event_proposal_index() {
         i: 5,
     };
 
-    let k = trees.proposal_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .proposal_index
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -664,7 +725,12 @@ fn test_index_event_ref_index() {
         i: 5,
     };
 
-    let k = trees.ref_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .ref_index
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -705,7 +771,12 @@ fn test_index_event_registrar_index() {
         i: 5,
     };
 
-    let k = trees.registrar_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .registrar_index
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -746,7 +817,12 @@ fn test_index_event_session_index() {
         i: 5,
     };
 
-    let k = trees.session_index.scan_prefix(8_u32.to_be_bytes().to_vec()).keys().next().unwrap();
+    let k = trees
+        .session_index
+        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = U32Key::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -799,7 +875,12 @@ fn test_index_event_tip_hash() {
         i: 5,
     };
 
-    let k = trees.tip_hash.scan_prefix([8; 32].to_vec()).keys().next().unwrap();
+    let k = trees
+        .tip_hash
+        .scan_prefix([8; 32].to_vec())
+        .keys()
+        .next()
+        .unwrap();
     let key2 = TipHashKey::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -830,24 +911,35 @@ async fn test_process_msg_tip_hash() {
 
 #[test]
 fn test_vector_as_u8_32_array() {
-    let vec:Vec<u8> = [8; 48].to_vec();
+    let vec: Vec<u8> = [8; 48].to_vec();
     assert_eq!(vector_as_u8_32_array(&vec), vec[..32]);
 }
 
 #[test]
 fn test_vector_as_u8_4_array() {
-    let vec:Vec<u8> = [8; 48].to_vec();
+    let vec: Vec<u8> = [8; 48].to_vec();
     assert_eq!(vector_as_u8_4_array(&vec), vec[..4]);
 }
 
 #[tokio::test]
 async fn test_process_msg_status() {
     let trees = init_db("target/debug/test_process_msg");
-    trees.root.insert("last_head_block", &845433_u32.to_be_bytes()).unwrap();
-    trees.root.insert("last_batch_block", &8445_u32.to_be_bytes()).unwrap();
+    trees
+        .root
+        .insert("last_head_block", &845433_u32.to_be_bytes())
+        .unwrap();
+    trees
+        .root
+        .insert("last_batch_block", &8445_u32.to_be_bytes())
+        .unwrap();
     let response = process_msg_status(&trees);
 
-    if let ResponseMessage::Status {last_head_block, last_batch_block, batch_indexing_complete} = response {
+    if let ResponseMessage::Status {
+        last_head_block,
+        last_batch_block,
+        batch_indexing_complete,
+    } = response
+    {
         assert_eq!(last_head_block, 845433);
         assert_eq!(last_batch_block, 8445);
         assert_eq!(batch_indexing_complete, false);

@@ -1,16 +1,11 @@
-use std::{
-    net::SocketAddr,
-};
+use futures::{SinkExt, StreamExt};
+use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
-use futures::{StreamExt, SinkExt};
 
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::UnboundedSender;
 
-use subxt::{
-    OnlineClient,
-    PolkadotConfig,
-};
+use subxt::{OnlineClient, PolkadotConfig};
 
 use crate::shared::*;
 
@@ -34,14 +29,14 @@ pub fn process_msg_status(trees: &Trees) -> ResponseMessage {
 pub async fn process_msg_variants(api: &OnlineClient<PolkadotConfig>) -> ResponseMessage {
     let metadata = api.rpc().metadata_legacy(None).await.unwrap();
     let mut pallets = Vec::new();
-    
+
     for pallet in metadata.pallets() {
         let mut pallet_meta = PalletMeta {
             index: pallet.index(),
             name: pallet.name().to_owned(),
             events: Vec::new(),
         };
-        
+
         if let Some(variants) = pallet.event_variants() {
             for variant in variants {
                 pallet_meta.events.push(EventMeta {
@@ -60,7 +55,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
         Key::Variant(pallet_id, variant_id) => {
             let mut events = Vec::new();
             let mut iter = trees.variant.scan_prefix([pallet_id, variant_id]).keys();
-            
+
             while let Some(Ok(key)) = iter.next_back() {
                 let key = VariantKey::unserialize(key.to_vec());
 
@@ -68,15 +63,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::Variant(pallet_id, variant_id),
-                events
+                events,
             }
-        },
+        }
         Key::AccountId(account_id) => {
             let mut events = Vec::new();
             let mut iter = trees.account_id.scan_prefix(account_id).keys();
@@ -88,18 +85,23 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
-            
+
             ResponseMessage::Events {
                 key: Key::AccountId(account_id),
-                events
+                events,
             }
-        },
+        }
         Key::AccountIndex(account_index) => {
             let mut events = Vec::new();
-            let mut iter = trees.account_index.scan_prefix(account_index.to_be_bytes()).keys();
+            let mut iter = trees
+                .account_index
+                .scan_prefix(account_index.to_be_bytes())
+                .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
                 let key = U32Key::unserialize(key.to_vec());
@@ -108,18 +110,23 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::AccountIndex(account_index),
-                events
+                events,
             }
-        },
+        }
         Key::AuctionIndex(auction_index) => {
             let mut events = Vec::new();
-            let mut iter = trees.auction_index.scan_prefix(auction_index.to_be_bytes()).keys();
+            let mut iter = trees
+                .auction_index
+                .scan_prefix(auction_index.to_be_bytes())
+                .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
                 let key = U32Key::unserialize(key.to_vec());
@@ -128,18 +135,23 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::AuctionIndex(auction_index),
-                events
+                events,
             }
-        },
+        }
         Key::BountyIndex(bounty_index) => {
             let mut events = Vec::new();
-            let mut iter = trees.bounty_index.scan_prefix(bounty_index.to_be_bytes()).keys();
+            let mut iter = trees
+                .bounty_index
+                .scan_prefix(bounty_index.to_be_bytes())
+                .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
                 let key = U32Key::unserialize(key.to_vec());
@@ -148,15 +160,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::BountyIndex(bounty_index),
-                events
+                events,
             }
-        },
+        }
         Key::CandidateHash(candidate_hash) => {
             let mut events = Vec::new();
             let mut iter = trees.candidate_hash.scan_prefix(candidate_hash).keys();
@@ -168,15 +182,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::CandidateHash(candidate_hash),
-                events
+                events,
             }
-        },
+        }
         Key::EraIndex(era_index) => {
             let mut events = Vec::new();
             let mut iter = trees.era_index.scan_prefix(era_index.to_be_bytes()).keys();
@@ -188,15 +204,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::EraIndex(era_index),
-                events
+                events,
             }
-        },
+        }
         Key::MessageId(message_id) => {
             let mut events = Vec::new();
             let mut iter = trees.message_id.scan_prefix(message_id).keys();
@@ -208,15 +226,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::MessageId(message_id),
-                events
+                events,
             }
-        },
+        }
         Key::ParaId(para_id) => {
             let mut events = Vec::new();
             let mut iter = trees.para_id.scan_prefix(para_id.to_be_bytes()).keys();
@@ -228,15 +248,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::ParaId(para_id),
-                events
+                events,
             }
-        },
+        }
         Key::PoolId(pool_id) => {
             let mut events = Vec::new();
             let mut iter = trees.pool_id.scan_prefix(pool_id.to_be_bytes()).keys();
@@ -248,15 +270,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::PoolId(pool_id),
-                events
+                events,
             }
-        },
+        }
         Key::PreimageHash(preimage_hash) => {
             let mut events = Vec::new();
             let mut iter = trees.preimage_hash.scan_prefix(preimage_hash).keys();
@@ -268,15 +292,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::PreimageHash(preimage_hash),
-                events
+                events,
             }
-        },
+        }
         Key::ProposalHash(proposal_hash) => {
             let mut events = Vec::new();
             let mut iter = trees.proposal_hash.scan_prefix(proposal_hash).keys();
@@ -288,18 +314,23 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::ProposalHash(proposal_hash),
-                events
+                events,
             }
-        },
+        }
         Key::ProposalIndex(proposal_index) => {
             let mut events = Vec::new();
-            let mut iter = trees.proposal_index.scan_prefix(proposal_index.to_be_bytes()).keys();
+            let mut iter = trees
+                .proposal_index
+                .scan_prefix(proposal_index.to_be_bytes())
+                .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
                 let key = U32Key::unserialize(key.to_vec());
@@ -308,15 +339,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::ProposalIndex(proposal_index),
-                events
+                events,
             }
-        },
+        }
         Key::RefIndex(ref_index) => {
             let mut events = Vec::new();
             let mut iter = trees.ref_index.scan_prefix(ref_index.to_be_bytes()).keys();
@@ -328,18 +361,23 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::RefIndex(ref_index),
-                events
+                events,
             }
-        },
+        }
         Key::RegistrarIndex(registrar_index) => {
             let mut events = Vec::new();
-            let mut iter = trees.registrar_index.scan_prefix(registrar_index.to_be_bytes()).keys();
+            let mut iter = trees
+                .registrar_index
+                .scan_prefix(registrar_index.to_be_bytes())
+                .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
                 let key = U32Key::unserialize(key.to_vec());
@@ -348,18 +386,23 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::RegistrarIndex(registrar_index),
-                events
+                events,
             }
-        },
+        }
         Key::SessionIndex(session_index) => {
             let mut events = Vec::new();
-            let mut iter = trees.session_index.scan_prefix(session_index.to_be_bytes()).keys();
+            let mut iter = trees
+                .session_index
+                .scan_prefix(session_index.to_be_bytes())
+                .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
                 let key = U32Key::unserialize(key.to_vec());
@@ -368,15 +411,17 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::SessionIndex(session_index),
-                events
+                events,
             }
-        },
+        }
         Key::TipHash(tip_hash) => {
             let mut events = Vec::new();
             let mut iter = trees.tip_hash.scan_prefix(tip_hash).keys();
@@ -388,30 +433,32 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     block_number: key.block_number,
                     i: key.i,
                 });
-                
-                if events.len() == 100 { break; }
+
+                if events.len() == 100 {
+                    break;
+                }
             }
 
             ResponseMessage::Events {
                 key: Key::TipHash(tip_hash),
-                events
+                events,
             }
-        },
+        }
     }
 }
 
-pub async fn process_msg(api: &OnlineClient<PolkadotConfig>, trees: &Trees, msg: RequestMessage, sub_tx: UnboundedSender<SubscribeMessage>, sub_response_tx: UnboundedSender<ResponseMessage>) -> ResponseMessage {
+pub async fn process_msg(
+    api: &OnlineClient<PolkadotConfig>,
+    trees: &Trees,
+    msg: RequestMessage,
+    sub_tx: UnboundedSender<SubscribeMessage>,
+    sub_response_tx: UnboundedSender<ResponseMessage>,
+) -> ResponseMessage {
     println!("{:?}", msg);
     match msg {
-        RequestMessage::Status => {
-            process_msg_status(trees)
-        },
-        RequestMessage::Variants => {
-            process_msg_variants(api).await
-        },
-        RequestMessage::GetEvents { key } => {
-            process_msg_get_events(trees, key)
-        },
+        RequestMessage::Status => process_msg_status(trees),
+        RequestMessage::Variants => process_msg_variants(api).await,
+        RequestMessage::GetEvents { key } => process_msg_get_events(trees, key),
         RequestMessage::SubscribeEvents { key } => {
             let msg = SubscribeMessage {
                 key,
@@ -419,11 +466,17 @@ pub async fn process_msg(api: &OnlineClient<PolkadotConfig>, trees: &Trees, msg:
             };
             sub_tx.send(msg).unwrap();
             ResponseMessage::Subscribed
-        },
+        }
     }
 }
 
-async fn handle_connection(api: OnlineClient<PolkadotConfig>, raw_stream: TcpStream, addr: SocketAddr, trees: Trees, sub_tx: UnboundedSender<SubscribeMessage>) {
+async fn handle_connection(
+    api: OnlineClient<PolkadotConfig>,
+    raw_stream: TcpStream,
+    addr: SocketAddr,
+    trees: Trees,
+    sub_tx: UnboundedSender<SubscribeMessage>,
+) {
     println!("Incoming TCP connection from: {}", addr);
 
     let ws_stream = tokio_tungstenite::accept_async(raw_stream)
@@ -458,7 +511,11 @@ async fn handle_connection(api: OnlineClient<PolkadotConfig>, raw_stream: TcpStr
     }
 }
 
-pub async fn websockets_listen(api: OnlineClient<PolkadotConfig>, trees: Trees, sub_tx: UnboundedSender<SubscribeMessage>) {
+pub async fn websockets_listen(
+    api: OnlineClient<PolkadotConfig>,
+    trees: Trees,
+    sub_tx: UnboundedSender<SubscribeMessage>,
+) {
     let addr = "0.0.0.0:8172".to_string();
 
     // Create the event loop and TCP listener we'll accept connections on.
@@ -468,6 +525,12 @@ pub async fn websockets_listen(api: OnlineClient<PolkadotConfig>, trees: Trees, 
 
     // Let's spawn the handling of each connection in a separate task.
     while let Ok((stream, addr)) = listener.accept().await {
-        tokio::spawn(handle_connection(api.clone(), stream, addr, trees.clone(), sub_tx.clone()));
+        tokio::spawn(handle_connection(
+            api.clone(),
+            stream,
+            addr,
+            trees.clone(),
+            sub_tx.clone(),
+        ));
     }
 }
