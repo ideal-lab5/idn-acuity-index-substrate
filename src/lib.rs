@@ -16,8 +16,7 @@ use subxt::{OnlineClient, PolkadotConfig};
 #[cfg(test)]
 mod tests;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn start() -> Result<(), Box<dyn std::error::Error>> {
     // Check command line parameters.
     let args = Args::parse();
     // Open database.
