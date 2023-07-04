@@ -2,8 +2,8 @@ use crate::shared::*;
 use crate::substrate::*;
 use subxt::PolkadotConfig;
 
-pub fn bags_list_index_event(
-    indexer: &Indexer,
+pub fn bags_list_index_event<R: RuntimeIndexer>(
+    indexer: &Indexer<R>,
     block_number: u32,
     event_index: u32,
     event: subxt::events::EventDetails<PolkadotConfig>,

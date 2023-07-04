@@ -74,7 +74,8 @@ async fn test_process_msg_variant() {
     let ResponseMessage::Events {
         key: Key::Variant(pallet_id, variant_id),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(pallet_id, 3);
@@ -137,7 +138,8 @@ async fn test_process_msg_account_id() {
     let ResponseMessage::Events {
         key: Key::AccountId(response_account_id),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(AccountId32Hash(account_id.0), response_account_id);
@@ -195,7 +197,8 @@ async fn test_process_msg_account_index() {
     let ResponseMessage::Events {
         key: Key::AccountIndex(response_account_index),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(account_index, response_account_index);
@@ -241,7 +244,8 @@ async fn test_process_msg_auction_index() {
     let ResponseMessage::Events {
         key: Key::AuctionIndex(response_auction_index),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(auction_index, response_auction_index);
@@ -287,7 +291,8 @@ async fn test_process_msg_bounty_index() {
     let ResponseMessage::Events {
         key: Key::BountyIndex(response_bounty_index),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(bounty_index, response_bounty_index);
@@ -345,7 +350,8 @@ async fn test_process_msg_candidate_hash() {
     let ResponseMessage::Events {
         key: Key::CandidateHash(response_candidate_hash),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(candidate_hash, response_candidate_hash);
@@ -391,7 +397,8 @@ async fn test_process_msg_era_index() {
     let ResponseMessage::Events {
         key: Key::EraIndex(response_era_index),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(era_index, response_era_index);
@@ -449,7 +456,8 @@ async fn test_process_msg_message_id() {
     let ResponseMessage::Events {
         key: Key::MessageId(response_message_id),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(message_id, response_message_id);
@@ -495,7 +503,8 @@ async fn test_process_msg_para_id() {
     let ResponseMessage::Events {
         key: Key::ParaId(response_para_id),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(para_id, response_para_id);
@@ -541,7 +550,8 @@ async fn test_process_msg_pool_id() {
     let ResponseMessage::Events {
         key: Key::PoolId(response_pool_id),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(pool_id, response_pool_id);
@@ -599,7 +609,8 @@ async fn test_process_msg_preimage_hash() {
     let ResponseMessage::Events {
         key: Key::PreimageHash(response_preimage_hash),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(preimage_hash, response_preimage_hash);
@@ -657,7 +668,8 @@ async fn test_process_msg_proposal_hash() {
     let ResponseMessage::Events {
         key: Key::ProposalHash(response_proposal_hash),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(proposal_hash, response_proposal_hash);
@@ -703,7 +715,8 @@ async fn test_process_msg_proposal_index() {
     let ResponseMessage::Events {
         key: Key::ProposalIndex(response_proposal_index),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(proposal_index, response_proposal_index);
@@ -749,7 +762,8 @@ async fn test_process_msg_ref_index() {
     let ResponseMessage::Events {
         key: Key::RefIndex(response_ref_index),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(ref_index, response_ref_index);
@@ -795,7 +809,8 @@ async fn test_process_msg_registrar_index() {
     let ResponseMessage::Events {
         key: Key::RegistrarIndex(response_registrar_index),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(registrar_index, response_registrar_index);
@@ -841,7 +856,8 @@ async fn test_process_msg_session_index() {
     let ResponseMessage::Events {
         key: Key::SessionIndex(response_session_index),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(session_index, response_session_index);
@@ -899,7 +915,8 @@ async fn test_process_msg_tip_hash() {
     let ResponseMessage::Events {
         key: Key::TipHash(response_tip_hash),
         events,
-    } = response else {
+    } = response
+    else {
         panic!("Wrong response message.");
     };
     assert_eq!(tip_hash, response_tip_hash);

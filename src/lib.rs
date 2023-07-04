@@ -3,7 +3,7 @@ use clap::Parser;
 use tokio::{join, sync::mpsc};
 
 mod pallets;
-mod shared;
+pub mod shared;
 mod substrate;
 mod websockets;
 
@@ -16,7 +16,8 @@ use subxt::{OnlineClient, PolkadotConfig};
 #[cfg(test)]
 mod tests;
 
-pub async fn start() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + 'static>(
+) -> Result<(), Box<dyn std::error::Error>> {
     // Check command line parameters.
     let args = Args::parse();
     // Open database.
@@ -56,11 +57,11 @@ pub async fn start() -> Result<(), Box<dyn std::error::Error>> {
     let (sub_tx, sub_rx) = mpsc::unbounded_channel();
 
     // Start Substrate tasks.
-    let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone(), sub_rx));
-    let substrate_batch = tokio::spawn(substrate_batch(api.clone(), trees.clone(), args));
+    //    let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone(), sub_rx));
+    let substrate_batch = tokio::spawn(substrate_batch::<R>(api.clone(), trees.clone(), args));
     // Spawn websockets task.
     let websockets_task = tokio::spawn(websockets_listen(api, trees.clone(), sub_tx));
     // Wait to exit.
-    let _result = join!(substrate_head, substrate_batch, websockets_task);
+    let _result = join!(/*substrate_head, */ substrate_batch, websockets_task);
     Ok(())
 }

@@ -9,7 +9,7 @@ use tokio::sync::{
 };
 
 use crate::pallets::bags_list::*;
-use crate::pallets::balances::*;
+/*use crate::pallets::balances::*;
 use crate::pallets::bounties::*;
 use crate::pallets::child_bounties::*;
 use crate::pallets::claims::*;
@@ -32,9 +32,10 @@ use crate::pallets::tips::*;
 use crate::pallets::transaction_payment::*;
 use crate::pallets::treasury::*;
 use crate::pallets::vesting::*;
+*/
 use crate::shared::*;
 
-use crate::pallets::polkadot::auctions::*;
+/*use crate::pallets::polkadot::auctions::*;
 use crate::pallets::polkadot::crowdloan::*;
 use crate::pallets::polkadot::parachains_disputes::*;
 use crate::pallets::polkadot::parachains_hrmp::*;
@@ -42,7 +43,9 @@ use crate::pallets::polkadot::parachains_paras::*;
 use crate::pallets::polkadot::parachains_ump::*;
 use crate::pallets::polkadot::paras_registrar::*;
 use crate::pallets::polkadot::slots::*;
+*/
 
+/*
 pub async fn substrate_head(
     api: OnlineClient<PolkadotConfig>,
     trees: Trees,
@@ -76,12 +79,14 @@ pub async fn substrate_head(
         }
     }
 }
+*/
 
-pub struct Indexer {
+pub struct Indexer<R> {
     trees: Trees,
     api: Option<OnlineClient<PolkadotConfig>>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
     sub_map: HashMap<Key, Vec<UnboundedSender<ResponseMessage>>>,
+    phantom: std::marker::PhantomData<R>,
 }
 
 #[derive(Debug)]
@@ -90,13 +95,14 @@ enum IndexBlockError {
     BlockNotFound,
 }
 
-impl Indexer {
+impl<R: RuntimeIndexer> Indexer<R> {
     fn new(trees: Trees, api: OnlineClient<PolkadotConfig>) -> Self {
         Indexer {
             trees,
             api: Some(api),
             metadata_map_lock: RwLock::new(HashMap::new()),
             sub_map: HashMap::new(),
+            phantom: std::marker::PhantomData,
         }
     }
 
@@ -107,6 +113,7 @@ impl Indexer {
             api: None,
             metadata_map_lock: RwLock::new(HashMap::new()),
             sub_map: HashMap::new(),
+            phantom: std::marker::PhantomData,
         }
     }
 
@@ -161,7 +168,7 @@ impl Indexer {
         for (i, evt) in events.iter().enumerate() {
             match evt {
                 Ok(evt) => {
-                    self.index_event(block_number, i.try_into().unwrap(), evt);
+                    R::process_event(block_number, i.try_into().unwrap(), evt);
                 }
                 Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
@@ -187,49 +194,50 @@ impl Indexer {
         //    let variant_name = event.variant_name().to_owned();
 
         let result = match pallet_name.as_str() {
-            "Auctions" => auctions_index_event(self, block_number, event_index, event),
-            "Balances" => balance_index_event(self, block_number, event_index, event),
-            "Bounties" => bounties_index_event(self, block_number, event_index, event),
-            "ChildBounties" => child_bounties_index_event(self, block_number, event_index, event),
-            "Claims" => claims_index_event(self, block_number, event_index, event),
-            "Council" => council_index_event(self, block_number, event_index, event),
-            "TechnicalCommittee" => {
-                technical_committee_index_event(self, block_number, event_index, event)
-            }
-            "Crowdloan" => crowdloan_index_event(self, block_number, event_index, event),
-            "Democracy" => democracy_index_event(self, block_number, event_index, event),
-            "ElectionProviderMultiPhase" => {
-                election_provider_multi_phase_index_event(self, block_number, event_index, event)
-            }
-            "FastUnstake" => fast_unstake_index_event(self, block_number, event_index, event),
-            "Hrmp" => parachains_hrmp_index_event(self, block_number, event_index, event),
-            "Identity" => identity_index_event(self, block_number, event_index, event),
-            "Indices" => indices_index_event(self, block_number, event_index, event),
-            "Multisig" => multisig_index_event(self, block_number, event_index, event),
-            "NominationPools" => {
-                nomination_pools_index_event(self, block_number, event_index, event)
-            }
-            "Paras" => parachains_paras_index_event(self, block_number, event_index, event),
-            "Ump" => parachains_ump_index_event(self, block_number, event_index, event),
-            "ParasDisputes" => {
-                parachains_disputes_index_event(self, block_number, event_index, event)
-            }
-            "PhragmenElection" => {
-                elections_phragmen_index_event(self, block_number, event_index, event)
-            }
-            "Preimage" => preimage_index_event(self, block_number, event_index, event),
-            "Proxy" => proxy_index_event(self, block_number, event_index, event),
-            "Registrar" => paras_registrar_index_event(self, block_number, event_index, event),
-            "Session" => session_index_event(self, block_number, event_index, event),
-            "Slots" => slots_index_event(self, block_number, event_index, event),
-            "Staking" => staking_index_event(self, block_number, event_index, event),
-            "System" => system_index_event(self, block_number, event_index, event),
-            "Tips" => tips_index_event(self, block_number, event_index, event),
-            "TransactionPayment" => {
-                transaction_payment_index_event(self, block_number, event_index, event)
-            }
-            "Treasury" => treasury_index_event(self, block_number, event_index, event),
-            "Vesting" => vesting_index_event(self, block_number, event_index, event),
+            /*            "Auctions" => auctions_index_event(self, block_number, event_index, event),
+                    "Balances" => balance_index_event(self, block_number, event_index, event),
+                    "Bounties" => bounties_index_event(self, block_number, event_index, event),
+                    "ChildBounties" => child_bounties_index_event(self, block_number, event_index, event),
+                    "Claims" => claims_index_event(self, block_number, event_index, event),
+                    "Council" => council_index_event(self, block_number, event_index, event),
+                    "TechnicalCommittee" => {
+                        technical_committee_index_event(self, block_number, event_index, event)
+                    }
+                    "Crowdloan" => crowdloan_index_event(self, block_number, event_index, event),
+                    "Democracy" => democracy_index_event(self, block_number, event_index, event),
+                    "ElectionProviderMultiPhase" => {
+                        election_provider_multi_phase_index_event(self, block_number, event_index, event)
+                    }
+                    "FastUnstake" => fast_unstake_index_event(self, block_number, event_index, event),
+                    "Hrmp" => parachains_hrmp_index_event(self, block_number, event_index, event),
+                    "Identity" => identity_index_event(self, block_number, event_index, event),
+                    "Indices" => indices_index_event(self, block_number, event_index, event),
+                    "Multisig" => multisig_index_event(self, block_number, event_index, event),
+                    "NominationPools" => {
+                        nomination_pools_index_event(self, block_number, event_index, event)
+                    }
+                    "Paras" => parachains_paras_index_event(self, block_number, event_index, event),
+                    "Ump" => parachains_ump_index_event(self, block_number, event_index, event),
+                    "ParasDisputes" => {
+                        parachains_disputes_index_event(self, block_number, event_index, event)
+                    }
+                    "PhragmenElection" => {
+                        elections_phragmen_index_event(self, block_number, event_index, event)
+                    }
+                    "Preimage" => preimage_index_event(self, block_number, event_index, event),
+                    "Proxy" => proxy_index_event(self, block_number, event_index, event),
+                    "Registrar" => paras_registrar_index_event(self, block_number, event_index, event),
+                    "Session" => session_index_event(self, block_number, event_index, event),
+                    "Slots" => slots_index_event(self, block_number, event_index, event),
+                    "Staking" => staking_index_event(self, block_number, event_index, event),
+                    "System" => system_index_event(self, block_number, event_index, event),
+                    "Tips" => tips_index_event(self, block_number, event_index, event),
+                    "TransactionPayment" => {
+                        transaction_payment_index_event(self, block_number, event_index, event)
+                    }
+                    "Treasury" => treasury_index_event(self, block_number, event_index, event),
+                    "Vesting" => vesting_index_event(self, block_number, event_index, event),
+            */
             "VoterList" => bags_list_index_event(self, block_number, event_index, event),
             _ => Ok(()),
         };
@@ -517,7 +525,11 @@ impl Indexer {
     }
 }
 
-pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, args: Args) {
+pub async fn substrate_batch<R: RuntimeIndexer>(
+    api: OnlineClient<PolkadotConfig>,
+    trees: Trees,
+    args: Args,
+) {
     // Determine the correct block to start batch indexing.
     let mut block_number: u32 = match args.block_height {
         Some(block_height) => block_height,
@@ -545,37 +557,37 @@ pub async fn substrate_batch(api: OnlineClient<PolkadotConfig>, trees: Trees, ar
         .insert("batch_indexing_complete", &0_u8.to_be_bytes())
         .unwrap();
 
-    let substrate_batch = Indexer::new(trees.clone(), api);
-
-    // AccountIndex: 9494
-    substrate_batch.index_block(10013701).await.unwrap();
-    // AuctionIndex: 15, ParaId: 2013
-    substrate_batch.index_block(10018925).await.unwrap();
-    // BountyIndex: 11
-    substrate_batch.index_block(15104642).await.unwrap();
-    // CandidateHash: 0x6a1cd467afb69aa2b23866538b1160a60d96228587c5d7efc1d3c1ce4e3efb63
-    substrate_batch.index_block(10059744).await.unwrap();
-    // EraIndex: 1076
-    substrate_batch.index_block(15825858).await.unwrap();
-    // MessageId: 0xc656c0814b4174d3fbae7b0dd3ae63a94ac858b9120f8dc13027d2ee89f54a46
-    substrate_batch.index_block(15100192).await.unwrap();
-    // PoolId: 12
-    substrate_batch.index_block(15180584).await.unwrap();
-    // PreimageHash: 0xdb2b6cb38c2f6704ed067da2e9001bc57314be4f0117f664a93c0d18610110c5
-    substrate_batch.index_block(15764612).await.unwrap();
-    // ProposalHash: 0x7c403355a3747fea8a84968a7a83b7f5d2b26ea0b5d63b317ae65c1b091cf07b
-    substrate_batch.index_block(10025666).await.unwrap();
-    // ProposalIndex: 103
-    substrate_batch.index_block(10022400).await.unwrap();
-    // RefIndex: 114
-    substrate_batch.index_block(15100839).await.unwrap();
-    // RegistrarIndex: 1
-    substrate_batch.index_block(10027254).await.unwrap();
-    // SessionIndex: 6552
-    substrate_batch.index_block(15649648).await.unwrap();
-    // TipHash: 0x729c6a740112abfc8cd143771f1f88518c3906e86f601a6c6a312fe7f7babf33
-    substrate_batch.index_block(10146463).await.unwrap();
-
+    let substrate_batch = Indexer::<R>::new(trees.clone(), api);
+    /*
+        // AccountIndex: 9494
+        substrate_batch.index_block(10013701).await.unwrap();
+        // AuctionIndex: 15, ParaId: 2013
+        substrate_batch.index_block(10018925).await.unwrap();
+        // BountyIndex: 11
+        substrate_batch.index_block(15104642).await.unwrap();
+        // CandidateHash: 0x6a1cd467afb69aa2b23866538b1160a60d96228587c5d7efc1d3c1ce4e3efb63
+        substrate_batch.index_block(10059744).await.unwrap();
+        // EraIndex: 1076
+        substrate_batch.index_block(15825858).await.unwrap();
+        // MessageId: 0xc656c0814b4174d3fbae7b0dd3ae63a94ac858b9120f8dc13027d2ee89f54a46
+        substrate_batch.index_block(15100192).await.unwrap();
+        // PoolId: 12
+        substrate_batch.index_block(15180584).await.unwrap();
+        // PreimageHash: 0xdb2b6cb38c2f6704ed067da2e9001bc57314be4f0117f664a93c0d18610110c5
+        substrate_batch.index_block(15764612).await.unwrap();
+        // ProposalHash: 0x7c403355a3747fea8a84968a7a83b7f5d2b26ea0b5d63b317ae65c1b091cf07b
+        substrate_batch.index_block(10025666).await.unwrap();
+        // ProposalIndex: 103
+        substrate_batch.index_block(10022400).await.unwrap();
+        // RefIndex: 114
+        substrate_batch.index_block(15100839).await.unwrap();
+        // RegistrarIndex: 1
+        substrate_batch.index_block(10027254).await.unwrap();
+        // SessionIndex: 6552
+        substrate_batch.index_block(15649648).await.unwrap();
+        // TipHash: 0x729c6a740112abfc8cd143771f1f88518c3906e86f601a6c6a312fe7f7babf33
+        substrate_batch.index_block(10146463).await.unwrap();
+    */
     let mut block_futures = Vec::new();
 
     for n in 0..async_blocks {

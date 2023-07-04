@@ -29,6 +29,14 @@ pub struct Args {
     pub async_blocks: Option<u32>,
 }
 
+pub trait RuntimeIndexer {
+    fn process_event(
+        block_number: u32,
+        event_index: u32,
+        event: subxt::events::EventDetails<subxt::PolkadotConfig>,
+    );
+}
+
 #[derive(Clone)]
 pub struct Trees {
     pub root: sled::Db,

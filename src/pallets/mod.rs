@@ -1,5 +1,6 @@
 pub mod bags_list;
-pub mod balances;
+
+/*pub mod balances;
 pub mod bounties;
 pub mod child_bounties;
 pub mod claims;
@@ -24,3 +25,4 @@ pub mod treasury;
 pub mod vesting;
 
 pub mod polkadot;
+*/
