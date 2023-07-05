@@ -1,4 +1,4 @@
-use subxt::{metadata::Metadata, utils::AccountId32, Config, OnlineClient, PolkadotConfig};
+use subxt::{metadata::Metadata, utils::AccountId32, OnlineClient};
 
 use futures::StreamExt;
 use std::{collections::HashMap, time::SystemTime};

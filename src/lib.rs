@@ -11,7 +11,7 @@ use crate::shared::*;
 use substrate::*;
 use websockets::websockets_listen;
 
-use subxt::{OnlineClient, PolkadotConfig};
+use subxt::OnlineClient;
 
 #[cfg(test)]
 mod tests;
