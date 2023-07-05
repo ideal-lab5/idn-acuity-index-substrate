@@ -30,11 +30,15 @@ pub struct Args {
 }
 
 pub trait RuntimeIndexer {
+    type RuntimeConfig: subxt::Config;
+
     fn process_event(
+        indexer: &crate::Indexer<Self>,
         block_number: u32,
         event_index: u32,
-        event: subxt::events::EventDetails<subxt::PolkadotConfig>,
-    );
+        event: subxt::events::EventDetails<Self::RuntimeConfig>,
+    ) where
+        Self: Sized;
 }
 
 #[derive(Clone)]

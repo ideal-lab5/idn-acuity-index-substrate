@@ -2,9 +2,9 @@ use clap::Parser;
 
 use tokio::{join, sync::mpsc};
 
-mod pallets;
+pub mod pallets;
 pub mod shared;
-mod substrate;
+pub mod substrate;
 mod websockets;
 
 use crate::shared::*;
@@ -50,7 +50,9 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         .url
         .clone()
         .unwrap_or_else(|| "wss://rpc.polkadot.io:443".to_string());
-    let api = OnlineClient::<PolkadotConfig>::from_url(url).await.unwrap();
+    let api = OnlineClient::<R::RuntimeConfig>::from_url(url)
+        .await
+        .unwrap();
     println!("Connected to Substrate node.");
 
     // Create the channel for the websockets threads to send subscribe messages to the head thread.
@@ -60,7 +62,7 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
     //    let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone(), sub_rx));
     let substrate_batch = tokio::spawn(substrate_batch::<R>(api.clone(), trees.clone(), args));
     // Spawn websockets task.
-    let websockets_task = tokio::spawn(websockets_listen(api, trees.clone(), sub_tx));
+    let websockets_task = tokio::spawn(websockets_listen::<R>(api, trees.clone(), sub_tx));
     // Wait to exit.
     let _result = join!(/*substrate_head, */ substrate_batch, websockets_task);
     Ok(())

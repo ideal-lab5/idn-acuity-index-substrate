@@ -1,4 +1,4 @@
-use subxt::{metadata::Metadata, utils::AccountId32, OnlineClient, PolkadotConfig};
+use subxt::{metadata::Metadata, utils::AccountId32, Config, OnlineClient, PolkadotConfig};
 
 use futures::StreamExt;
 use std::{collections::HashMap, time::SystemTime};
@@ -8,7 +8,7 @@ use tokio::sync::{
     RwLock,
 };
 
-use crate::pallets::bags_list::*;
+//use crate::pallets::bags_list::*;
 /*use crate::pallets::balances::*;
 use crate::pallets::bounties::*;
 use crate::pallets::child_bounties::*;
@@ -81,9 +81,9 @@ pub async fn substrate_head(
 }
 */
 
-pub struct Indexer<R> {
+pub struct Indexer<R: RuntimeIndexer> {
     trees: Trees,
-    api: Option<OnlineClient<PolkadotConfig>>,
+    api: Option<OnlineClient<R::RuntimeConfig>>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
     sub_map: HashMap<Key, Vec<UnboundedSender<ResponseMessage>>>,
     phantom: std::marker::PhantomData<R>,
@@ -96,7 +96,7 @@ enum IndexBlockError {
 }
 
 impl<R: RuntimeIndexer> Indexer<R> {
-    fn new(trees: Trees, api: OnlineClient<PolkadotConfig>) -> Self {
+    fn new(trees: Trees, api: OnlineClient<R::RuntimeConfig>) -> Self {
         Indexer {
             trees,
             api: Some(api),
@@ -168,7 +168,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         for (i, evt) in events.iter().enumerate() {
             match evt {
                 Ok(evt) => {
-                    R::process_event(block_number, i.try_into().unwrap(), evt);
+                    R::process_event(self, block_number, i.try_into().unwrap(), evt);
                 }
                 Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
@@ -177,78 +177,80 @@ impl<R: RuntimeIndexer> Indexer<R> {
         Ok(())
     }
 
-    fn index_event(
-        &self,
-        block_number: u32,
-        event_index: u32,
-        event: subxt::events::EventDetails<PolkadotConfig>,
-    ) {
-        self.index_event_variant(
-            event.pallet_index(),
-            event.variant_index(),
-            block_number,
-            event_index,
-        );
+    /*
+        fn index_event(
+            &self,
+            block_number: u32,
+            event_index: u32,
+            event: subxt::events::EventDetails<PolkadotConfig>,
+        ) {
+            self.index_event_variant(
+                event.pallet_index(),
+                event.variant_index(),
+                block_number,
+                event_index,
+            );
 
-        let pallet_name = event.pallet_name().to_owned();
-        //    let variant_name = event.variant_name().to_owned();
+            let pallet_name = event.pallet_name().to_owned();
+            //    let variant_name = event.variant_name().to_owned();
 
-        let result = match pallet_name.as_str() {
-            /*            "Auctions" => auctions_index_event(self, block_number, event_index, event),
-                    "Balances" => balance_index_event(self, block_number, event_index, event),
-                    "Bounties" => bounties_index_event(self, block_number, event_index, event),
-                    "ChildBounties" => child_bounties_index_event(self, block_number, event_index, event),
-                    "Claims" => claims_index_event(self, block_number, event_index, event),
-                    "Council" => council_index_event(self, block_number, event_index, event),
-                    "TechnicalCommittee" => {
-                        technical_committee_index_event(self, block_number, event_index, event)
-                    }
-                    "Crowdloan" => crowdloan_index_event(self, block_number, event_index, event),
-                    "Democracy" => democracy_index_event(self, block_number, event_index, event),
-                    "ElectionProviderMultiPhase" => {
-                        election_provider_multi_phase_index_event(self, block_number, event_index, event)
-                    }
-                    "FastUnstake" => fast_unstake_index_event(self, block_number, event_index, event),
-                    "Hrmp" => parachains_hrmp_index_event(self, block_number, event_index, event),
-                    "Identity" => identity_index_event(self, block_number, event_index, event),
-                    "Indices" => indices_index_event(self, block_number, event_index, event),
-                    "Multisig" => multisig_index_event(self, block_number, event_index, event),
-                    "NominationPools" => {
-                        nomination_pools_index_event(self, block_number, event_index, event)
-                    }
-                    "Paras" => parachains_paras_index_event(self, block_number, event_index, event),
-                    "Ump" => parachains_ump_index_event(self, block_number, event_index, event),
-                    "ParasDisputes" => {
-                        parachains_disputes_index_event(self, block_number, event_index, event)
-                    }
-                    "PhragmenElection" => {
-                        elections_phragmen_index_event(self, block_number, event_index, event)
-                    }
-                    "Preimage" => preimage_index_event(self, block_number, event_index, event),
-                    "Proxy" => proxy_index_event(self, block_number, event_index, event),
-                    "Registrar" => paras_registrar_index_event(self, block_number, event_index, event),
-                    "Session" => session_index_event(self, block_number, event_index, event),
-                    "Slots" => slots_index_event(self, block_number, event_index, event),
-                    "Staking" => staking_index_event(self, block_number, event_index, event),
-                    "System" => system_index_event(self, block_number, event_index, event),
-                    "Tips" => tips_index_event(self, block_number, event_index, event),
-                    "TransactionPayment" => {
-                        transaction_payment_index_event(self, block_number, event_index, event)
-                    }
-                    "Treasury" => treasury_index_event(self, block_number, event_index, event),
-                    "Vesting" => vesting_index_event(self, block_number, event_index, event),
-            */
-            "VoterList" => bags_list_index_event(self, block_number, event_index, event),
-            _ => Ok(()),
-        };
+            let result = match pallet_name.as_str() {
+                        "Auctions" => auctions_index_event(self, block_number, event_index, event),
+                        "Balances" => balance_index_event(self, block_number, event_index, event),
+                        "Bounties" => bounties_index_event(self, block_number, event_index, event),
+                        "ChildBounties" => child_bounties_index_event(self, block_number, event_index, event),
+                        "Claims" => claims_index_event(self, block_number, event_index, event),
+                        "Council" => council_index_event(self, block_number, event_index, event),
+                        "TechnicalCommittee" => {
+                            technical_committee_index_event(self, block_number, event_index, event)
+                        }
+                        "Crowdloan" => crowdloan_index_event(self, block_number, event_index, event),
+                        "Democracy" => democracy_index_event(self, block_number, event_index, event),
+                        "ElectionProviderMultiPhase" => {
+                            election_provider_multi_phase_index_event(self, block_number, event_index, event)
+                        }
+                        "FastUnstake" => fast_unstake_index_event(self, block_number, event_index, event),
+                        "Hrmp" => parachains_hrmp_index_event(self, block_number, event_index, event),
+                        "Identity" => identity_index_event(self, block_number, event_index, event),
+                        "Indices" => indices_index_event(self, block_number, event_index, event),
+                        "Multisig" => multisig_index_event(self, block_number, event_index, event),
+                        "NominationPools" => {
+                            nomination_pools_index_event(self, block_number, event_index, event)
+                        }
+                        "Paras" => parachains_paras_index_event(self, block_number, event_index, event),
+                        "Ump" => parachains_ump_index_event(self, block_number, event_index, event),
+                        "ParasDisputes" => {
+                            parachains_disputes_index_event(self, block_number, event_index, event)
+                        }
+                        "PhragmenElection" => {
+                            elections_phragmen_index_event(self, block_number, event_index, event)
+                        }
+                        "Preimage" => preimage_index_event(self, block_number, event_index, event),
+                        "Proxy" => proxy_index_event(self, block_number, event_index, event),
+                        "Registrar" => paras_registrar_index_event(self, block_number, event_index, event),
+                        "Session" => session_index_event(self, block_number, event_index, event),
+                        "Slots" => slots_index_event(self, block_number, event_index, event),
+                        "Staking" => staking_index_event(self, block_number, event_index, event),
+                        "System" => system_index_event(self, block_number, event_index, event),
+                        "Tips" => tips_index_event(self, block_number, event_index, event),
+                        "TransactionPayment" => {
+                            transaction_payment_index_event(self, block_number, event_index, event)
+                        }
+                        "Treasury" => treasury_index_event(self, block_number, event_index, event),
+                        "Vesting" => vesting_index_event(self, block_number, event_index, event),
 
-        match result {
-            Ok(()) => (),
-            Err(_error) => {
-                //    println!("Block: {}, pallet: {}, variant: {}, error: {}", block_number, pallet_name, variant_name, error);
-            }
-        };
-    }
+                "VoterList" => bags_list_index_event(self, block_number, event_index, event),
+                _ => Ok(()),
+            };
+
+            match result {
+                Ok(()) => (),
+                Err(_error) => {
+                    //    println!("Block: {}, pallet: {}, variant: {}, error: {}", block_number, pallet_name, variant_name, error);
+                }
+            };
+        }
+    */
 
     pub fn notify_subscribers(&self, search_key: Key, event: Event) {
         if let Some(txs) = self.sub_map.get(&search_key) {
@@ -526,7 +528,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
 }
 
 pub async fn substrate_batch<R: RuntimeIndexer>(
-    api: OnlineClient<PolkadotConfig>,
+    api: OnlineClient<R::RuntimeConfig>,
     trees: Trees,
     args: Args,
 ) {

@@ -26,7 +26,9 @@ pub fn process_msg_status(trees: &Trees) -> ResponseMessage {
     }
 }
 
-pub async fn process_msg_variants(api: &OnlineClient<PolkadotConfig>) -> ResponseMessage {
+pub async fn process_msg_variants<R: RuntimeIndexer>(
+    api: &OnlineClient<R::RuntimeConfig>,
+) -> ResponseMessage {
     let metadata = api.rpc().metadata_legacy(None).await.unwrap();
     let mut pallets = Vec::new();
 
@@ -447,8 +449,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
     }
 }
 
-pub async fn process_msg(
-    api: &OnlineClient<PolkadotConfig>,
+pub async fn process_msg<R: RuntimeIndexer>(
+    api: &OnlineClient<R::RuntimeConfig>,
     trees: &Trees,
     msg: RequestMessage,
     sub_tx: UnboundedSender<SubscribeMessage>,
@@ -457,7 +459,7 @@ pub async fn process_msg(
     println!("{:?}", msg);
     match msg {
         RequestMessage::Status => process_msg_status(trees),
-        RequestMessage::Variants => process_msg_variants(api).await,
+        RequestMessage::Variants => process_msg_variants::<R>(api).await,
         RequestMessage::GetEvents { key } => process_msg_get_events(trees, key),
         RequestMessage::SubscribeEvents { key } => {
             let msg = SubscribeMessage {
@@ -470,8 +472,8 @@ pub async fn process_msg(
     }
 }
 
-async fn handle_connection(
-    api: OnlineClient<PolkadotConfig>,
+async fn handle_connection<R: RuntimeIndexer>(
+    api: OnlineClient<R::RuntimeConfig>,
     raw_stream: TcpStream,
     addr: SocketAddr,
     trees: Trees,
@@ -495,7 +497,7 @@ async fn handle_connection(
                 if msg.is_text() || msg.is_binary() {
                     match serde_json::from_str(msg.to_text().unwrap()) {
                         Ok(request_json) => {
-                            let response_msg = process_msg(&api, &trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await;
+                            let response_msg = process_msg::<R>(&api, &trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await;
                             let response_json = serde_json::to_string(&response_msg).unwrap();
                             ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(response_json)).await.unwrap();
                         },
@@ -511,8 +513,8 @@ async fn handle_connection(
     }
 }
 
-pub async fn websockets_listen(
-    api: OnlineClient<PolkadotConfig>,
+pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
+    api: OnlineClient<R::RuntimeConfig>,
     trees: Trees,
     sub_tx: UnboundedSender<SubscribeMessage>,
 ) {
@@ -525,7 +527,7 @@ pub async fn websockets_listen(
 
     // Let's spawn the handling of each connection in a separate task.
     while let Ok((stream, addr)) = listener.accept().await {
-        tokio::spawn(handle_connection(
+        tokio::spawn(handle_connection::<R>(
             api.clone(),
             stream,
             addr,
