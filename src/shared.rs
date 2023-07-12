@@ -72,7 +72,7 @@ pub struct VariantKey {
     pub pallet_index: u8,
     pub variant_index: u8,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
+    pub event_index: u32,
 }
 
 impl VariantKey {
@@ -81,7 +81,7 @@ impl VariantKey {
             self.pallet_index.to_be_bytes().to_vec(),
             self.variant_index.to_be_bytes().to_vec(),
             self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
+            self.event_index.to_be_bytes().to_vec(),
         ]
         .concat()
     }
@@ -91,7 +91,7 @@ impl VariantKey {
             pallet_index: vec[0],
             variant_index: vec[1],
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[2..6])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[6..10])),
+            event_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[6..10])),
         }
     }
 }
@@ -100,7 +100,7 @@ impl VariantKey {
 pub struct AccountIdKey {
     pub account_id: <SubstrateConfig as Config>::AccountId,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
+    pub event_index: u32,
 }
 
 impl AccountIdKey {
@@ -108,7 +108,7 @@ impl AccountIdKey {
         [
             self.account_id.0.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
+            self.event_index.to_be_bytes().to_vec(),
         ]
         .concat()
     }
@@ -117,7 +117,7 @@ impl AccountIdKey {
         AccountIdKey {
             account_id: AccountId32(vector_as_u8_32_array(&vec[0..32])),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
+            event_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
@@ -126,7 +126,7 @@ impl AccountIdKey {
 pub struct U32Key {
     pub key: u32,
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
+    pub event_index: u32,
 }
 
 impl U32Key {
@@ -134,7 +134,7 @@ impl U32Key {
         [
             self.key.to_be_bytes().to_vec(),
             self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
+            self.event_index.to_be_bytes().to_vec(),
         ]
         .concat()
     }
@@ -143,7 +143,7 @@ impl U32Key {
         U32Key {
             key: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
+            event_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[8..12])),
         }
     }
 }
@@ -152,7 +152,7 @@ impl U32Key {
 pub struct CandidateHashKey {
     pub candidate_hash: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
+    pub event_index: u32,
 }
 
 impl CandidateHashKey {
@@ -160,7 +160,7 @@ impl CandidateHashKey {
         [
             self.candidate_hash.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
+            self.event_index.to_be_bytes().to_vec(),
         ]
         .concat()
     }
@@ -169,7 +169,7 @@ impl CandidateHashKey {
         CandidateHashKey {
             candidate_hash: vector_as_u8_32_array(&vec[0..32]),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
+            event_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
@@ -178,7 +178,7 @@ impl CandidateHashKey {
 pub struct MessageIdKey {
     pub message_id: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
+    pub event_index: u32,
 }
 
 impl MessageIdKey {
@@ -186,7 +186,7 @@ impl MessageIdKey {
         [
             self.message_id.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
+            self.event_index.to_be_bytes().to_vec(),
         ]
         .concat()
     }
@@ -195,7 +195,7 @@ impl MessageIdKey {
         MessageIdKey {
             message_id: vector_as_u8_32_array(&vec[0..32]),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
+            event_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
@@ -204,7 +204,7 @@ impl MessageIdKey {
 pub struct HashKey {
     pub hash: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
+    pub event_index: u32,
 }
 
 impl HashKey {
@@ -212,7 +212,7 @@ impl HashKey {
         [
             self.hash.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
+            self.event_index.to_be_bytes().to_vec(),
         ]
         .concat()
     }
@@ -221,7 +221,7 @@ impl HashKey {
         HashKey {
             hash: vector_as_u8_32_array(&vec[0..32]),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
+            event_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
@@ -230,7 +230,7 @@ impl HashKey {
 pub struct TipHashKey {
     pub tip_hash: [u8; 32],
     pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub i: u32,
+    pub event_index: u32,
 }
 
 impl TipHashKey {
@@ -238,7 +238,7 @@ impl TipHashKey {
         [
             self.tip_hash.to_vec(),
             self.block_number.to_be_bytes().to_vec(),
-            self.i.to_be_bytes().to_vec(),
+            self.event_index.to_be_bytes().to_vec(),
         ]
         .concat()
     }
@@ -247,7 +247,7 @@ impl TipHashKey {
         TipHashKey {
             tip_hash: vector_as_u8_32_array(&vec[0..32]),
             block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            i: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
+            event_index: u32::from_be_bytes(vector_as_u8_4_array(&vec[36..40])),
         }
     }
 }
@@ -442,7 +442,7 @@ pub enum RequestMessage {
 #[serde(rename_all = "camelCase")]
 pub struct Event {
     pub block_number: u32,
-    pub i: u32,
+    pub event_index: u32,
 }
 
 #[derive(Serialize, Debug, Clone)]

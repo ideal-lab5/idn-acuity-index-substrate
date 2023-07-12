@@ -63,7 +63,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -85,7 +85,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -110,7 +110,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -135,7 +135,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -160,7 +160,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -182,7 +182,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -204,7 +204,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -226,7 +226,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -248,7 +248,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -270,7 +270,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -292,7 +292,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -314,7 +314,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -339,7 +339,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -361,7 +361,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -386,7 +386,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -411,7 +411,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
@@ -433,7 +433,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 
                 events.push(Event {
                     block_number: key.block_number,
-                    i: key.i,
+                    event_index: key.event_index,
                 });
 
                 if events.len() == 100 {
