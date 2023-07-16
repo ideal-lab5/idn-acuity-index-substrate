@@ -548,3 +548,23 @@ macro_rules! index_multisig_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_fast_unstake_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Unstaked { stash, .. } => {
+                $indexer.index_event_account_id(stash, $block_number, $event_index);
+            }
+            <$event_enum>::Slashed { stash, .. } => {
+                $indexer.index_event_account_id(stash, $block_number, $event_index);
+            }
+            <$event_enum>::BatchChecked { eras } => {
+                for era in eras {
+                    $indexer.index_event_era_index(era, $block_number, $event_index);
+                }
+            }
+            _ => {}
+        }
+    };
+}
