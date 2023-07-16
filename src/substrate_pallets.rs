@@ -185,3 +185,15 @@ macro_rules! index_staking_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_session_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::NewSession { session_index } => {
+                $indexer.index_event_session_index(session_index, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
