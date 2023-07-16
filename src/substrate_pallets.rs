@@ -474,3 +474,36 @@ macro_rules! index_identity_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_proxy_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::PureCreated { pure, who, .. } => {
+                $indexer.index_event_account_id(pure, $block_number, $event_index);
+                $indexer.index_event_account_id(who, $block_number, $event_index);
+            }
+            <$event_enum>::Announced { real, proxy, .. } => {
+                $indexer.index_event_account_id(real, $block_number, $event_index);
+                $indexer.index_event_account_id(proxy, $block_number, $event_index);
+            }
+            <$event_enum>::ProxyAdded {
+                delegator,
+                delegatee,
+                ..
+            } => {
+                $indexer.index_event_account_id(delegator, $block_number, $event_index);
+                $indexer.index_event_account_id(delegatee, $block_number, $event_index);
+            }
+            <$event_enum>::ProxyRemoved {
+                delegator,
+                delegatee,
+                ..
+            } => {
+                $indexer.index_event_account_id(delegator, $block_number, $event_index);
+                $indexer.index_event_account_id(delegatee, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
