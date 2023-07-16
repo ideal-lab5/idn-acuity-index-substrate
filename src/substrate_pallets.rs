@@ -130,3 +130,58 @@ macro_rules! index_transaction_payment_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_staking_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::EraPaid { era_index, .. } => {
+                $indexer.index_event_era_index(era_index, $block_number, $event_index);
+            }
+            <$event_enum>::Rewarded { stash, .. } => {
+                $indexer.index_event_account_id(stash, $block_number, $event_index);
+            }
+            <$event_enum>::Slashed { staker, .. } => {
+                $indexer.index_event_account_id(staker, $block_number, $event_index);
+            }
+            <$event_enum>::SlashReported {
+                validator,
+                fraction: _,
+                slash_era,
+            } => {
+                $indexer.index_event_account_id(validator, $block_number, $event_index);
+                $indexer.index_event_era_index(slash_era, $block_number, $event_index);
+            }
+            <$event_enum>::OldSlashingReportDiscarded { session_index } => {
+                $indexer.index_event_session_index(session_index, $block_number, $event_index);
+            }
+            <$event_enum>::Bonded { stash, .. } => {
+                $indexer.index_event_account_id(stash, $block_number, $event_index);
+            }
+            <$event_enum>::Unbonded { stash, .. } => {
+                $indexer.index_event_account_id(stash, $block_number, $event_index);
+            }
+            <$event_enum>::Withdrawn { stash, .. } => {
+                $indexer.index_event_account_id(stash, $block_number, $event_index);
+            }
+            <$event_enum>::Kicked { nominator, stash } => {
+                $indexer.index_event_account_id(nominator, $block_number, $event_index);
+                $indexer.index_event_account_id(stash, $block_number, $event_index);
+            }
+            <$event_enum>::Chilled { stash, .. } => {
+                $indexer.index_event_account_id(stash, $block_number, $event_index);
+            }
+            <$event_enum>::PayoutStarted {
+                era_index,
+                validator_stash,
+            } => {
+                $indexer.index_event_era_index(era_index, $block_number, $event_index);
+                $indexer.index_event_account_id(validator_stash, $block_number, $event_index);
+            }
+            <$event_enum>::ValidatorPrefsSet { stash, .. } => {
+                $indexer.index_event_account_id(stash, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
