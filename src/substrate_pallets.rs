@@ -347,3 +347,29 @@ macro_rules! index_collective_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_elections_phragmen_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::NewTerm { new_members } => {
+                for member in &new_members {
+                    $indexer.index_event_account_id(member.0.clone(), $block_number, $event_index);
+                }
+            }
+            <$event_enum>::MemberKicked { member } => {
+                $indexer.index_event_account_id(member, $block_number, $event_index);
+            }
+            <$event_enum>::Renounced { candidate } => {
+                $indexer.index_event_account_id(candidate, $block_number, $event_index);
+            }
+            <$event_enum>::CandidateSlashed { candidate, .. } => {
+                $indexer.index_event_account_id(candidate, $block_number, $event_index);
+            }
+            <$event_enum>::SeatHolderSlashed { seat_holder, .. } => {
+                $indexer.index_event_account_id(seat_holder, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
