@@ -37,7 +37,8 @@ pub trait RuntimeIndexer {
         block_number: u32,
         event_index: u32,
         event: subxt::events::EventDetails<Self::RuntimeConfig>,
-    ) where
+    ) -> Result<(), subxt::Error>
+    where
         Self: Sized;
 }
 

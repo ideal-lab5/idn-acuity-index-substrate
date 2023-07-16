@@ -168,7 +168,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         for (i, evt) in events.iter().enumerate() {
             match evt {
                 Ok(evt) => {
-                    R::process_event(self, block_number, i.try_into().unwrap(), evt);
+                    let _ = R::process_event(self, block_number, i.try_into().unwrap(), evt);
                 }
                 Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
