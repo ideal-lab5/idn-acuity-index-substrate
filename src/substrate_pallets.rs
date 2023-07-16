@@ -400,3 +400,18 @@ macro_rules! index_treasury_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_vesting_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::VestingUpdated { account, .. } => {
+                $indexer.index_event_account_id(account, $block_number, $event_index);
+            }
+            <$event_enum>::VestingCompleted { account } => {
+                $indexer.index_event_account_id(account, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
