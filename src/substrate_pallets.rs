@@ -588,3 +588,31 @@ macro_rules! index_election_provider_multi_phase_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_tips_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::NewTip { tip_hash } => {
+                $indexer.index_event_tip_hash(tip_hash.into(), $block_number, $event_index);
+            }
+            <$event_enum>::TipClosing { tip_hash } => {
+                $indexer.index_event_tip_hash(tip_hash.into(), $block_number, $event_index);
+            }
+            <$event_enum>::TipClosed { tip_hash, who, .. } => {
+                $indexer.index_event_tip_hash(tip_hash.into(), $block_number, $event_index);
+                $indexer.index_event_account_id(who, $block_number, $event_index);
+            }
+            <$event_enum>::TipRetracted { tip_hash } => {
+                $indexer.index_event_tip_hash(tip_hash.into(), $block_number, $event_index);
+            }
+            <$event_enum>::TipSlashed {
+                tip_hash, finder, ..
+            } => {
+                $indexer.index_event_tip_hash(tip_hash.into(), $block_number, $event_index);
+                $indexer.index_event_account_id(finder, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
