@@ -568,3 +568,23 @@ macro_rules! index_fast_unstake_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_election_provider_multi_phase_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::SolutionStored { origin, .. } => {
+                if let Some(account) = origin {
+                    $indexer.index_event_account_id(account, $block_number, $event_index);
+                }
+            }
+            <$event_enum>::Rewarded { account, .. } => {
+                $indexer.index_event_account_id(account, $block_number, $event_index);
+            }
+            <$event_enum>::Slashed { account, .. } => {
+                $indexer.index_event_account_id(account, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
