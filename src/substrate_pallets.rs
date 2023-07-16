@@ -507,3 +507,44 @@ macro_rules! index_proxy_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_multisig_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::NewMultisig {
+                approving,
+                multisig,
+                ..
+            } => {
+                $indexer.index_event_account_id(approving, $block_number, $event_index);
+                $indexer.index_event_account_id(multisig, $block_number, $event_index);
+            }
+            <$event_enum>::MultisigApproval {
+                approving,
+                multisig,
+                ..
+            } => {
+                $indexer.index_event_account_id(approving, $block_number, $event_index);
+                $indexer.index_event_account_id(multisig, $block_number, $event_index);
+            }
+            <$event_enum>::MultisigExecuted {
+                approving,
+                multisig,
+                ..
+            } => {
+                $indexer.index_event_account_id(approving, $block_number, $event_index);
+                $indexer.index_event_account_id(multisig, $block_number, $event_index);
+            }
+            <$event_enum>::MultisigCancelled {
+                cancelling,
+                multisig,
+                ..
+            } => {
+                $indexer.index_event_account_id(cancelling, $block_number, $event_index);
+                $indexer.index_event_account_id(multisig, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
