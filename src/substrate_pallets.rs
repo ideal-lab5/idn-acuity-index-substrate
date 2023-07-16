@@ -32,7 +32,7 @@ macro_rules! index_preimage_event {
 }
 
 #[macro_export]
-macro_rules! index_indicies_event {
+macro_rules! index_indices_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::IndexAssigned { who, index } => {
