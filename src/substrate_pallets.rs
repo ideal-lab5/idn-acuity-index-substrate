@@ -277,3 +277,73 @@ macro_rules! index_democracy_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_collective_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Proposed {
+                account,
+                proposal_index,
+                proposal_hash,
+                ..
+            } => {
+                $indexer.index_event_account_id(account, $block_number, $event_index);
+                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index);
+                $indexer.index_event_proposal_hash(
+                    proposal_hash.into(),
+                    $block_number,
+                    $event_index,
+                );
+            }
+            <$event_enum>::Voted {
+                account,
+                proposal_hash,
+                ..
+            } => {
+                $indexer.index_event_account_id(account, $block_number, $event_index);
+                $indexer.index_event_proposal_hash(
+                    proposal_hash.into(),
+                    $block_number,
+                    $event_index,
+                );
+            }
+            <$event_enum>::Approved { proposal_hash } => {
+                $indexer.index_event_proposal_hash(
+                    proposal_hash.into(),
+                    $block_number,
+                    $event_index,
+                );
+            }
+            <$event_enum>::Disapproved { proposal_hash } => {
+                $indexer.index_event_proposal_hash(
+                    proposal_hash.into(),
+                    $block_number,
+                    $event_index,
+                );
+            }
+            <$event_enum>::Executed { proposal_hash, .. } => {
+                $indexer.index_event_proposal_hash(
+                    proposal_hash.into(),
+                    $block_number,
+                    $event_index,
+                );
+            }
+            <$event_enum>::MemberExecuted { proposal_hash, .. } => {
+                $indexer.index_event_proposal_hash(
+                    proposal_hash.into(),
+                    $block_number,
+                    $event_index,
+                );
+            }
+            <$event_enum>::Closed { proposal_hash, .. } => {
+                $indexer.index_event_proposal_hash(
+                    proposal_hash.into(),
+                    $block_number,
+                    $event_index,
+                );
+            }
+            _ => {}
+        }
+    };
+}
