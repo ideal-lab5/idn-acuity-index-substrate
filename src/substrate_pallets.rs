@@ -197,3 +197,83 @@ macro_rules! index_session_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_democracy_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Proposed { proposal_index, .. } => {
+                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index);
+            }
+            <$event_enum>::Tabled { proposal_index, .. } => {
+                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index);
+            }
+            <$event_enum>::Started { ref_index, .. } => {
+                $indexer.index_event_ref_index(ref_index, $block_number, $event_index);
+            }
+            <$event_enum>::Passed { ref_index } => {
+                $indexer.index_event_ref_index(ref_index, $block_number, $event_index);
+            }
+            <$event_enum>::NotPassed { ref_index } => {
+                $indexer.index_event_ref_index(ref_index, $block_number, $event_index);
+            }
+            <$event_enum>::Cancelled { ref_index } => {
+                $indexer.index_event_ref_index(ref_index, $block_number, $event_index);
+            }
+            <$event_enum>::Delegated { who, target } => {
+                $indexer.index_event_account_id(who, $block_number, $event_index);
+                $indexer.index_event_account_id(target, $block_number, $event_index);
+            }
+            <$event_enum>::Undelegated { account } => {
+                $indexer.index_event_account_id(account, $block_number, $event_index);
+            }
+            <$event_enum>::Vetoed {
+                who, proposal_hash, ..
+            } => {
+                $indexer.index_event_account_id(who, $block_number, $event_index);
+                $indexer.index_event_proposal_hash(
+                    proposal_hash.into(),
+                    $block_number,
+                    $event_index,
+                );
+            }
+            <$event_enum>::Blacklisted { proposal_hash } => {
+                $indexer.index_event_proposal_hash(
+                    proposal_hash.into(),
+                    $block_number,
+                    $event_index,
+                );
+            }
+            <$event_enum>::Voted {
+                voter, ref_index, ..
+            } => {
+                $indexer.index_event_account_id(voter, $block_number, $event_index);
+                $indexer.index_event_ref_index(ref_index, $block_number, $event_index);
+            }
+            <$event_enum>::Seconded {
+                seconder,
+                prop_index,
+            } => {
+                $indexer.index_event_account_id(seconder, $block_number, $event_index);
+                $indexer.index_event_proposal_index(prop_index, $block_number, $event_index);
+            }
+            <$event_enum>::ProposalCanceled { prop_index } => {
+                $indexer.index_event_proposal_index(prop_index, $block_number, $event_index);
+            }
+            <$event_enum>::MetadataSet { owner: _, hash } => {
+                $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index);
+            }
+            <$event_enum>::MetadataCleared { owner: _, hash } => {
+                $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index);
+            }
+            <$event_enum>::MetadataTransferred {
+                prev_owner: _,
+                owner: _,
+                hash,
+            } => {
+                $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
