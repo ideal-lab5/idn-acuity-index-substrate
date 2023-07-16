@@ -146,8 +146,8 @@ macro_rules! index_staking_event {
             }
             <$event_enum>::SlashReported {
                 validator,
-                fraction: _,
                 slash_era,
+                ..
             } => {
                 $indexer.index_event_account_id(validator, $block_number, $event_index);
                 $indexer.index_event_era_index(slash_era, $block_number, $event_index);
@@ -260,17 +260,13 @@ macro_rules! index_democracy_event {
             <$event_enum>::ProposalCanceled { prop_index } => {
                 $indexer.index_event_proposal_index(prop_index, $block_number, $event_index);
             }
-            <$event_enum>::MetadataSet { owner: _, hash } => {
+            <$event_enum>::MetadataSet { hash, .. } => {
                 $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index);
             }
-            <$event_enum>::MetadataCleared { owner: _, hash } => {
+            <$event_enum>::MetadataCleared { hash, .. } => {
                 $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index);
             }
-            <$event_enum>::MetadataTransferred {
-                prev_owner: _,
-                owner: _,
-                hash,
-            } => {
+            <$event_enum>::MetadataTransferred { hash, .. } => {
                 $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index);
             }
             _ => {}
@@ -368,6 +364,37 @@ macro_rules! index_elections_phragmen_event {
             }
             <$event_enum>::SeatHolderSlashed { seat_holder, .. } => {
                 $indexer.index_event_account_id(seat_holder, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! index_treasury_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Proposed { proposal_index } => {
+                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index);
+            }
+            <$event_enum>::Awarded {
+                proposal_index,
+                account,
+                ..
+            } => {
+                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index);
+                $indexer.index_event_account_id(account, $block_number, $event_index);
+            }
+            <$event_enum>::Rejected { proposal_index, .. } => {
+                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index);
+            }
+            <$event_enum>::SpendApproved {
+                proposal_index,
+                beneficiary,
+                ..
+            } => {
+                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index);
+                $indexer.index_event_account_id(beneficiary, $block_number, $event_index);
             }
             _ => {}
         }
