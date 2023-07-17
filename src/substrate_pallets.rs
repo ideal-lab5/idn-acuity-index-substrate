@@ -650,3 +650,39 @@ macro_rules! index_bounties_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_child_bounties_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Added { index, child_index } => {
+                $indexer.index_event_bounty_index(index, $block_number, $event_index);
+                $indexer.index_event_bounty_index(child_index, $block_number, $event_index);
+            }
+            <$event_enum>::Awarded {
+                index,
+                child_index,
+                beneficiary,
+            } => {
+                $indexer.index_event_bounty_index(index, $block_number, $event_index);
+                $indexer.index_event_bounty_index(child_index, $block_number, $event_index);
+                $indexer.index_event_account_id(beneficiary, $block_number, $event_index);
+            }
+            <$event_enum>::Claimed {
+                index,
+                child_index,
+                beneficiary,
+                ..
+            } => {
+                $indexer.index_event_bounty_index(index, $block_number, $event_index);
+                $indexer.index_event_bounty_index(child_index, $block_number, $event_index);
+                $indexer.index_event_account_id(beneficiary, $block_number, $event_index);
+            }
+            <$event_enum>::Canceled { index, child_index } => {
+                $indexer.index_event_bounty_index(index, $block_number, $event_index);
+                $indexer.index_event_bounty_index(child_index, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
