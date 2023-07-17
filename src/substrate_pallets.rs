@@ -701,3 +701,96 @@ macro_rules! index_bags_list_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_nomination_pools_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Created { depositor, pool_id } => {
+                $indexer.index_event_account_id(depositor, $block_number, $event_index);
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::Bonded {
+                member, pool_id, ..
+            } => {
+                $indexer.index_event_account_id(member, $block_number, $event_index);
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::PaidOut {
+                member, pool_id, ..
+            } => {
+                $indexer.index_event_account_id(member, $block_number, $event_index);
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::Unbonded {
+                member,
+                pool_id,
+                era,
+                ..
+            } => {
+                $indexer.index_event_account_id(member, $block_number, $event_index);
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+                $indexer.index_event_era_index(era, $block_number, $event_index);
+            }
+            <$event_enum>::Withdrawn {
+                member, pool_id, ..
+            } => {
+                $indexer.index_event_account_id(member, $block_number, $event_index);
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::Destroyed { pool_id } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::StateChanged { pool_id, .. } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::MemberRemoved { pool_id, member } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+                $indexer.index_event_account_id(member, $block_number, $event_index);
+            }
+            <$event_enum>::RolesUpdated {
+                root,
+                bouncer,
+                nominator,
+            } => {
+                if let Some(account) = root {
+                    $indexer.index_event_account_id(account, $block_number, $event_index);
+                }
+                if let Some(account) = bouncer {
+                    $indexer.index_event_account_id(account, $block_number, $event_index);
+                }
+                if let Some(account) = nominator {
+                    $indexer.index_event_account_id(account, $block_number, $event_index);
+                }
+            }
+            <$event_enum>::PoolSlashed { pool_id, .. } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::UnbondingPoolSlashed { pool_id, era, .. } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+                $indexer.index_event_era_index(era, $block_number, $event_index);
+            }
+            <$event_enum>::PoolCommissionUpdated {
+                pool_id, current, ..
+            } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+                if let Some((i, account)) = current {
+                    $indexer.index_event_account_id(account, $block_number, $event_index);
+                }
+            }
+            <$event_enum>::PoolMaxCommissionUpdated { pool_id, .. } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::PoolCommissionChangeRateUpdated { pool_id, .. } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::PoolCommissionChangeRateUpdated { pool_id, .. } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            <$event_enum>::PoolCommissionClaimed { pool_id, .. } => {
+                $indexer.index_event_pool_id(pool_id, $block_number, $event_index);
+            }
+            _ => {}
+        }
+    };
+}
