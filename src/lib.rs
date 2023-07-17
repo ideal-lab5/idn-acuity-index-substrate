@@ -2,7 +2,6 @@ use clap::Parser;
 
 use tokio::{join, sync::mpsc};
 
-pub mod pallets;
 pub mod shared;
 pub mod substrate;
 pub mod substrate_pallets;
