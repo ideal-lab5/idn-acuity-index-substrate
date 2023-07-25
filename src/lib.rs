@@ -59,11 +59,11 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
     let (sub_tx, sub_rx) = mpsc::unbounded_channel();
 
     // Start Substrate tasks.
-    //    let substrate_head = tokio::spawn(substrate_head(api.clone(), trees.clone(), sub_rx));
+    let substrate_head = tokio::spawn(substrate_head::<R>(api.clone(), trees.clone(), sub_rx));
     let substrate_batch = tokio::spawn(substrate_batch::<R>(api.clone(), trees.clone(), args));
     // Spawn websockets task.
     let websockets_task = tokio::spawn(websockets_listen::<R>(api, trees.clone(), sub_tx));
     // Wait to exit.
-    let _result = join!(/*substrate_head, */ substrate_batch, websockets_task);
+    let _result = join!(substrate_head, substrate_batch, websockets_task);
     Ok(())
 }

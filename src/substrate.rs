@@ -8,50 +8,14 @@ use tokio::sync::{
     RwLock,
 };
 
-//use crate::pallets::bags_list::*;
-/*use crate::pallets::balances::*;
-use crate::pallets::bounties::*;
-use crate::pallets::child_bounties::*;
-use crate::pallets::claims::*;
-use crate::pallets::council::*;
-use crate::pallets::democracy::*;
-use crate::pallets::election_provider_multi_phase::*;
-use crate::pallets::elections_phragmen::*;
-use crate::pallets::fast_unstake::*;
-use crate::pallets::identity::*;
-use crate::pallets::indices::*;
-use crate::pallets::multisig::*;
-use crate::pallets::nomination_pools::*;
-use crate::pallets::preimage::*;
-use crate::pallets::proxy::*;
-use crate::pallets::session::*;
-use crate::pallets::staking::*;
-use crate::pallets::system::*;
-use crate::pallets::technical_committee::*;
-use crate::pallets::tips::*;
-use crate::pallets::transaction_payment::*;
-use crate::pallets::treasury::*;
-use crate::pallets::vesting::*;
-*/
 use crate::shared::*;
 
-/*use crate::pallets::polkadot::auctions::*;
-use crate::pallets::polkadot::crowdloan::*;
-use crate::pallets::polkadot::parachains_disputes::*;
-use crate::pallets::polkadot::parachains_hrmp::*;
-use crate::pallets::polkadot::parachains_paras::*;
-use crate::pallets::polkadot::parachains_ump::*;
-use crate::pallets::polkadot::paras_registrar::*;
-use crate::pallets::polkadot::slots::*;
-*/
-
-/*
-pub async fn substrate_head(
-    api: OnlineClient<PolkadotConfig>,
+pub async fn substrate_head<R: RuntimeIndexer>(
+    api: OnlineClient<R::RuntimeConfig>,
     trees: Trees,
     mut sub_rx: UnboundedReceiver<SubscribeMessage>,
 ) {
-    let mut indexer = Indexer::new(trees.clone(), api.clone());
+    let mut indexer = Indexer::<R>::new(trees.clone(), api.clone());
 
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
@@ -60,7 +24,7 @@ pub async fn substrate_head(
         tokio::select! {
             block = blocks_sub.next() => {
                 let block = block.unwrap().unwrap();
-                let block_number = block.header().number;
+                let block_number:u32 = block.number().into().try_into().unwrap();
                 println!(" ✨ #{block_number}");
                 indexer.index_block(block_number).await.unwrap();
                 trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
@@ -79,7 +43,6 @@ pub async fn substrate_head(
         }
     }
 }
-*/
 
 pub struct Indexer<R: RuntimeIndexer> {
     trees: Trees,
