@@ -1,5 +1,3 @@
-use clap::Parser;
-
 use tokio::{join, sync::mpsc};
 
 pub mod shared;
@@ -17,9 +15,10 @@ use subxt::OnlineClient;
 mod tests;
 
 pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + 'static>(
+    url: String,
+    block_number: Option<u32>,
+    async_blocks: Option<u32>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // Check command line parameters.
-    let args = Args::parse();
     // Open database.
     let path = "db";
     let db = sled::open(path)?;
@@ -46,10 +45,6 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
     };
     println!("Opened database.");
     // Determine url of Substrate node to connect to.
-    let url = args
-        .url
-        .clone()
-        .unwrap_or_else(|| "wss://rpc.polkadot.io:443".to_string());
     let api = OnlineClient::<R::RuntimeConfig>::from_url(url)
         .await
         .unwrap();
@@ -60,7 +55,12 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
 
     // Start Substrate tasks.
     let substrate_head = tokio::spawn(substrate_head::<R>(api.clone(), trees.clone(), sub_rx));
-    let substrate_batch = tokio::spawn(substrate_batch::<R>(api.clone(), trees.clone(), args));
+    let substrate_batch = tokio::spawn(substrate_batch::<R>(
+        api.clone(),
+        trees.clone(),
+        block_number,
+        async_blocks,
+    ));
     // Spawn websockets task.
     let websockets_task = tokio::spawn(websockets_listen::<R>(api, trees.clone(), sub_tx));
     // Wait to exit.

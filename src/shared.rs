@@ -1,5 +1,3 @@
-use clap::Parser;
-
 use subxt::{config::Header, utils::AccountId32, Config, SubstrateConfig};
 
 use sled::Tree;
@@ -14,20 +12,6 @@ pub struct ParaId(pub u32);
 
 #[subxt::subxt(runtime_metadata_path = "metadata.scale")]
 pub mod polkadot {}
-
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-pub struct Args {
-    /// URL of Substrate node to connect to.
-    #[arg(short, long)]
-    pub url: Option<String>,
-    /// Block number to start indexing from.
-    #[arg(short, long)]
-    pub block_height: Option<u32>,
-    /// How many blocks to query at the same time [128]
-    #[arg(short, long)]
-    pub async_blocks: Option<u32>,
-}
 
 pub trait RuntimeIndexer {
     type RuntimeConfig: subxt::Config;
