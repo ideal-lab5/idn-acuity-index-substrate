@@ -10,9 +10,6 @@ use tokio::sync::mpsc::UnboundedSender;
 #[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub struct ParaId(pub u32);
 
-#[subxt::subxt(runtime_metadata_path = "metadata.scale")]
-pub mod polkadot {}
-
 pub trait RuntimeIndexer {
     type RuntimeConfig: subxt::Config;
 
