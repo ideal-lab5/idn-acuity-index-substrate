@@ -15,7 +15,7 @@ use subxt::OnlineClient;
 mod tests;
 
 pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + 'static>(
-    url: String,
+    url: Option<String>,
     block_number: Option<u32>,
     async_blocks: Option<u32>,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -48,15 +48,17 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         tip_hash: db.open_tree("tip_hash")?,
     };
     println!("Opened db: {}", path);
+    let url = match url {
+        Some(url) => url,
+        None => R::get_url().to_owned(),
+    };
     // Determine url of Substrate node to connect to.
-    let api = OnlineClient::<R::RuntimeConfig>::from_url(url)
+    let api = OnlineClient::<R::RuntimeConfig>::from_url(&url)
         .await
         .unwrap();
-    println!("Connected to Substrate node.");
-
+    println!("Connected to: {}", url);
     // Create the channel for the websockets threads to send subscribe messages to the head thread.
     let (sub_tx, sub_rx) = mpsc::unbounded_channel();
-
     // Start Substrate tasks.
     let substrate_head = tokio::spawn(substrate_head::<R>(api.clone(), trees.clone(), sub_rx));
     let substrate_batch = tokio::spawn(substrate_batch::<R>(

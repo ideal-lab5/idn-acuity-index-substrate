@@ -15,6 +15,10 @@ pub trait RuntimeIndexer {
 
     fn get_name() -> &'static str;
 
+    fn get_url() -> &'static str;
+
+    fn get_start_block() -> u32;
+
     fn process_event(
         indexer: &crate::Indexer<Self>,
         block_number: u32,

@@ -583,15 +583,16 @@ pub async fn substrate_batch<R: RuntimeIndexer>(
             } {
                 true => match trees.root.get("last_head_block").unwrap() {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
-                    None => 0,
+                    None => R::get_start_block(),
                 },
                 false => match trees.root.get("last_batch_block").unwrap() {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
-                    None => 0,
+                    None => R::get_start_block(),
                 },
             }
         }
     };
+    println!("Batch indexing from #{}", block_number);
     // Determine the correct block to start batch indexing.
     let async_blocks = async_blocks.unwrap_or(128);
     // Record in database that batch indexing has not finished.
