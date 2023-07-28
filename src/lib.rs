@@ -19,9 +19,13 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
     block_number: Option<u32>,
     async_blocks: Option<u32>,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let name = R::get_name();
+    println!("Indexing {}", name);
     // Open database.
-    let path = "db";
-    let db = sled::open(path)?;
+    let mut path = "~/.local/share/hybrid-indexer/".to_owned();
+    path.push_str(name);
+    path.push_str("/db");
+    let db = sled::open(&path)?;
     let trees = Trees {
         root: db.clone(),
         variant: db.open_tree("variant")?,
@@ -43,7 +47,7 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         session_index: db.open_tree("session_index")?,
         tip_hash: db.open_tree("tip_hash")?,
     };
-    println!("Opened database.");
+    println!("Opened db: {}", path);
     // Determine url of Substrate node to connect to.
     let api = OnlineClient::<R::RuntimeConfig>::from_url(url)
         .await

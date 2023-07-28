@@ -13,6 +13,8 @@ pub struct ParaId(pub u32);
 pub trait RuntimeIndexer {
     type RuntimeConfig: subxt::Config;
 
+    fn get_name() -> &'static str;
+
     fn process_event(
         indexer: &crate::Indexer<Self>,
         block_number: u32,
