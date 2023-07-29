@@ -22,9 +22,11 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
     let name = R::get_name();
     println!("Indexing {}", name);
     // Open database.
-    let mut path = "~/.local/share/hybrid-indexer/".to_owned();
-    path.push_str(name);
-    path.push_str("/db");
+    let mut path = home::home_dir().ok_or("No home directory.")?;
+    path.push(".local/share/hybrid-indexer");
+    path.push(name);
+    path.push("db");
+    println!("Opening db: {}", path.display());
     let db = sled::open(&path)?;
     let trees = Trees {
         root: db.clone(),
@@ -47,7 +49,6 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         session_index: db.open_tree("session_index")?,
         tip_hash: db.open_tree("tip_hash")?,
     };
-    println!("Opened db: {}", path);
     let url = match url {
         Some(url) => url,
         None => R::get_url().to_owned(),
