@@ -203,7 +203,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         // Insert record.
         self.trees.account_id.insert(key, &[]).unwrap();
         // Notify subscribers.
-        let search_key = Key::AccountId(AccountId32Hash(account_id.0));
+        let search_key = Key::AccountId(Bytes32(account_id.0));
         self.notify_subscribers(
             search_key,
             Event {

@@ -398,7 +398,7 @@ impl<'de> Deserialize<'de> for Bytes32 {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
 #[serde(tag = "type", content = "value")]
 pub enum Key {
-    AccountId(AccountId32Hash),
+    AccountId(Bytes32),
     AccountIndex(u32),
     AuctionIndex(u32),
     BountyIndex(u32),
