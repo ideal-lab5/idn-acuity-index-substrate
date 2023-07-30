@@ -1,10 +1,38 @@
 use crate::shared::*;
 use crate::substrate::*;
 use crate::websockets::*;
+use crate::*;
 
 use subxt::utils::AccountId32;
 
 use std::str::FromStr;
+
+pub struct TestIndexer;
+
+impl RuntimeIndexer for TestIndexer {
+    type RuntimeConfig = subxt::PolkadotConfig;
+
+    fn get_name() -> &'static str {
+        "test"
+    }
+
+    fn get_url() -> &'static str {
+        ""
+    }
+
+    fn get_start_block() -> u32 {
+        0
+    }
+
+    fn process_event(
+        _indexer: &Indexer<Self>,
+        _block_number: u32,
+        _event_index: u32,
+        _event: subxt::events::EventDetails<Self::RuntimeConfig>,
+    ) -> Result<(), subxt::Error> {
+        Ok(())
+    }
+}
 
 fn init_db(name: &str) -> Trees {
     let db = sled::open(name).unwrap();
@@ -36,7 +64,7 @@ fn test_variant_key() {
         pallet_index: 3,
         variant_index: 65,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let key2 = VariantKey::unserialize(key1.serialize());
@@ -46,14 +74,14 @@ fn test_variant_key() {
 #[test]
 fn test_index_event_variant() {
     let trees = init_db("target/debug/test_variant");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_variant(3, 65, 4, 5);
 
     let key1 = VariantKey {
         pallet_index: 3,
         variant_index: 65,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees.variant.scan_prefix([3, 65]).keys().next().unwrap();
@@ -64,7 +92,7 @@ fn test_index_event_variant() {
 #[tokio::test]
 async fn test_process_msg_variant() {
     let trees = init_db("target/debug/test_process_msg_variant");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_variant(3, 65, 4, 5);
     indexer.index_event_variant(3, 65, 8, 5);
     indexer.index_event_variant(3, 65, 10, 5);
@@ -92,7 +120,7 @@ fn test_account_id_key() {
         account_id: AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
             .unwrap(),
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let key2 = AccountIdKey::unserialize(key1.serialize());
@@ -102,7 +130,7 @@ fn test_account_id_key() {
 #[test]
 fn test_index_event_account_id() {
     let trees = init_db("target/debug/test_account_id");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let account_id =
         AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap();
     indexer.index_event_account_id(account_id.clone(), 4, 5);
@@ -110,7 +138,7 @@ fn test_index_event_account_id() {
     let key1 = AccountIdKey {
         account_id: account_id.clone(),
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -126,14 +154,14 @@ fn test_index_event_account_id() {
 #[tokio::test]
 async fn test_process_msg_account_id() {
     let trees = init_db("target/debug/test_process_msg_account_id");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let account_id =
         AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY").unwrap();
     indexer.index_event_account_id(account_id.clone(), 4, 5);
     indexer.index_event_account_id(account_id.clone(), 8, 5);
     indexer.index_event_account_id(account_id.clone(), 10, 5);
 
-    let response = process_msg_get_events(&trees, Key::AccountId(AccountId32Hash(account_id.0)));
+    let response = process_msg_get_events(&trees, Key::AccountId(Bytes32(account_id.0)));
 
     let ResponseMessage::Events {
         key: Key::AccountId(response_account_id),
@@ -142,7 +170,7 @@ async fn test_process_msg_account_id() {
     else {
         panic!("Wrong response message.");
     };
-    assert_eq!(AccountId32Hash(account_id.0), response_account_id);
+    assert_eq!(Bytes32(account_id.0), response_account_id);
     assert_eq!(events.len(), 3);
     assert_eq!(events[0].block_number, 10);
     assert_eq!(events[1].block_number, 8);
@@ -154,7 +182,7 @@ fn test_u32_key() {
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let key2 = U32Key::unserialize(key1.serialize());
@@ -164,13 +192,13 @@ fn test_u32_key() {
 #[test]
 fn test_index_event_account_index() {
     let trees = init_db("target/debug/test_account_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_account_index(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -186,7 +214,7 @@ fn test_index_event_account_index() {
 #[tokio::test]
 async fn test_process_msg_account_index() {
     let trees = init_db("target/debug/test_process_msg_account_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let account_index = 88;
     indexer.index_event_account_index(account_index, 4, 5);
     indexer.index_event_account_index(account_index, 8, 5);
@@ -211,13 +239,13 @@ async fn test_process_msg_account_index() {
 #[test]
 fn test_index_event_auction_index() {
     let trees = init_db("target/debug/test_auction_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_auction_index(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -233,7 +261,7 @@ fn test_index_event_auction_index() {
 #[tokio::test]
 async fn test_process_msg_auction_index() {
     let trees = init_db("target/debug/test_process_msg_auction_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let auction_index = 88;
     indexer.index_event_auction_index(auction_index, 4, 5);
     indexer.index_event_auction_index(auction_index, 8, 5);
@@ -258,13 +286,13 @@ async fn test_process_msg_auction_index() {
 #[test]
 fn test_index_event_bounty_index() {
     let trees = init_db("target/debug/test_bounty_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_bounty_index(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -280,7 +308,7 @@ fn test_index_event_bounty_index() {
 #[tokio::test]
 async fn test_process_msg_bounty_index() {
     let trees = init_db("target/debug/test_process_msg_bounty_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let bounty_index = 88;
     indexer.index_event_bounty_index(bounty_index, 4, 5);
     indexer.index_event_bounty_index(bounty_index, 8, 5);
@@ -307,7 +335,7 @@ fn test_candidate_hash_key() {
     let key1: CandidateHashKey = CandidateHashKey {
         candidate_hash: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let key2 = CandidateHashKey::unserialize(key1.serialize());
@@ -317,13 +345,13 @@ fn test_candidate_hash_key() {
 #[test]
 fn test_index_event_candidate_hash() {
     let trees = init_db("target/debug/test_candidate_hash");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_candidate_hash([8; 32], 4, 5);
 
     let key1 = CandidateHashKey {
         candidate_hash: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -339,7 +367,7 @@ fn test_index_event_candidate_hash() {
 #[tokio::test]
 async fn test_process_msg_candidate_hash() {
     let trees = init_db("target/debug/test_process_msg_candidate_hash");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let candidate_hash = Bytes32([8; 32]);
     indexer.index_event_candidate_hash(candidate_hash.0, 4, 5);
     indexer.index_event_candidate_hash(candidate_hash.0, 8, 5);
@@ -364,13 +392,13 @@ async fn test_process_msg_candidate_hash() {
 #[test]
 fn test_index_event_era_index() {
     let trees = init_db("target/debug/test_era_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_era_index(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -386,7 +414,7 @@ fn test_index_event_era_index() {
 #[tokio::test]
 async fn test_process_msg_era_index() {
     let trees = init_db("target/debug/test_process_msg_era_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let era_index = 88;
     indexer.index_event_era_index(era_index, 4, 5);
     indexer.index_event_era_index(era_index, 8, 5);
@@ -413,7 +441,7 @@ fn test_message_id_key() {
     let key1: MessageIdKey = MessageIdKey {
         message_id: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let key2 = MessageIdKey::unserialize(key1.serialize());
@@ -423,13 +451,13 @@ fn test_message_id_key() {
 #[test]
 fn test_index_event_message_id() {
     let trees = init_db("target/debug/test_message_id");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_message_id([8; 32], 4, 5);
 
     let key1 = MessageIdKey {
         message_id: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -445,7 +473,7 @@ fn test_index_event_message_id() {
 #[tokio::test]
 async fn test_process_msg_message_id() {
     let trees = init_db("target/debug/test_process_msg_message_id");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let message_id = Bytes32([8; 32]);
     indexer.index_event_message_id(message_id.0, 4, 5);
     indexer.index_event_message_id(message_id.0, 8, 5);
@@ -470,13 +498,13 @@ async fn test_process_msg_message_id() {
 #[test]
 fn test_index_event_para_id() {
     let trees = init_db("target/debug/test_para_id");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_para_id(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -492,7 +520,7 @@ fn test_index_event_para_id() {
 #[tokio::test]
 async fn test_process_msg_para_id() {
     let trees = init_db("target/debug/test_process_msg_para_id");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let para_id = 88;
     indexer.index_event_para_id(para_id, 4, 5);
     indexer.index_event_para_id(para_id, 8, 5);
@@ -517,13 +545,13 @@ async fn test_process_msg_para_id() {
 #[test]
 fn test_index_event_pool_id() {
     let trees = init_db("target/debug/test_pool_id");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_pool_id(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -539,7 +567,7 @@ fn test_index_event_pool_id() {
 #[tokio::test]
 async fn test_process_msg_pool_id() {
     let trees = init_db("target/debug/test_process_msg_pool_id");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let pool_id = 88;
     indexer.index_event_pool_id(pool_id, 4, 5);
     indexer.index_event_pool_id(pool_id, 8, 5);
@@ -566,7 +594,7 @@ fn test_preimage_hash_key() {
     let key1 = HashKey {
         hash: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let key2 = HashKey::unserialize(key1.serialize());
@@ -576,13 +604,13 @@ fn test_preimage_hash_key() {
 #[test]
 fn test_index_event_preimage_hash() {
     let trees = init_db("target/debug/test_preimage_hash");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_preimage_hash([8; 32], 4, 5);
 
     let key1 = HashKey {
         hash: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -598,7 +626,7 @@ fn test_index_event_preimage_hash() {
 #[tokio::test]
 async fn test_process_msg_preimage_hash() {
     let trees = init_db("target/debug/test_process_msg_preimage_hash");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let preimage_hash = Bytes32([8; 32]);
     indexer.index_event_preimage_hash(preimage_hash.0, 4, 5);
     indexer.index_event_preimage_hash(preimage_hash.0, 8, 5);
@@ -625,7 +653,7 @@ fn test_proposal_hash_key() {
     let key1 = HashKey {
         hash: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let key2 = HashKey::unserialize(key1.serialize());
@@ -635,13 +663,13 @@ fn test_proposal_hash_key() {
 #[test]
 fn test_index_event_proposal_hash() {
     let trees = init_db("target/debug/test_proposal_hash");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_proposal_hash([8; 32], 4, 5);
 
     let key1 = HashKey {
         hash: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -657,7 +685,7 @@ fn test_index_event_proposal_hash() {
 #[tokio::test]
 async fn test_process_msg_proposal_hash() {
     let trees = init_db("target/debug/test_process_msg_proposal_hash");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let proposal_hash = Bytes32([8; 32]);
     indexer.index_event_proposal_hash(proposal_hash.0, 4, 5);
     indexer.index_event_proposal_hash(proposal_hash.0, 8, 5);
@@ -682,13 +710,13 @@ async fn test_process_msg_proposal_hash() {
 #[test]
 fn test_index_event_proposal_index() {
     let trees = init_db("target/debug/test_proposal_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_proposal_index(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -704,7 +732,7 @@ fn test_index_event_proposal_index() {
 #[tokio::test]
 async fn test_process_msg_proposal_index() {
     let trees = init_db("target/debug/test_process_msg_proposal_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let proposal_index = 88;
     indexer.index_event_proposal_index(proposal_index, 4, 5);
     indexer.index_event_proposal_index(proposal_index, 8, 5);
@@ -729,13 +757,13 @@ async fn test_process_msg_proposal_index() {
 #[test]
 fn test_index_event_ref_index() {
     let trees = init_db("target/debug/test_ref_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_ref_index(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -751,7 +779,7 @@ fn test_index_event_ref_index() {
 #[tokio::test]
 async fn test_process_msg_ref_index() {
     let trees = init_db("target/debug/test_process_msg_ref_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let ref_index = 88;
     indexer.index_event_ref_index(ref_index, 4, 5);
     indexer.index_event_ref_index(ref_index, 8, 5);
@@ -776,13 +804,13 @@ async fn test_process_msg_ref_index() {
 #[test]
 fn test_index_event_registrar_index() {
     let trees = init_db("target/debug/test_registrar_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_registrar_index(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -798,7 +826,7 @@ fn test_index_event_registrar_index() {
 #[tokio::test]
 async fn test_process_msg_registrar_index() {
     let trees = init_db("target/debug/test_process_msg_registrar_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let registrar_index = 88;
     indexer.index_event_registrar_index(registrar_index, 4, 5);
     indexer.index_event_registrar_index(registrar_index, 8, 5);
@@ -823,13 +851,13 @@ async fn test_process_msg_registrar_index() {
 #[test]
 fn test_index_event_session_index() {
     let trees = init_db("target/debug/test_session_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_session_index(8, 4, 5);
 
     let key1 = U32Key {
         key: 8,
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -845,7 +873,7 @@ fn test_index_event_session_index() {
 #[tokio::test]
 async fn test_process_msg_session_index() {
     let trees = init_db("target/debug/test_process_msg_session_index");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let session_index = 88;
     indexer.index_event_session_index(session_index, 4, 5);
     indexer.index_event_session_index(session_index, 8, 5);
@@ -872,7 +900,7 @@ fn test_tip_hash_key() {
     let key1: TipHashKey = TipHashKey {
         tip_hash: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let key2 = TipHashKey::unserialize(key1.serialize());
@@ -882,13 +910,13 @@ fn test_tip_hash_key() {
 #[test]
 fn test_index_event_tip_hash() {
     let trees = init_db("target/debug/test_tip_hash");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_tip_hash([8; 32], 4, 5);
 
     let key1 = TipHashKey {
         tip_hash: [8; 32],
         block_number: 4,
-        i: 5,
+        event_index: 5,
     };
 
     let k = trees
@@ -904,7 +932,7 @@ fn test_index_event_tip_hash() {
 #[tokio::test]
 async fn test_process_msg_tip_hash() {
     let trees = init_db("target/debug/test_process_msg_tip_hash");
-    let indexer = Indexer::new_test(trees.clone());
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let tip_hash = Bytes32([8; 32]);
     indexer.index_event_tip_hash(tip_hash.0, 4, 5);
     indexer.index_event_tip_hash(tip_hash.0, 8, 5);
