@@ -53,9 +53,9 @@ pub async fn process_msg_variants<R: RuntimeIndexer>(
 }
 
 pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
+    let mut events = Vec::new();
     match key {
         Key::Variant(pallet_id, variant_id) => {
-            let mut events = Vec::new();
             let mut iter = trees.variant.scan_prefix([pallet_id, variant_id]).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -70,14 +70,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::Variant(pallet_id, variant_id),
-                events,
-            }
         }
         Key::AccountId(account_id) => {
-            let mut events = Vec::new();
             let mut iter = trees.account_id.scan_prefix(account_id).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -92,14 +86,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::AccountId(account_id),
-                events,
-            }
         }
         Key::AccountIndex(account_index) => {
-            let mut events = Vec::new();
             let mut iter = trees
                 .account_index
                 .scan_prefix(account_index.to_be_bytes())
@@ -117,14 +105,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::AccountIndex(account_index),
-                events,
-            }
         }
         Key::AuctionIndex(auction_index) => {
-            let mut events = Vec::new();
             let mut iter = trees
                 .auction_index
                 .scan_prefix(auction_index.to_be_bytes())
@@ -142,14 +124,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::AuctionIndex(auction_index),
-                events,
-            }
         }
         Key::BountyIndex(bounty_index) => {
-            let mut events = Vec::new();
             let mut iter = trees
                 .bounty_index
                 .scan_prefix(bounty_index.to_be_bytes())
@@ -167,14 +143,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::BountyIndex(bounty_index),
-                events,
-            }
         }
         Key::CandidateHash(candidate_hash) => {
-            let mut events = Vec::new();
             let mut iter = trees.candidate_hash.scan_prefix(candidate_hash).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -189,14 +159,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::CandidateHash(candidate_hash),
-                events,
-            }
         }
         Key::EraIndex(era_index) => {
-            let mut events = Vec::new();
             let mut iter = trees.era_index.scan_prefix(era_index.to_be_bytes()).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -211,14 +175,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::EraIndex(era_index),
-                events,
-            }
         }
         Key::MessageId(message_id) => {
-            let mut events = Vec::new();
             let mut iter = trees.message_id.scan_prefix(message_id).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -233,14 +191,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::MessageId(message_id),
-                events,
-            }
         }
         Key::ParaId(para_id) => {
-            let mut events = Vec::new();
             let mut iter = trees.para_id.scan_prefix(para_id.to_be_bytes()).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -255,14 +207,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::ParaId(para_id),
-                events,
-            }
         }
         Key::PoolId(pool_id) => {
-            let mut events = Vec::new();
             let mut iter = trees.pool_id.scan_prefix(pool_id.to_be_bytes()).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -277,14 +223,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::PoolId(pool_id),
-                events,
-            }
         }
         Key::PreimageHash(preimage_hash) => {
-            let mut events = Vec::new();
             let mut iter = trees.preimage_hash.scan_prefix(preimage_hash).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -299,14 +239,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::PreimageHash(preimage_hash),
-                events,
-            }
         }
         Key::ProposalHash(proposal_hash) => {
-            let mut events = Vec::new();
             let mut iter = trees.proposal_hash.scan_prefix(proposal_hash).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -321,14 +255,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::ProposalHash(proposal_hash),
-                events,
-            }
         }
         Key::ProposalIndex(proposal_index) => {
-            let mut events = Vec::new();
             let mut iter = trees
                 .proposal_index
                 .scan_prefix(proposal_index.to_be_bytes())
@@ -346,14 +274,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::ProposalIndex(proposal_index),
-                events,
-            }
         }
         Key::RefIndex(ref_index) => {
-            let mut events = Vec::new();
             let mut iter = trees.ref_index.scan_prefix(ref_index.to_be_bytes()).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -368,14 +290,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::RefIndex(ref_index),
-                events,
-            }
         }
         Key::RegistrarIndex(registrar_index) => {
-            let mut events = Vec::new();
             let mut iter = trees
                 .registrar_index
                 .scan_prefix(registrar_index.to_be_bytes())
@@ -393,14 +309,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::RegistrarIndex(registrar_index),
-                events,
-            }
         }
         Key::SessionIndex(session_index) => {
-            let mut events = Vec::new();
             let mut iter = trees
                 .session_index
                 .scan_prefix(session_index.to_be_bytes())
@@ -418,14 +328,8 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::SessionIndex(session_index),
-                events,
-            }
         }
         Key::TipHash(tip_hash) => {
-            let mut events = Vec::new();
             let mut iter = trees.tip_hash.scan_prefix(tip_hash).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
@@ -440,13 +344,9 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                     break;
                 }
             }
-
-            ResponseMessage::Events {
-                key: Key::TipHash(tip_hash),
-                events,
-            }
         }
-    }
+    };
+    ResponseMessage::Events { key, events }
 }
 
 pub async fn process_msg<R: RuntimeIndexer>(
