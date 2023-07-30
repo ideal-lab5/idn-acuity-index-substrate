@@ -128,10 +128,17 @@ impl<R: RuntimeIndexer> Indexer<R> {
             .await
             .unwrap();
 
-        for (i, evt) in events.iter().enumerate() {
-            match evt {
-                Ok(evt) => {
-                    let _ = R::process_event(self, block_number, i.try_into().unwrap(), evt);
+        for (i, event) in events.iter().enumerate() {
+            match event {
+                Ok(event) => {
+                    let event_index = i.try_into().unwrap();
+                    self.index_event_variant(
+                        event.pallet_index(),
+                        event.variant_index(),
+                        block_number,
+                        event_index,
+                    );
+                    let _ = R::process_event(self, block_number, event_index, event);
                 }
                 Err(error) => println!("Block: {}, error: {}", block_number, error),
             }
