@@ -203,7 +203,7 @@ fn test_index_event_account_index() {
 
     let k = trees
         .account_index
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -250,7 +250,7 @@ fn test_index_event_auction_index() {
 
     let k = trees
         .auction_index
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -297,7 +297,7 @@ fn test_index_event_bounty_index() {
 
     let k = trees
         .bounty_index
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -356,7 +356,7 @@ fn test_index_event_candidate_hash() {
 
     let k = trees
         .candidate_hash
-        .scan_prefix([8; 32].to_vec())
+        .scan_prefix([8; 32])
         .keys()
         .next()
         .unwrap();
@@ -403,7 +403,7 @@ fn test_index_event_era_index() {
 
     let k = trees
         .era_index
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -460,12 +460,7 @@ fn test_index_event_message_id() {
         event_index: 5,
     };
 
-    let k = trees
-        .message_id
-        .scan_prefix([8; 32].to_vec())
-        .keys()
-        .next()
-        .unwrap();
+    let k = trees.message_id.scan_prefix([8; 32]).keys().next().unwrap();
     let key2 = MessageIdKey::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -509,7 +504,7 @@ fn test_index_event_para_id() {
 
     let k = trees
         .para_id
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -556,7 +551,7 @@ fn test_index_event_pool_id() {
 
     let k = trees
         .pool_id
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -615,7 +610,7 @@ fn test_index_event_preimage_hash() {
 
     let k = trees
         .preimage_hash
-        .scan_prefix([8; 32].to_vec())
+        .scan_prefix([8; 32])
         .keys()
         .next()
         .unwrap();
@@ -674,7 +669,7 @@ fn test_index_event_proposal_hash() {
 
     let k = trees
         .proposal_hash
-        .scan_prefix([8; 32].to_vec())
+        .scan_prefix([8; 32])
         .keys()
         .next()
         .unwrap();
@@ -721,7 +716,7 @@ fn test_index_event_proposal_index() {
 
     let k = trees
         .proposal_index
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -768,7 +763,7 @@ fn test_index_event_ref_index() {
 
     let k = trees
         .ref_index
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -815,7 +810,7 @@ fn test_index_event_registrar_index() {
 
     let k = trees
         .registrar_index
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -862,7 +857,7 @@ fn test_index_event_session_index() {
 
     let k = trees
         .session_index
-        .scan_prefix(8_u32.to_be_bytes().to_vec())
+        .scan_prefix(8_u32.to_be_bytes())
         .keys()
         .next()
         .unwrap();
@@ -919,12 +914,7 @@ fn test_index_event_tip_hash() {
         event_index: 5,
     };
 
-    let k = trees
-        .tip_hash
-        .scan_prefix([8; 32].to_vec())
-        .keys()
-        .next()
-        .unwrap();
+    let k = trees.tip_hash.scan_prefix([8; 32]).keys().next().unwrap();
     let key2 = TipHashKey::unserialize(k.unwrap().to_vec());
     assert_eq!(key1, key2);
 }
@@ -987,6 +977,6 @@ async fn test_process_msg_status() {
     {
         assert_eq!(last_head_block, 845433);
         assert_eq!(last_batch_block, 8445);
-        assert_eq!(batch_indexing_complete, false);
+        assert!(!batch_indexing_complete);
     }
 }
