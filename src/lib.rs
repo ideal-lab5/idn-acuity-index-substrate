@@ -17,7 +17,7 @@ mod tests;
 pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + 'static>(
     url: Option<String>,
     block_number: Option<u32>,
-    async_blocks: Option<u32>,
+    async_blocks: u32,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let name = R::get_name();
     println!("Indexing {}", name);

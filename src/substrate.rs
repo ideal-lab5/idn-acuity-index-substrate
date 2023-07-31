@@ -578,7 +578,7 @@ pub async fn substrate_batch<R: RuntimeIndexer>(
     api: OnlineClient<R::RuntimeConfig>,
     trees: Trees,
     block_number: Option<u32>,
-    async_blocks: Option<u32>,
+    async_blocks: u32,
 ) {
     // Determine the correct block to start batch indexing.
     let mut block_number: u32 = match block_number {
@@ -600,8 +600,6 @@ pub async fn substrate_batch<R: RuntimeIndexer>(
         }
     };
     println!("Batch indexing from #{}", block_number);
-    // Determine the correct block to start batch indexing.
-    let async_blocks = async_blocks.unwrap_or(128);
     // Record in database that batch indexing has not finished.
     trees
         .root
