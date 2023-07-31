@@ -18,6 +18,7 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
     url: Option<String>,
     block_number: Option<u32>,
     async_blocks: u32,
+    port: u16,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let name = R::get_name();
     println!("Indexing {}", name);
@@ -69,7 +70,7 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         async_blocks,
     ));
     // Spawn websockets task.
-    let websockets_task = tokio::spawn(websockets_listen::<R>(api, trees.clone(), sub_tx));
+    let websockets_task = tokio::spawn(websockets_listen::<R>(api, trees.clone(), sub_tx, port));
     // Wait to exit.
     let _result = join!(substrate_head, substrate_batch, websockets_task);
     Ok(())

@@ -417,8 +417,10 @@ pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
     api: OnlineClient<R::RuntimeConfig>,
     trees: Trees,
     sub_tx: UnboundedSender<SubscribeMessage>,
+    port: u16,
 ) {
-    let addr = "0.0.0.0:8172".to_string();
+    let mut addr = "0.0.0.0:".to_string();
+    addr.push_str(&port.to_string());
 
     // Create the event loop and TCP listener we'll accept connections on.
     let try_socket = TcpListener::bind(&addr).await;
