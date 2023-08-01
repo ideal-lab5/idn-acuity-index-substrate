@@ -1,3 +1,7 @@
+//! # Hybrid Indexer
+//!
+//! A library for indexing events from Substrate blockchains.
+
 use tokio::{join, sync::mpsc};
 
 pub mod shared;
@@ -14,6 +18,7 @@ use subxt::OnlineClient;
 #[cfg(test)]
 mod tests;
 
+/// Starts the indexer. Chain is defined by `R`.
 pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + 'static>(
     url: Option<String>,
     block_number: Option<u32>,
@@ -52,7 +57,7 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
     };
     let url = match url {
         Some(url) => url,
-        None => R::get_url().to_owned(),
+        None => R::get_default_url().to_owned(),
     };
     // Determine url of Substrate node to connect to.
     let api = OnlineClient::<R::RuntimeConfig>::from_url(&url)

@@ -590,11 +590,11 @@ pub async fn substrate_batch<R: RuntimeIndexer>(
             } {
                 true => match trees.root.get("last_head_block").unwrap() {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
-                    None => R::get_start_block(),
+                    None => R::get_default_start_block(),
                 },
                 false => match trees.root.get("last_batch_block").unwrap() {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
-                    None => R::get_start_block(),
+                    None => R::get_default_start_block(),
                 },
             }
         }
@@ -607,36 +607,7 @@ pub async fn substrate_batch<R: RuntimeIndexer>(
         .unwrap();
 
     let substrate_batch = Indexer::<R>::new(trees.clone(), api);
-    /*
-        // AccountIndex: 9494
-        substrate_batch.index_block(10013701).await.unwrap();
-        // AuctionIndex: 15, ParaId: 2013
-        substrate_batch.index_block(10018925).await.unwrap();
-        // BountyIndex: 11
-        substrate_batch.index_block(15104642).await.unwrap();
-        // CandidateHash: 0x6a1cd467afb69aa2b23866538b1160a60d96228587c5d7efc1d3c1ce4e3efb63
-        substrate_batch.index_block(10059744).await.unwrap();
-        // EraIndex: 1076
-        substrate_batch.index_block(15825858).await.unwrap();
-        // MessageId: 0xc656c0814b4174d3fbae7b0dd3ae63a94ac858b9120f8dc13027d2ee89f54a46
-        substrate_batch.index_block(15100192).await.unwrap();
-        // PoolId: 12
-        substrate_batch.index_block(15180584).await.unwrap();
-        // PreimageHash: 0xdb2b6cb38c2f6704ed067da2e9001bc57314be4f0117f664a93c0d18610110c5
-        substrate_batch.index_block(15764612).await.unwrap();
-        // ProposalHash: 0x7c403355a3747fea8a84968a7a83b7f5d2b26ea0b5d63b317ae65c1b091cf07b
-        substrate_batch.index_block(10025666).await.unwrap();
-        // ProposalIndex: 103
-        substrate_batch.index_block(10022400).await.unwrap();
-        // RefIndex: 114
-        substrate_batch.index_block(15100839).await.unwrap();
-        // RegistrarIndex: 1
-        substrate_batch.index_block(10027254).await.unwrap();
-        // SessionIndex: 6552
-        substrate_batch.index_block(15649648).await.unwrap();
-        // TipHash: 0x729c6a740112abfc8cd143771f1f88518c3906e86f601a6c6a312fe7f7babf33
-        substrate_batch.index_block(10146463).await.unwrap();
-    */
+
     let mut block_futures = Vec::new();
 
     for n in 0..async_blocks {

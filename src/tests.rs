@@ -16,11 +16,11 @@ impl RuntimeIndexer for TestIndexer {
         "test"
     }
 
-    fn get_url() -> &'static str {
+    fn get_default_url() -> &'static str {
         ""
     }
 
-    fn get_start_block() -> u32 {
+    fn get_default_start_block() -> u32 {
         0
     }
 

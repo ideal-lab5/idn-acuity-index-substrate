@@ -10,14 +10,15 @@ use tokio::sync::mpsc::UnboundedSender;
 #[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub struct ParaId(pub u32);
 
+/// Indexer for a specific chain.
 pub trait RuntimeIndexer {
     type RuntimeConfig: subxt::Config;
 
     fn get_name() -> &'static str;
 
-    fn get_url() -> &'static str;
+    fn get_default_url() -> &'static str;
 
-    fn get_start_block() -> u32;
+    fn get_default_start_block() -> u32;
 
     fn process_event(
         indexer: &crate::Indexer<Self>,
