@@ -42,6 +42,14 @@ The database keys are constructed in such a way that events can be found using i
 
 Database entries are key-only. No value is stored. The block number and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
 
+## Hybrid Dapp
+
+![Hybrid Dapp](https://raw.githubusercontent.com/hybrid-explorer/hybrid-indexer/main/doc/hybrid-dapp.png)
+
+[Hybrid Dapp](https://github.com/hybrid-explorer/hybrid-dapp) is a rudimentary frontend to Hybrid Indexers. Events can be searched by event parameters and event types. It can be configured to support multiple chains.
+
+In the future a hosted Substrate block explorer will be launched based on Hybrid Dapp.
+
 ## Web3 Foundation
 
 Learn more about the Web3 Foundation by visiting their [website](https://web3.foundation/), and stay up to date with the latest developments by following them on [Medium](https://medium.com/web3foundation) or [Twitter](https://twitter.com/web3foundation).
