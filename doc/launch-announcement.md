@@ -18,11 +18,11 @@ Development of this tool was funded by a [grant](https://github.com/w3f/Grants-P
 
 A Hybrid indexer binary has to be built for each chain type in a similar manner to how a full node binary using the Substrate library has to be built. For example, polkadot-indexer indexes events on chains supported by the polkadot binary (Polkadot, Kusama, Rococo and Westend).
 
-It reads events in blocks using subxt and indexes these events in a Key-value database using the sled library. This is considerably more efficient than storing the index in an SQL database.
+It reads events in blocks using [subxt](https://github.com/paritytech/subxt) and indexes these events in a key-value database using the [sled](http://sled.rs/) library. This is considerably more efficient than storing the index in an SQL database.
 
 Events that have identifying parameters will be indexed. For example the Transfer event in the Balances pallet is identifiable by the `AccountId` of both `from` and `to`.
 
-Additionally, all events are indexed by event variant.
+Additionally, all events are indexed by event variant. This means that, for example, a list of all balance transfers for all accounts can be obtained. 
 
 To index a block, first a query has to be made to determine the hash from the block number. Then a second query for the metadata version. Finally the block itself is downloaded. In order to ensure throughput is as high as possible, multiple blocks are indexed simultaneously to counteract the round-trip delay.
 
