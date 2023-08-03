@@ -22,6 +22,10 @@ It reads events in blocks using [subxt](https://github.com/paritytech/subxt) and
 
 Events that have identifying parameters will be indexed. For example the Transfer event in the Balances pallet is identifiable by the `AccountId` of both `from` and `to`.
 
+Hybrid has built-in indexing macros for the following Substrate pallets: System, Preimage, Indices, Balances, Transaction Payment, Staking, Session, Democracy, Collective, Elections Phragmen, Treasury, Vesting, Identity, Proxy, Multisig, Fast Unstake, Election Provider Multi-phase, Tips, Bounties, Child Bounties, Bags List, Nomination Pools.
+
+Hybrid currently supports indexing of the following event parameters: AccountId, AccountIndex, AuctionIndex, BountyIndex, CandidateHash, EraIndex, MessageId, ParaId, PoolId, PreimageHash, ProposalHash, RefIndex, RegistrarIndex, SessionIndex, TipHash.
+
 Additionally, all events are indexed by event variant. This means that, for example, a list of all balance transfers for all accounts can be obtained. 
 
 To index a block, first a query has to be made to determine the hash from the block number. Then a second query for the metadata version. Finally the block itself is downloaded. In order to ensure throughput is as high as possible, multiple blocks are indexed simultaneously to counteract the round-trip delay.
