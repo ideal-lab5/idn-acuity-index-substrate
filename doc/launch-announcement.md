@@ -48,7 +48,7 @@ Database entries are key-only. No value is stored. The block number and event in
 
 [Hybrid Dapp](https://github.com/hybrid-explorer/hybrid-dapp) is a rudimentary frontend to instances of Hybrid Indexer. Events can be searched by event parameters and event types. It can be configured to support multiple chains.
 
-In the future a hosted Substrate block explorer will be launched based on Hybrid Dapp.
+In the future, a hosted Substrate block explorer will be launched based on Hybrid Dapp.
 
 ## Web3 Foundation
 
