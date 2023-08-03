@@ -24,7 +24,7 @@ Events that have identifying parameters will be indexed. For example the Transfe
 
 Hybrid has built-in indexing macros for the following Substrate pallets: System, Preimage, Indices, Balances, Transaction Payment, Staking, Session, Democracy, Collective, Elections Phragmen, Treasury, Vesting, Identity, Proxy, Multisig, Fast Unstake, Election Provider Multi-phase, Tips, Bounties, Child Bounties, Bags List, Nomination Pools.
 
-Hybrid currently supports indexing of the following event parameters: AccountId, AccountIndex, AuctionIndex, BountyIndex, CandidateHash, EraIndex, MessageId, ParaId, PoolId, PreimageHash, ProposalHash, RefIndex, RegistrarIndex, SessionIndex, TipHash.
+Hybrid currently supports indexing of the following event parameters: `AccountId`, `AccountIndex`, `AuctionIndex`, `BountyIndex`, `CandidateHash`, `EraIndex`, `MessageId`, `ParaId`, `PoolId`, `PreimageHash`, `ProposalHash`, `RefIndex`, `RegistrarIndex`, `SessionIndex`, `TipHash`.
 
 Additionally, all events are indexed by event variant. This means that, for example, a list of all balance transfers for all accounts can be obtained. 
 
