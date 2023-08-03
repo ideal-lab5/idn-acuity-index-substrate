@@ -36,4 +36,4 @@ The database keys are constructed in such a way that events can be found using i
 
 `AccountId/BlockNumber/EventIndex`
 
-Database entries are key-only. No value is stored. The blocknumber and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
+Database entries are key-only. No value is stored. The block number and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
