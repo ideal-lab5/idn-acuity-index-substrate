@@ -10,7 +10,7 @@ Hybrid can either be used in a decentralized or centralized manner:
 
 Currently hybrid connects directly to a full node to index it. In a later version it will be able to index a chain via a light client. 
 
-Development of this tool was funded by a [grant](https://github.com/w3f/Grants-Program/blob/master/applications/hybrid.md) from the Web3 Foundation.
+Development of this tool was funded by a [grant](https://github.com/w3f/Grants-Program/blob/master/applications/hybrid.md) from the [Web3 Foundation](https://web3.foundation/).
 
 ## Architecture
 
