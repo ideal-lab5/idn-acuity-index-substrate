@@ -1,6 +1,6 @@
 # Tutorial
 
-To learn how to build an indexer for a Substrate chain with Hybrid Indexer it is best to examine Polkadot Indexer.
+To learn how to build an indexer for a Substrate chain with Hybrid Indexer it is best to examine [Polkadot Indexer](https://github.com/hybrid-explorer/polkadot-indexer/).
 
 Follow the subxt [instructions](https://github.com/paritytech/subxt#downloading-metadata-from-a-substrate-node) to download the metadata from the chain to be indexed:
 
@@ -56,7 +56,7 @@ impl Config for MyChainConfig {
 }
 ```
 
-Each chain to be indexed by the indexer has a separate struct that implements the RuntimeIndexer trait. For example, look at [KusamaIndexer](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/indexer/src/kusama/mod.rs#L40).
+Each chain to be indexed by the indexer has a separate struct that implements the [RuntimeIndexer](https://docs.rs/hybrid-indexer/0.1.0/hybrid_indexer/shared/trait.RuntimeIndexer.html) trait. For example, look at [KusamaIndexer](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/indexer/src/kusama/mod.rs#L40).
 
 subxt may not be able to process older blocks. Experiment with get_default_start_block()
 
