@@ -10,7 +10,7 @@ Hybrid can either be used in a decentralized or centralized manner:
 
 Currently hybrid connects directly to a full node to index it. In a later version it will be able to index a chain via a light client. 
 
-Development of this tool was funded by a [grant](https://github.com/w3f/Grants-Program/blob/master/applications/hybrid.md) from the [Web3 Foundation](https://web3.foundation/).
+Development of this tool was funded by a [grant](https://github.com/w3f/Grants-Program/blob/master/applications/hybrid.md) from the [Web3 Foundation](https://web3.foundation/). The Web3 Foundation funds research and development teams building the technology stack of the decentralized web. It was established in Zug, Switzerland by Ethereum co-founder and former CTO Gavin Wood. Polkadot is the Foundation's flagship project.
 
 ## Architecture
 
@@ -41,3 +41,7 @@ The database keys are constructed in such a way that events can be found using i
 `AccountId/BlockNumber/EventIndex`
 
 Database entries are key-only. No value is stored. The block number and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
+
+## Web3 Foundation
+
+Learn more about the Web3 Foundation by visiting their [website](https://web3.foundation/), and stay up to date with the latest developments by following them on [Medium](https://medium.com/web3foundation) or [Twitter](https://twitter.com/web3foundation).
