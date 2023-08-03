@@ -1,6 +1,6 @@
 # Hybrid Indexer Launch Announcement
 
-Hybrid is a Rust software library for indexing events in Substrate blockchains. It stores the bare minimum in its database to identify events containing certain parameters, e.g. `AccountId`, and should be used in tandem with a light client or full node to actually retrieve event contents. This is why it is called "Hybrid".
+[Hybrid Index](https://github.com/hybrid-explorer/hybrid-indexer) is a Rust software library for indexing events in [Substrate](https://substrate.io/) blockchains. It stores the bare minimum in its database to identify events containing certain parameters, e.g. `AccountId`, and should be used in tandem with a light client or full node to actually retrieve event contents. This is why it is called "Hybrid".
 
 Hybrid can either be used in a decentralized or centralized manner:
 
