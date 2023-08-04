@@ -2,9 +2,11 @@
 
 ## Deliverable 1 - Hybrid Indexer Library
 
-Check out this repository and run:
+Check out this repository and run the tests:
 
  ```sh
+git checkout https://github.com/hybrid-explorer/hybrid-indexer
+cd hybrid-indexer
 cargo test
 ```
 
