@@ -28,7 +28,7 @@ Because Substrate is a federated platform, it will be possible browse multiple c
 
 The Hybrid indexer is written in Rust. It can be configured to connect to any Substrate chain.
 
-It reads events in all blocks using [subxt](https://github.com/paritytech/subxt) and index these events in a Key-value database using the [sled](http://sled.rs/) library. This is considerably more efficient than storing the index in an SQL database.
+It reads events in all blocks using [subxt](https://github.com/paritytech/subxt) and indexes these events in a key-value database using the [sled](http://sled.rs/) library. This is considerably more efficient than storing the index in an SQL database.
 
 All events in all pallets that have identifying parameters will be indexed. For example the Transfer event in the Balances pallet is identifiable by the `AccountId` of both `from` and `to`.
 
