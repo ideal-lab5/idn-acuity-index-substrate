@@ -44,12 +44,10 @@ When a chain is going to potentially perform a runtime upgrade, the Hybrid Index
 
 WSS queries are handled via the highly scalable [tokio_tungstenite](https://github.com/snapview/tokio-tungstenite) Rust library.
 
-In addition to the identifier being searched for, queries will be able to include start block, offset, and limit to control which events are returned.
-
 Consumers will be able to subscribe for new events that match a query.
 
-The database keys will be constructed in such a way so that events can be found using iterators starting at a specific block number. For example, for for the AccountId keyspace:
+The database keys are constructed in such a way so that events can be found using iterators starting at a specific block number. For example, for for the AccountId keyspace:
 
 `AccountId/BlockNumber/EventIndex`
 
-Database entries will be key-only. No value will be stored. The blocknumber and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
+Database entries are key-only. No value is stored. The blocknumber and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
