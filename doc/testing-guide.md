@@ -12,12 +12,12 @@ cargo test
 
 ## Deliverable 2 - Polkadot Indexer
 
-1. Follow the [instructions](https://github.com/hybrid-explorer/polkadot-indexer#docker) in polkadot-indexer to run a docker image in a separate console tab for each of polkadot, kusama, rococo & westend.
+1. Follow the [instructions](https://github.com/hybrid-explorer/blob/main/README.md#docker) in polkadot-indexer to run a docker image in a separate console tab for each of polkadot, kusama, rococo & westend.
 1. Observe that all 4 Polakdot chains are being indexed.
 
 ## Deliverable 3 - Chain Select
 
-1. Follow the [instructions](https://github.com/hybrid-explorer/polkadot-indexer#docker) in hybrid-dapp to run a docker image and launch the dapp in a web browser.
+1. Follow the [instructions](https://github.com/hybrid-explorer/hybrid-dapp/blob/main/README.md#docker) in hybrid-dapp to run a docker image and launch the dapp in a web browser.
 1. If the chain selector is not visible in the top left, click on the "hamburger" icon.
 1. Switch between the different chains.
 1. Observe that the indexing status at the top changes for each chain.
