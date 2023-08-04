@@ -5,7 +5,7 @@
 Check out this repository and run the tests:
 
  ```sh
-git checkout https://github.com/hybrid-explorer/hybrid-indexer
+git clone https://github.com/hybrid-explorer/hybrid-indexer
 cd hybrid-indexer
 cargo test
 ```
