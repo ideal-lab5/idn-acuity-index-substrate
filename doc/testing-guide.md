@@ -20,14 +20,13 @@ cargo test
 1. Switch between the different chains.
 1. Observe that the indexing status at the top changes for each chain.
 1. For each chain check that the indexing is working:
-
-...1. Select Pallet / Variant search key.
-...1. Select Balances pallet.
-...1. Select Transfer variant.
-...1. Click Search.
-...1. Observe events are found.
-...1. Copy an account address from an event to the clipboard.
-...1. Select AccountId search key.
-...1. Paste account address into AccountId box.
-...1. Click Search.
-...1. Observe events are found.
+  1. Select Pallet / Variant search key.
+  1. Select Balances pallet.
+  1. Select Transfer variant.
+  1. Click Search.
+  1. Observe events are found.
+  1. Copy an account address from an event to the clipboard.
+  1. Select AccountId search key.
+  1. Paste account address into AccountId box.
+  1. Click Search.
+  1. Observe events are found.
