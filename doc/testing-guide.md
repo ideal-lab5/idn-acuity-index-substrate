@@ -12,7 +12,7 @@ cargo test
 
 ## Deliverable 2 - Polkadot Indexer
 
-1. Follow the [instructions](https://github.com/hybrid-explorer/blob/main/README.md#docker) in polkadot-indexer to run a docker image in a separate console tab for each of polkadot, kusama, rococo & westend.
+1. Follow the [instructions](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/README.md#docker) in polkadot-indexer to run a docker image in a separate console tab for each of polkadot, kusama, rococo & westend.
 1. Observe that all 4 Polakdot chains are being indexed.
 
 ## Deliverable 3 - Chain Select
