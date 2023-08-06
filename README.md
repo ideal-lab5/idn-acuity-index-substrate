@@ -1,4 +1,4 @@
-# hybrid-indexer
+# Hybrid Indexer
 Substrate event indexer.
 
 Development of this tool was funded by a [grant](https://github.com/w3f/Grants-Program/blob/master/applications/hybrid.md) from the Web3 Foundation.
@@ -28,15 +28,17 @@ Because Substrate is a federated platform, it will be possible browse multiple c
 
 The Hybrid indexer is written in Rust. It can be configured to connect to any Substrate chain.
 
-It reads events in all blocks using [subxt](https://github.com/paritytech/subxt) and index these events in a Key-value database using the [sled](http://sled.rs/) library. This is considerably more efficient than storing the index in an SQL database.
+It reads events in all blocks using [subxt](https://github.com/paritytech/subxt) and indexes these events in a key-value database using the [sled](http://sled.rs/) library. This is considerably more efficient than storing the index in an SQL database.
 
-All events in all pallets that have identifying parameters will be indexed. For example the Transfer event in the Balances pallet is identifiable by the `AccountId` of both `from` and `to`.
+Events that have identifying parameters will be indexed. For example the Transfer event in the Balances pallet is identifiable by the `AccountId` of both `from` and `to`.
 
-Other examples of identifying event parameters are `assetId` in the Assets pallet, `code_hash` in the contracts pallet, `CollectionId` and `ItemId` in the NFTs pallet, and `MultiLocation` in the XCM pallet.
+Hybrid has built-in indexing macros for the following Substrate pallets: System, Preimage, Indices, Balances, Transaction Payment, Staking, Session, Democracy, Collective, Elections Phragmen, Treasury, Vesting, Identity, Proxy, Multisig, Fast Unstake, Election Provider Multi-phase, Tips, Bounties, Child Bounties, Bags List, Nomination Pools.
 
-Additionally, all events are indexed by event variant.
+Hybrid currently supports indexing of the following event parameters: `AccountId`, `AccountIndex`, `AuctionIndex`, `BountyIndex`, `CandidateHash`, `EraIndex`, `MessageId`, `ParaId`, `PoolId`, `PreimageHash`, `ProposalHash`, `RefIndex`, `RegistrarIndex`, `SessionIndex`, `TipHash`.
 
-To download a block, a query first has to be made to determine the hash for a given block number. In order to ensure throughput is as high as possible, multiple queries to the full node will be active at the same time to avoid round-trip delay.
+Additionally, all events are indexed by event variant. This means that, for example, a list of all balance transfers for all accounts can be obtained. 
+
+To index a block, first a query has to be made to determine the hash from the block number. Then a second query for the metadata version. Finally the block itself is downloaded. In order to ensure throughput is as high as possible, multiple blocks are indexed simultaneously to counteract the round-trip delay.
 
 In the same manner that each Substrate chain is a separate Rust build that uses Substrate crates, each chain will need a separate Hybrid Indexer build that is configured to index the correct pallets.
 
@@ -44,12 +46,10 @@ When a chain is going to potentially perform a runtime upgrade, the Hybrid Index
 
 WSS queries are handled via the highly scalable [tokio_tungstenite](https://github.com/snapview/tokio-tungstenite) Rust library.
 
-In addition to the identifier being searched for, queries will be able to include start block, offset, and limit to control which events are returned.
-
 Consumers will be able to subscribe for new events that match a query.
 
-The database keys will be constructed in such a way so that events can be found using iterators starting at a specific block number. For example, for for the AccountId keyspace:
+The database keys are constructed in such a way so that events can be found using iterators starting at a specific block number. For example, for for the AccountId keyspace:
 
 `AccountId/BlockNumber/EventIndex`
 
-Database entries will be key-only. No value will be stored. The blocknumber and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
+Database entries are key-only. No value is stored. The blocknumber and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
