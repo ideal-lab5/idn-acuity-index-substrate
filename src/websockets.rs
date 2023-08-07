@@ -356,7 +356,6 @@ pub async fn process_msg<R: RuntimeIndexer>(
     sub_tx: UnboundedSender<SubscribeMessage>,
     sub_response_tx: UnboundedSender<ResponseMessage>,
 ) -> ResponseMessage {
-    println!("{:?}", msg);
     match msg {
         RequestMessage::Status => process_msg_status(trees),
         RequestMessage::Variants => process_msg_variants::<R>(api).await,
