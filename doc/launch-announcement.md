@@ -42,6 +42,8 @@ The database keys are constructed in such a way that events can be found using i
 
 Database entries are key-only. No value is stored. The block number and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
 
+Read the [Tutorial](https://github.com/hybrid-explorer/hybrid-indexer/blob/main/doc/tutorial.md) to learn how to index your Substrate chain with Hybrid. 
+
 ## Hybrid Dapp
 
 ![Hybrid Dapp](https://raw.githubusercontent.com/hybrid-explorer/hybrid-indexer/main/doc/hybrid-dapp.png)
