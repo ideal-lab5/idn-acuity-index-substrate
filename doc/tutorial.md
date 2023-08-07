@@ -113,3 +113,5 @@ macro_rules! index_mypallet_event {
     };
 }
 ```
+
+Examine the [API documentation](https://github.com/hybrid-explorer/hybrid-indexer/blob/main/doc/api.md) to help determine how to query the indexer.
