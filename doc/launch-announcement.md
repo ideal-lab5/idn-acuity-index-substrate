@@ -16,7 +16,7 @@ Development of this tool was funded by a [grant](https://github.com/w3f/Grants-P
 
 ![Hybrid Architecture](https://raw.githubusercontent.com/ethernomad/hybrid-diagram/main/hybrid.png)
 
-A Hybrid indexer binary has to be built for each chain type in a similar manner to how a full node binary using the Substrate library has to be built. For example, polkadot-indexer indexes events on chains supported by the polkadot binary (Polkadot, Kusama, Rococo and Westend).
+A Hybrid indexer binary has to be built for each chain type in a similar manner to how a full node binary using the Substrate library has to be built. For example, [Polkadot Indexer](https://github.com/hybrid-explorer/polkadot-indexer) indexes events on chains supported by the polkadot binary (Polkadot, Kusama, Rococo and Westend).
 
 It reads events in blocks using [subxt](https://github.com/paritytech/subxt) and indexes these events in a key-value database using the [sled](http://sled.rs/) library. This is considerably more efficient than storing the index in an SQL database.
 
@@ -41,6 +41,8 @@ The database keys are constructed in such a way that events can be found using i
 `AccountId/BlockNumber/EventIndex`
 
 Database entries are key-only. No value is stored. The block number and event index are all that need to be returned for each event found. This reduces the size of the index database and increases decentralization. The frontend can query the chain in a decentralized manner to retrieve the event.
+
+Read the [Tutorial](https://github.com/hybrid-explorer/hybrid-indexer/blob/main/doc/tutorial.md) to learn how to index your Substrate chain with Hybrid. 
 
 ## Hybrid Dapp
 
