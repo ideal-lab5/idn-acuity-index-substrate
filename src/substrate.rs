@@ -578,7 +578,7 @@ pub async fn substrate_batch<R: RuntimeIndexer>(
     api: OnlineClient<R::RuntimeConfig>,
     trees: Trees,
     block_number: Option<u32>,
-    async_blocks: u32,
+    queue_depth: u32,
 ) {
     // Determine the correct block to start batch indexing.
     let mut block_number: u32 = match block_number {
@@ -610,12 +610,12 @@ pub async fn substrate_batch<R: RuntimeIndexer>(
 
     let mut block_futures = Vec::new();
 
-    for n in 0..async_blocks {
+    for n in 0..queue_depth {
         block_futures.push(Box::pin(substrate_batch.index_block(block_number + n)));
     }
 
     let mut last_batch_block = block_number;
-    block_number += async_blocks;
+    block_number += queue_depth;
     let mut now = SystemTime::now();
 
     loop {
@@ -634,8 +634,8 @@ pub async fn substrate_batch<R: RuntimeIndexer>(
         if let Ok(()) = result.0 {
             block_futures.push(Box::pin(substrate_batch.index_block(block_number)));
 
-            if (block_number - async_blocks) > last_batch_block {
-                last_batch_block = block_number - async_blocks;
+            if (block_number - queue_depth) > last_batch_block {
+                last_batch_block = block_number - queue_depth;
                 if last_batch_block % 100 == 0 {
                     trees
                         .root
