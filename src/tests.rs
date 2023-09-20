@@ -5,6 +5,7 @@ use crate::*;
 
 use subxt::utils::AccountId32;
 
+use hex_literal::hex;
 use std::str::FromStr;
 
 pub struct TestIndexer;
@@ -14,6 +15,10 @@ impl RuntimeIndexer for TestIndexer {
 
     fn get_name() -> &'static str {
         "test"
+    }
+
+    fn get_genesis_hash() -> <Self::RuntimeConfig as subxt::Config>::Hash {
+        hex!["91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"].into()
     }
 
     fn get_default_url() -> &'static str {
