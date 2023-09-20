@@ -23,7 +23,7 @@ mod tests;
 pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + 'static>(
     url: Option<String>,
     block_number: Option<u32>,
-    queue_depth: u32,
+    queue_depth: u8,
     port: u16,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let name = R::get_name();
@@ -102,7 +102,7 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         api.clone(),
         trees.clone(),
         block_number,
-        queue_depth,
+        queue_depth.into(),
         sub_rx,
     ));
     // Spawn websockets task.
