@@ -16,6 +16,8 @@ pub trait RuntimeIndexer {
 
     fn get_name() -> &'static str;
 
+    fn get_genesis_hash() -> <Self::RuntimeConfig as subxt::Config>::Hash;
+
     fn get_default_url() -> &'static str;
 
     fn get_default_start_block() -> u32;

@@ -2,6 +2,7 @@
 //!
 //! A library for indexing events from Substrate blockchains.
 
+use std::process;
 use tokio::{join, sync::mpsc};
 
 pub mod shared;
@@ -27,6 +28,7 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
 ) -> Result<(), Box<dyn std::error::Error>> {
     let name = R::get_name();
     println!("Indexing {}", name);
+    let genesis_hash_config = R::get_genesis_hash().as_ref().to_vec();
     // Open database.
     let mut path = home::home_dir().ok_or("No home directory.")?;
     path.push(".local/share/hybrid-indexer");
@@ -55,15 +57,44 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         session_index: db.open_tree("session_index")?,
         tip_hash: db.open_tree("tip_hash")?,
     };
+
+    let genesis_hash_db = match trees.root.get("genesis_hash").unwrap() {
+        Some(value) => value.to_vec(),
+        //    vector_as_u8_32_array(&value),
+        None => {
+            trees
+                .root
+                .insert("genesis_hash", genesis_hash_config.clone())
+                .unwrap();
+            genesis_hash_config.clone()
+        }
+    };
+
+    if genesis_hash_db != genesis_hash_config {
+        eprintln!("Database has wrong genesis hash.");
+        eprintln!("Correct hash:  0x{}", hex::encode(genesis_hash_config));
+        eprintln!("Database hash: 0x{}", hex::encode(genesis_hash_db));
+        process::exit(1);
+    }
+
     let url = match url {
         Some(url) => url,
         None => R::get_default_url().to_owned(),
     };
+    println!("Connecting to: {}", url);
     // Determine url of Substrate node to connect to.
     let api = OnlineClient::<R::RuntimeConfig>::from_url(&url)
         .await
         .unwrap();
-    println!("Connected to: {}", url);
+    let genesis_hash_api = api.genesis_hash().as_ref().to_vec();
+
+    if genesis_hash_api != genesis_hash_config {
+        eprintln!("Chain has wrong genesis hash.");
+        eprintln!("Correct hash: 0x{}", hex::encode(genesis_hash_config));
+        eprintln!("Chain hash:   0x{}", hex::encode(genesis_hash_api));
+        process::exit(1);
+    }
+
     // Create the channel for the websockets threads to send subscribe messages to the head thread.
     let (sub_tx, sub_rx) = mpsc::unbounded_channel();
     // Start Substrate tasks.
