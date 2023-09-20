@@ -2,7 +2,7 @@
 //!
 //! A library for indexing events from Substrate blockchains.
 
-use std::process;
+use std::{path::PathBuf, process};
 use tokio::{join, sync::mpsc};
 
 pub mod shared;
@@ -21,6 +21,7 @@ mod tests;
 
 /// Starts the indexer. Chain is defined by `R`.
 pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + 'static>(
+    db_path: Option<String>,
     url: Option<String>,
     block_number: Option<u32>,
     queue_depth: u8,
@@ -30,12 +31,18 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
     println!("Indexing {}", name);
     let genesis_hash_config = R::get_genesis_hash().as_ref().to_vec();
     // Open database.
-    let mut path = home::home_dir().ok_or("No home directory.")?;
-    path.push(".local/share/hybrid-indexer");
-    path.push(name);
-    path.push("db");
-    println!("Opening db: {}", path.display());
-    let db = sled::open(&path)?;
+    let db_path = match db_path {
+        Some(db_path) => PathBuf::from(db_path),
+        None => {
+            let mut db_path = home::home_dir().ok_or("No home directory.")?;
+            db_path.push(".local/share/hybrid-indexer");
+            db_path.push(name);
+            db_path.push("db");
+            db_path
+        }
+    };
+    println!("Opening db: {}", db_path.display());
+    let db = sled::open(&db_path)?;
     let trees = Trees {
         root: db.clone(),
         variant: db.open_tree("variant")?,
