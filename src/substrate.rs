@@ -3,9 +3,12 @@ use subxt::{metadata::Metadata, utils::AccountId32, OnlineClient};
 use futures::StreamExt;
 use std::{collections::HashMap, sync::Mutex, time::SystemTime};
 
-use tokio::sync::{
-    mpsc::{UnboundedReceiver, UnboundedSender},
-    RwLock,
+use tokio::{
+    sync::{
+        mpsc::{UnboundedReceiver, UnboundedSender},
+        RwLock,
+    },
+    time::{self, Duration, MissedTickBehavior},
 };
 
 use crate::shared::*;
@@ -583,19 +586,16 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     }
 
     let mut last_batch_block = block_number;
-    block_number += queue_depth;
-    let mut now = SystemTime::now();
+    let mut last_batch_time = SystemTime::now();
+
+    let mut interval = time::interval(Duration::from_millis(2000));
+    interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
 
     loop {
-        if futures.len() == 0 {
+        if futures.is_empty() {
             tokio::select! {
-                block = blocks_sub.next() => {
-                    let block = block.unwrap().unwrap();
-                    let block_number:u32 = block.number().into().try_into().unwrap();
-                    println!(" ✨ #{block_number}");
-                    indexer.index_block(block_number).await.unwrap();
-                    trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
-                }
+                biased;
+
                 Some(msg) = sub_rx.recv() => {
                     let mut sub_map = indexer.sub_map.lock().unwrap();
                     match sub_map.get_mut(&msg.key) {
@@ -607,17 +607,19 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                             sub_map.insert(msg.key, txs);
                         },
                     };
+                }
+                block = blocks_sub.next() => {
+                    let block = block.unwrap().unwrap();
+                    let block_number:u32 = block.number().into().try_into().unwrap();
+                    println!(" ✨ #{block_number}");
+                    indexer.index_block(block_number).await.unwrap();
+                    trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
                 }
             }
         } else {
             tokio::select! {
-                block = blocks_sub.next() => {
-                    let block = block.unwrap().unwrap();
-                    let block_number:u32 = block.number().into().try_into().unwrap();
-                    println!(" ✨ #{block_number}");
-                    indexer.index_block(block_number).await.unwrap();
-                    trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
-                }
+                biased;
+
                 Some(msg) = sub_rx.recv() => {
                     let mut sub_map = indexer.sub_map.lock().unwrap();
                     match sub_map.get_mut(&msg.key) {
@@ -630,43 +632,50 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         },
                     };
                 }
-                result = futures::future::select_all(&mut futures) => {
-                    match result.0 {
+                block = blocks_sub.next() => {
+                    let block = block.unwrap().unwrap();
+                    let block_number:u32 = block.number().into().try_into().unwrap();
+                    println!(" ✨ #{block_number}");
+                    indexer.index_block(block_number).await.unwrap();
+                    trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
+                }
+                _ = interval.tick() => {
+                    if block_number > last_batch_block {
+                        let current_batch_time = SystemTime::now();
+                        let duration = (current_batch_time.duration_since(last_batch_time)).unwrap().as_micros();
+                        if duration != 0 {
+                            println!(
+                                " 📚 #{}, {:?} blocks/sec",
+                                block_number,
+                                <u32 as Into<u128>>::into(block_number - last_batch_block) * 1_000_000 / duration
+                            );
+                        }
+                        last_batch_block = block_number;
+                        last_batch_time = current_batch_time;
+                    }
+                }
+                (result, index, _) = futures::future::select_all(&mut futures) => {
+                    futures.remove(index);
+                    match result {
                         Ok(()) => {
-                            let index = result.1;
-                            futures.remove(index);
-                            futures.push(Box::pin(indexer.index_block(block_number)));
-
-                            if (block_number - queue_depth) > last_batch_block {
-                                last_batch_block = block_number - queue_depth;
-                                if last_batch_block % 100 == 0 {
-                                    trees
-                                        .root
-                                        .insert("last_batch_block", &last_batch_block.to_be_bytes())
-                                        .unwrap();
-                                    println!(
-                                        " 📚 #{}, {:?} blocks/sec",
-                                        last_batch_block,
-                                        100_000_000 / now.elapsed().unwrap().as_micros()
-                                    );
-                                    now = SystemTime::now();
-                                }
+                            if last_batch_block % 1000 == 0 {
+                                trees
+                                    .root
+                                    .insert("last_batch_block", &block_number.to_be_bytes())
+                                    .unwrap();
                             }
-
+                            futures.push(Box::pin(indexer.index_block(block_number + queue_depth)));
                             block_number += 1;
                         }
                         Err(_) => {
-                            let index = result.1;
-                            futures.remove(index);
+                            if futures.is_empty() {
+                                trees
+                                    .root
+                                    .insert("batch_indexing_complete", &1_u8.to_be_bytes())
+                                    .unwrap();
+                                println!(" 📚 Finished batch indexing.");
+                            }
                         }
-                    }
-
-                    if futures.len() == 0 {
-                        trees
-                            .root
-                            .insert("batch_indexing_complete", &1_u8.to_be_bytes())
-                            .unwrap();
-                        println!(" 📚 Finished batch indexing.");
                     }
                 }
             }
