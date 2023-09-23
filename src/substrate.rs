@@ -131,7 +131,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         pallet_index: u8,
         variant_index: u8,
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = VariantKey {
@@ -158,7 +158,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         account_id: AccountId32,
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = AccountIdKey {
@@ -184,7 +184,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         account_index: u32,
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = U32Key {
@@ -210,7 +210,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         auction_index: u32,
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = U32Key {
@@ -232,7 +232,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         );
     }
 
-    pub fn index_event_bounty_index(&self, bounty_index: u32, block_number: u32, event_index: u32) {
+    pub fn index_event_bounty_index(&self, bounty_index: u32, block_number: u32, event_index: u16) {
         // Generate key
         let key = U32Key {
             key: bounty_index,
@@ -257,7 +257,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         candidate_hash: [u8; 32],
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = CandidateHashKey {
@@ -279,7 +279,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         );
     }
 
-    pub fn index_event_era_index(&self, era_index: u32, block_number: u32, event_index: u32) {
+    pub fn index_event_era_index(&self, era_index: u32, block_number: u32, event_index: u16) {
         // Generate key
         let key = U32Key {
             key: era_index,
@@ -304,7 +304,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         message_id: [u8; 32],
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = MessageIdKey {
@@ -326,7 +326,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         );
     }
 
-    pub fn index_event_para_id(&self, para_id: u32, block_number: u32, event_index: u32) {
+    pub fn index_event_para_id(&self, para_id: u32, block_number: u32, event_index: u16) {
         // Generate key
         let key = U32Key {
             key: para_id,
@@ -347,7 +347,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         );
     }
 
-    pub fn index_event_pool_id(&self, pool_id: u32, block_number: u32, event_index: u32) {
+    pub fn index_event_pool_id(&self, pool_id: u32, block_number: u32, event_index: u16) {
         // Generate key
         let key = U32Key {
             key: pool_id,
@@ -372,7 +372,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         preimage_hash: [u8; 32],
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = HashKey {
@@ -398,7 +398,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         proposal_hash: [u8; 32],
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = HashKey {
@@ -424,7 +424,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         proposal_index: u32,
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = U32Key {
@@ -446,7 +446,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         );
     }
 
-    pub fn index_event_ref_index(&self, ref_index: u32, block_number: u32, event_index: u32) {
+    pub fn index_event_ref_index(&self, ref_index: u32, block_number: u32, event_index: u16) {
         // Generate key
         let key = U32Key {
             key: ref_index,
@@ -471,7 +471,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         registrar_index: u32,
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = U32Key {
@@ -497,7 +497,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         &self,
         session_index: u32,
         block_number: u32,
-        event_index: u32,
+        event_index: u16,
     ) {
         // Generate key
         let key = U32Key {
@@ -519,7 +519,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         );
     }
 
-    pub fn index_event_tip_hash(&self, tip_hash: [u8; 32], block_number: u32, event_index: u32) {
+    pub fn index_event_tip_hash(&self, tip_hash: [u8; 32], block_number: u32, event_index: u16) {
         // Generate key
         let key = TipHashKey {
             tip_hash,

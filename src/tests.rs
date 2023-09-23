@@ -32,7 +32,7 @@ impl RuntimeIndexer for TestIndexer {
     fn process_event(
         _indexer: &Indexer<Self>,
         _block_number: u32,
-        _event_index: u32,
+        _event_index: u16,
         _event: subxt::events::EventDetails<Self::RuntimeConfig>,
     ) -> Result<(), subxt::Error> {
         Ok(())
