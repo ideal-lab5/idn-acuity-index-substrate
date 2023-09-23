@@ -2,8 +2,8 @@ use futures::{SinkExt, StreamExt};
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
 
-use tokio::sync::mpsc;
-use tokio::sync::mpsc::UnboundedSender;
+use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
+use tokio_tungstenite::tungstenite;
 
 use subxt::OnlineClient;
 
@@ -387,7 +387,7 @@ async fn handle_connection<R: RuntimeIndexer>(
 
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
     // Create the channel for the substrate thread to send event messages to this thread.
-    let (sub_events_tx, mut sub_events_rx) = mpsc::unbounded_channel();
+    let (sub_events_tx, mut sub_events_rx) = unbounded_channel();
 
     loop {
         tokio::select! {
@@ -398,7 +398,7 @@ async fn handle_connection<R: RuntimeIndexer>(
                         Ok(request_json) => {
                             let response_msg = process_msg::<R>(&api, &trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await;
                             let response_json = serde_json::to_string(&response_msg).unwrap();
-                            ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(response_json)).await.unwrap();
+                            ws_sender.send(tungstenite::Message::Text(response_json)).await.unwrap();
                         },
                         Err(error) => println!("{}", error),
                     }
@@ -406,7 +406,7 @@ async fn handle_connection<R: RuntimeIndexer>(
             },
             Some(msg) = sub_events_rx.recv() => {
                 let response_json = serde_json::to_string(&msg).unwrap();
-                ws_sender.send(tokio_tungstenite::tungstenite::Message::Text(response_json)).await.unwrap();
+                ws_sender.send(tungstenite::Message::Text(response_json)).await.unwrap();
             },
         }
     }

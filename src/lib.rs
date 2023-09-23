@@ -2,8 +2,8 @@
 //!
 //! A library for indexing events from Substrate blockchains.
 
-use std::{path::PathBuf, process};
-use tokio::{join, sync::mpsc};
+use std::{error::Error, path::PathBuf, process::exit};
+use tokio::{join, spawn, sync::mpsc::unbounded_channel};
 
 pub mod shared;
 pub mod substrate;
@@ -20,13 +20,13 @@ use subxt::OnlineClient;
 mod tests;
 
 /// Starts the indexer. Chain is defined by `R`.
-pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + 'static>(
+pub async fn start<R: RuntimeIndexer + 'static>(
     db_path: Option<String>,
     url: Option<String>,
     block_number: Option<u32>,
     queue_depth: u8,
     port: u16,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn Error>> {
     let name = R::get_name();
     println!("Indexing {}", name);
     let genesis_hash_config = R::get_genesis_hash().as_ref().to_vec();
@@ -81,7 +81,7 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         eprintln!("Database has wrong genesis hash.");
         eprintln!("Correct hash:  0x{}", hex::encode(genesis_hash_config));
         eprintln!("Database hash: 0x{}", hex::encode(genesis_hash_db));
-        process::exit(1);
+        exit(1);
     }
 
     let url = match url {
@@ -99,13 +99,13 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         eprintln!("Chain has wrong genesis hash.");
         eprintln!("Correct hash: 0x{}", hex::encode(genesis_hash_config));
         eprintln!("Chain hash:   0x{}", hex::encode(genesis_hash_api));
-        process::exit(1);
+        exit(1);
     }
 
     // Create the channel for the websockets threads to send subscribe messages to the head thread.
-    let (sub_tx, sub_rx) = mpsc::unbounded_channel();
+    let (sub_tx, sub_rx) = unbounded_channel();
     // Start Substrate tasks.
-    let substrate_index = tokio::spawn(substrate_index::<R>(
+    let substrate_index = spawn(substrate_index::<R>(
         api.clone(),
         trees.clone(),
         block_number,
@@ -113,7 +113,7 @@ pub async fn start<R: RuntimeIndexer + std::marker::Send + std::marker::Sync + '
         sub_rx,
     ));
     // Spawn websockets task.
-    let websockets_task = tokio::spawn(websockets_listen::<R>(api, trees.clone(), sub_tx, port));
+    let websockets_task = spawn(websockets_listen::<R>(api, trees.clone(), sub_tx, port));
     // Wait to exit.
     let _result = join!(substrate_index, websockets_task);
     Ok(())

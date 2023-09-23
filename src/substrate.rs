@@ -1,6 +1,6 @@
 use subxt::{metadata::Metadata, utils::AccountId32, OnlineClient};
 
-use futures::StreamExt;
+use futures::{future::select_all, StreamExt};
 use std::{collections::HashMap, sync::Mutex, time::SystemTime};
 
 use tokio::{
@@ -631,7 +631,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     last_batch_time = current_batch_time;
                 }
             }
-            (result, index, _) = futures::future::select_all(&mut futures), if is_batching => {
+            (result, index, _) = select_all(&mut futures), if is_batching => {
                 if last_batch_block % 1000 == 0 {
                     trees
                         .root
