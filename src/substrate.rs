@@ -23,7 +23,7 @@ pub struct Indexer<R: RuntimeIndexer> {
 #[derive(Debug)]
 enum IndexBlockError {
     NoApi,
-    BlockNotFound,
+    BlockNotFound(u32),
 }
 
 impl<R: RuntimeIndexer> Indexer<R> {
@@ -59,7 +59,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             .unwrap()
         {
             Some(block_hash) => block_hash,
-            None => return Err(IndexBlockError::BlockNotFound),
+            None => return Err(IndexBlockError::BlockNotFound(block_number)),
         };
         // Get the runtime version of the block.
         let runtime_version = api.rpc().runtime_version(Some(block_hash)).await.unwrap();
@@ -550,9 +550,10 @@ pub async fn substrate_index<R: RuntimeIndexer>(
 ) {
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
+    let mut head_start_block = None;
 
     // Determine the correct block to start batch indexing.
-    let mut block_number: u32 = match block_number {
+    let mut block_number = match block_number {
         Some(block_height) => block_height,
         None => {
             match match trees.root.get("batch_indexing_complete").unwrap() {
@@ -579,7 +580,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
 
     let indexer = Indexer::<R>::new(trees.clone(), api);
 
-    let mut futures = Vec::new();
+    let mut futures = Vec::with_capacity(queue_depth.try_into().unwrap());
 
     for n in 0..queue_depth {
         futures.push(Box::pin(indexer.index_block(block_number + n)));
@@ -611,10 +612,13 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             }
             block = blocks_sub.next() => {
                 let block = block.unwrap().unwrap();
-                let block_number:u32 = block.number().into().try_into().unwrap();
-                println!(" ✨ #{block_number}");
-                indexer.index_block(block_number).await.unwrap();
-                trees.root.insert("last_head_block", &block_number.to_be_bytes()).unwrap();
+                let head_block_number:u32 = block.number().into().try_into().unwrap();
+                println!(" ✨ #{head_block_number}");
+                indexer.index_block(head_block_number).await.unwrap();
+                trees.root.insert("last_head_block", &head_block_number.to_be_bytes()).unwrap();
+                if head_start_block == None {
+                    head_start_block = Some(head_block_number);
+                }
             }
             _ = interval.tick(), if is_batching => {
                 if block_number > last_batch_block {
@@ -632,23 +636,21 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 }
             }
             (result, index, _) = select_all(&mut futures), if is_batching => {
-                if last_batch_block % 1000 == 0 {
-                    trees
-                        .root
-                        .insert("last_batch_block", &block_number.to_be_bytes())
-                        .unwrap();
-                }
-                futures.remove(index);
-                futures.push(Box::pin(indexer.index_block(block_number + queue_depth)));
+                futures[index] = Box::pin(indexer.index_block(block_number + queue_depth));
                 block_number += 1;
 
+                if head_start_block == Some(block_number) {
+                    trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes()).unwrap();
+                    println!(" 📚 Finished batch indexing.");
+                    is_batching = false;
+                }
+                else if block_number % 1000 == 0 {
+                    trees.root.insert("last_batch_block", &block_number.to_be_bytes()).unwrap();
+                }
                 if let Err(error) = result {
                     match error {
                         IndexBlockError::NoApi => {}
-                        IndexBlockError::BlockNotFound => {
-                            trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes()).unwrap();
-                            println!(" 📚 Finished batch indexing.");
-                            is_batching = false;
+                        IndexBlockError::BlockNotFound(_block_number) => {
                         }
                     }
                 }
