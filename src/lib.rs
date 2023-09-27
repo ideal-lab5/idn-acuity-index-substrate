@@ -2,8 +2,19 @@
 //!
 //! A library for indexing events from Substrate blockchains.
 
-use std::{error::Error, path::PathBuf, process::exit};
-use tokio::{join, spawn, sync::mpsc::unbounded_channel};
+use futures::StreamExt;
+use signal_hook::{consts::TERM_SIGNALS, flag};
+use signal_hook_tokio::Signals;
+use std::{
+    error::Error,
+    path::PathBuf,
+    process::exit,
+    sync::{atomic::AtomicBool, Arc},
+};
+use tokio::{
+    join, spawn,
+    sync::{mpsc, watch},
+};
 
 pub mod shared;
 pub mod substrate;
@@ -64,6 +75,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         session_index: db.open_tree("session_index")?,
         tip_hash: db.open_tree("tip_hash")?,
     };
+    drop(db);
 
     let genesis_hash_db = match trees.root.get("genesis_hash").unwrap() {
         Some(value) => value.to_vec(),
@@ -101,20 +113,66 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         eprintln!("Chain hash:   0x{}", hex::encode(genesis_hash_api));
         exit(1);
     }
-
+    // https://docs.rs/signal-hook/0.3.17/signal_hook/#a-complex-signal-handling-with-a-background-thread
+    // Make sure double CTRL+C and similar kills.
+    let term_now = Arc::new(AtomicBool::new(false));
+    for sig in TERM_SIGNALS {
+        // When terminated by a second term signal, exit with exit code 1.
+        // This will do nothing the first time (because term_now is false).
+        flag::register_conditional_shutdown(*sig, 1, Arc::clone(&term_now))?;
+        // But this will "arm" the above for the second time, by setting it to true.
+        // The order of registering these is important, if you put this one first, it will
+        // first arm and then terminate ‒ all in the first round.
+        flag::register(*sig, Arc::clone(&term_now))?;
+    }
+    // Create a watch channel to exit the program.
+    let (exit_tx, exit_rx) = watch::channel(false);
     // Create the channel for the websockets threads to send subscribe messages to the head thread.
-    let (sub_tx, sub_rx) = unbounded_channel();
-    // Start Substrate tasks.
+    let (sub_tx, sub_rx) = mpsc::unbounded_channel();
+    // Start indexer thread.
     let substrate_index = spawn(substrate_index::<R>(
-        api.clone(),
         trees.clone(),
+        api.clone(),
         block_number,
         queue_depth.into(),
+        exit_rx.clone(),
         sub_rx,
     ));
     // Spawn websockets task.
-    let websockets_task = spawn(websockets_listen::<R>(api, trees.clone(), sub_tx, port));
+    let websockets_task = spawn(websockets_listen::<R>(
+        trees.clone(),
+        api,
+        port,
+        exit_rx,
+        sub_tx,
+    ));
+    // Wait for signal.
+    let mut signals = Signals::new(TERM_SIGNALS)?;
+    signals.next().await;
+    println!("Exiting.");
+    let _ = exit_tx.send(true);
     // Wait to exit.
     let _result = join!(substrate_index, websockets_task);
+    // Close db.
+    println!("Closing db.");
+    let _bytes = trees.root.flush();
+    let _bytes = trees.variant.flush();
+    let _bytes = trees.account_id.flush();
+    let _bytes = trees.account_index.flush();
+    let _bytes = trees.auction_index.flush();
+    let _bytes = trees.bounty_index.flush();
+    let _bytes = trees.candidate_hash.flush();
+    let _bytes = trees.era_index.flush();
+    let _bytes = trees.message_id.flush();
+    let _bytes = trees.para_id.flush();
+    let _bytes = trees.pool_id.flush();
+    let _bytes = trees.preimage_hash.flush();
+    let _bytes = trees.proposal_hash.flush();
+    let _bytes = trees.proposal_index.flush();
+    let _bytes = trees.ref_index.flush();
+    let _bytes = trees.registrar_index.flush();
+    let _bytes = trees.session_index.flush();
+    let _bytes = trees.tip_hash.flush();
+    drop(trees);
     Ok(())
 }

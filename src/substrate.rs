@@ -4,10 +4,7 @@ use futures::{future::select_all, StreamExt};
 use std::{collections::HashMap, sync::Mutex, time::SystemTime};
 
 use tokio::{
-    sync::{
-        mpsc::{UnboundedReceiver, UnboundedSender},
-        RwLock,
-    },
+    sync::{mpsc, watch, RwLock},
     time::{self, Duration, MissedTickBehavior},
 };
 
@@ -17,7 +14,7 @@ pub struct Indexer<R: RuntimeIndexer> {
     trees: Trees,
     api: Option<OnlineClient<R::RuntimeConfig>>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
-    sub_map: Mutex<HashMap<Key, Vec<UnboundedSender<ResponseMessage>>>>,
+    sub_map: Mutex<HashMap<Key, Vec<mpsc::UnboundedSender<ResponseMessage>>>>,
 }
 
 #[derive(Debug)]
@@ -542,11 +539,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
 }
 
 pub async fn substrate_index<R: RuntimeIndexer>(
-    api: OnlineClient<R::RuntimeConfig>,
     trees: Trees,
+    api: OnlineClient<R::RuntimeConfig>,
     block_number: Option<u32>,
     queue_depth: u32,
-    mut sub_rx: UnboundedReceiver<SubscribeMessage>,
+    mut exit_rx: watch::Receiver<bool>,
+    mut sub_rx: mpsc::UnboundedReceiver<SubscribeMessage>,
 ) {
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
@@ -598,6 +596,9 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         tokio::select! {
             biased;
 
+            _ = exit_rx.changed() => {
+                break;
+            }
             Some(msg) = sub_rx.recv() => {
                 let mut sub_map = indexer.sub_map.lock().unwrap();
                 match sub_map.get_mut(&msg.key) {

@@ -2,7 +2,10 @@ use futures::{SinkExt, StreamExt};
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
 
-use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
+use tokio::sync::{
+    mpsc::{unbounded_channel, UnboundedSender},
+    watch::Receiver,
+};
 use tokio_tungstenite::tungstenite;
 
 use subxt::OnlineClient;
@@ -413,10 +416,11 @@ async fn handle_connection<R: RuntimeIndexer>(
 }
 
 pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
-    api: OnlineClient<R::RuntimeConfig>,
     trees: Trees,
-    sub_tx: UnboundedSender<SubscribeMessage>,
+    api: OnlineClient<R::RuntimeConfig>,
     port: u16,
+    mut exit_rx: Receiver<bool>,
+    sub_tx: UnboundedSender<SubscribeMessage>,
 ) {
     let mut addr = "0.0.0.0:".to_string();
     addr.push_str(&port.to_string());
@@ -427,13 +431,22 @@ pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
     println!("Listening on: {}", addr);
 
     // Let's spawn the handling of each connection in a separate task.
-    while let Ok((stream, addr)) = listener.accept().await {
-        tokio::spawn(handle_connection::<R>(
-            api.clone(),
-            stream,
-            addr,
-            trees.clone(),
-            sub_tx.clone(),
-        ));
+    loop {
+        tokio::select! {
+            biased;
+
+            _ = exit_rx.changed() => {
+                break;
+            }
+            Ok((stream, addr)) = listener.accept() => {
+                tokio::spawn(handle_connection::<R>(
+                    api.clone(),
+                    stream,
+                    addr,
+                    trees.clone(),
+                    sub_tx.clone(),
+                ));
+            }
+        }
     }
 }
