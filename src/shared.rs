@@ -6,6 +6,32 @@ use parity_scale_codec::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 
 use tokio::sync::mpsc::UnboundedSender;
+use tokio_tungstenite::tungstenite;
+
+pub enum IndexError {
+    Sled(sled::Error),
+    Subxt(subxt::Error),
+    Tungstenite(tungstenite::Error),
+    BlockNotFound(u32),
+}
+
+impl From<sled::Error> for IndexError {
+    fn from(err: sled::Error) -> IndexError {
+        IndexError::Sled(err)
+    }
+}
+
+impl From<subxt::Error> for IndexError {
+    fn from(err: subxt::Error) -> IndexError {
+        IndexError::Subxt(err)
+    }
+}
+
+impl From<tungstenite::Error> for IndexError {
+    fn from(err: tungstenite::Error) -> IndexError {
+        IndexError::Tungstenite(err)
+    }
+}
 
 #[derive(Encode, Decode, Serialize, Debug, Clone)]
 pub struct ParaId(pub u32);
@@ -27,7 +53,7 @@ pub trait RuntimeIndexer {
         block_number: u32,
         event_index: u16,
         event: subxt::events::EventDetails<Self::RuntimeConfig>,
-    ) -> Result<(), subxt::Error>
+    ) -> Result<(), IndexError>
     where
         Self: Sized;
 }

@@ -8,6 +8,8 @@ use tokio::{
     time::{self, Duration, MissedTickBehavior},
 };
 
+use log::*;
+
 use crate::shared::*;
 
 pub struct Indexer<R: RuntimeIndexer> {
@@ -15,12 +17,6 @@ pub struct Indexer<R: RuntimeIndexer> {
     api: Option<OnlineClient<R::RuntimeConfig>>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
     sub_map: Mutex<HashMap<Key, Vec<mpsc::UnboundedSender<ResponseMessage>>>>,
-}
-
-#[derive(Debug)]
-enum IndexBlockError {
-    NoApi,
-    BlockNotFound(u32),
 }
 
 impl<R: RuntimeIndexer> Indexer<R> {
@@ -43,23 +39,16 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
     }
 
-    async fn index_block(&self, block_number: u32) -> Result<(), IndexBlockError> {
-        let api = match &self.api {
-            Some(api) => api.clone(),
-            None => return Err(IndexBlockError::NoApi),
-        };
+    async fn index_block(&self, block_number: u32) -> Result<(), IndexError> {
+        debug!("Indexing #{}", block_number);
+        let api = self.api.as_ref().unwrap();
 
-        let block_hash = match api
-            .rpc()
-            .block_hash(Some(block_number.into()))
-            .await
-            .unwrap()
-        {
+        let block_hash = match api.rpc().block_hash(Some(block_number.into())).await? {
             Some(block_hash) => block_hash,
-            None => return Err(IndexBlockError::BlockNotFound(block_number)),
+            None => return Err(IndexError::BlockNotFound(block_number)),
         };
         // Get the runtime version of the block.
-        let runtime_version = api.rpc().runtime_version(Some(block_hash)).await.unwrap();
+        let runtime_version = api.rpc().runtime_version(Some(block_hash)).await?;
 
         let metadata_map = self.metadata_map_lock.read().await;
         let metadata = match metadata_map.get(&runtime_version.spec_version) {
@@ -75,11 +64,11 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 match metadata_map.get(&runtime_version.spec_version) {
                     Some(metadata) => metadata.clone(),
                     None => {
-                        println!(
+                        info!(
                             "Downloading metadata for spec version {}",
                             runtime_version.spec_version
                         );
-                        let metadata = api.rpc().metadata_legacy(Some(block_hash)).await.unwrap();
+                        let metadata = api.rpc().metadata_legacy(Some(block_hash)).await?;
                         metadata_map.insert(runtime_version.spec_version, metadata.clone());
                         metadata
                     }
@@ -87,9 +76,8 @@ impl<R: RuntimeIndexer> Indexer<R> {
             }
         };
 
-        let events = subxt::events::Events::new_from_client(metadata, block_hash, api.clone())
-            .await
-            .unwrap();
+        let events =
+            subxt::events::Events::new_from_client(metadata, block_hash, api.clone()).await?;
 
         for (i, event) in events.iter().enumerate() {
             match event {
@@ -100,10 +88,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
                         event.variant_index(),
                         block_number,
                         event_index,
-                    );
+                    )?;
                     let _ = R::process_event(self, block_number, event_index, event);
                 }
-                Err(error) => println!("Block: {}, error: {}", block_number, error),
+                Err(error) => error!("Block: {}, error: {}", block_number, error),
             }
         }
 
@@ -129,7 +117,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         variant_index: u8,
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = VariantKey {
             pallet_index,
@@ -139,7 +127,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.variant.insert(key, &[]).unwrap();
+        self.trees.variant.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::Variant(pallet_index, variant_index);
         self.notify_subscribers(
@@ -149,6 +137,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_account_id(
@@ -156,7 +145,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         account_id: AccountId32,
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = AccountIdKey {
             account_id: account_id.clone(),
@@ -165,7 +154,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.account_id.insert(key, &[]).unwrap();
+        self.trees.account_id.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::AccountId(Bytes32(account_id.0));
         self.notify_subscribers(
@@ -175,6 +164,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_account_index(
@@ -182,7 +172,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         account_index: u32,
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: account_index,
@@ -191,7 +181,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.account_index.insert(key, &[]).unwrap();
+        self.trees.account_index.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::AccountIndex(account_index);
         self.notify_subscribers(
@@ -201,6 +191,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_auction_index(
@@ -208,7 +199,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         auction_index: u32,
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: auction_index,
@@ -217,7 +208,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.auction_index.insert(key, &[]).unwrap();
+        self.trees.auction_index.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::AuctionIndex(auction_index);
         self.notify_subscribers(
@@ -227,9 +218,15 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
-    pub fn index_event_bounty_index(&self, bounty_index: u32, block_number: u32, event_index: u16) {
+    pub fn index_event_bounty_index(
+        &self,
+        bounty_index: u32,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: bounty_index,
@@ -238,7 +235,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.bounty_index.insert(key, &[]).unwrap();
+        self.trees.bounty_index.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::BountyIndex(bounty_index);
         self.notify_subscribers(
@@ -248,6 +245,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_candidate_hash(
@@ -255,7 +253,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         candidate_hash: [u8; 32],
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = CandidateHashKey {
             candidate_hash,
@@ -264,7 +262,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.candidate_hash.insert(key, &[]).unwrap();
+        self.trees.candidate_hash.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::CandidateHash(Bytes32(candidate_hash));
         self.notify_subscribers(
@@ -274,9 +272,15 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
-    pub fn index_event_era_index(&self, era_index: u32, block_number: u32, event_index: u16) {
+    pub fn index_event_era_index(
+        &self,
+        era_index: u32,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: era_index,
@@ -285,7 +289,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.era_index.insert(key, &[]).unwrap();
+        self.trees.era_index.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::EraIndex(era_index);
         self.notify_subscribers(
@@ -295,6 +299,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_message_id(
@@ -302,7 +307,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         message_id: [u8; 32],
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = MessageIdKey {
             message_id,
@@ -311,7 +316,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.message_id.insert(key, &[]).unwrap();
+        self.trees.message_id.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::MessageId(Bytes32(message_id));
         self.notify_subscribers(
@@ -321,9 +326,15 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
-    pub fn index_event_para_id(&self, para_id: u32, block_number: u32, event_index: u16) {
+    pub fn index_event_para_id(
+        &self,
+        para_id: u32,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: para_id,
@@ -332,7 +343,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.para_id.insert(key, &[]).unwrap();
+        self.trees.para_id.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::ParaId(para_id);
         self.notify_subscribers(
@@ -342,9 +353,15 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
-    pub fn index_event_pool_id(&self, pool_id: u32, block_number: u32, event_index: u16) {
+    pub fn index_event_pool_id(
+        &self,
+        pool_id: u32,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: pool_id,
@@ -353,7 +370,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.pool_id.insert(key, &[]).unwrap();
+        self.trees.pool_id.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::PoolId(pool_id);
         self.notify_subscribers(
@@ -363,6 +380,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_preimage_hash(
@@ -370,7 +388,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         preimage_hash: [u8; 32],
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = HashKey {
             hash: preimage_hash,
@@ -379,7 +397,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.preimage_hash.insert(key, &[]).unwrap();
+        self.trees.preimage_hash.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::PreimageHash(Bytes32(preimage_hash));
         self.notify_subscribers(
@@ -389,6 +407,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_proposal_hash(
@@ -396,7 +415,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         proposal_hash: [u8; 32],
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = HashKey {
             hash: proposal_hash,
@@ -405,7 +424,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.proposal_hash.insert(key, &[]).unwrap();
+        self.trees.proposal_hash.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::ProposalHash(Bytes32(proposal_hash));
         self.notify_subscribers(
@@ -415,6 +434,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_proposal_index(
@@ -422,7 +442,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         proposal_index: u32,
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: proposal_index,
@@ -431,7 +451,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.proposal_index.insert(key, &[]).unwrap();
+        self.trees.proposal_index.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::ProposalIndex(proposal_index);
         self.notify_subscribers(
@@ -441,9 +461,15 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
-    pub fn index_event_ref_index(&self, ref_index: u32, block_number: u32, event_index: u16) {
+    pub fn index_event_ref_index(
+        &self,
+        ref_index: u32,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: ref_index,
@@ -452,7 +478,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.ref_index.insert(key, &[]).unwrap();
+        self.trees.ref_index.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::RefIndex(ref_index);
         self.notify_subscribers(
@@ -462,6 +488,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_registrar_index(
@@ -469,7 +496,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         registrar_index: u32,
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: registrar_index,
@@ -478,7 +505,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.registrar_index.insert(key, &[]).unwrap();
+        self.trees.registrar_index.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::RegistrarIndex(registrar_index);
         self.notify_subscribers(
@@ -488,6 +515,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
     pub fn index_event_session_index(
@@ -495,7 +523,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         session_index: u32,
         block_number: u32,
         event_index: u16,
-    ) {
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
             key: session_index,
@@ -504,7 +532,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.session_index.insert(key, &[]).unwrap();
+        self.trees.session_index.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::SessionIndex(session_index);
         self.notify_subscribers(
@@ -514,9 +542,15 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 
-    pub fn index_event_tip_hash(&self, tip_hash: [u8; 32], block_number: u32, event_index: u16) {
+    pub fn index_event_tip_hash(
+        &self,
+        tip_hash: [u8; 32],
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
         // Generate key
         let key = TipHashKey {
             tip_hash,
@@ -525,7 +559,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
         .serialize();
         // Insert record.
-        self.trees.tip_hash.insert(key, &[]).unwrap();
+        self.trees.tip_hash.insert(key, &[])?;
         // Notify subscribers.
         let search_key = Key::TipHash(Bytes32(tip_hash));
         self.notify_subscribers(
@@ -535,6 +569,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
+        Ok(())
     }
 }
 
@@ -545,36 +580,41 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     queue_depth: u32,
     mut exit_rx: watch::Receiver<bool>,
     mut sub_rx: mpsc::UnboundedReceiver<SubscribeMessage>,
-) {
+) -> Result<(), IndexError> {
     // Subscribe to all finalized blocks:
-    let mut blocks_sub = api.blocks().subscribe_finalized().await.unwrap();
-    let mut head_start_block = None;
-
+    let mut blocks_sub = api.blocks().subscribe_finalized().await?;
+    let head_start_block: u32 = blocks_sub
+        .next()
+        .await
+        .ok_or(IndexError::BlockNotFound(0))??
+        .number()
+        .into()
+        .try_into()
+        .unwrap();
     // Determine the correct block to start batch indexing.
     let mut block_number = match block_number {
         Some(block_height) => block_height,
         None => {
-            match match trees.root.get("batch_indexing_complete").unwrap() {
+            match match trees.root.get("batch_indexing_complete")? {
                 Some(value) => value.to_vec()[0] == 1,
                 None => false,
             } {
-                true => match trees.root.get("last_head_block").unwrap() {
+                true => match trees.root.get("last_head_block")? {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
                     None => R::get_default_start_block(),
                 },
-                false => match trees.root.get("last_batch_block").unwrap() {
+                false => match trees.root.get("last_batch_block")? {
                     Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
                     None => R::get_default_start_block(),
                 },
             }
         }
     };
-    println!("Batch indexing from #{}", block_number);
+    info!("Batch indexing from #{}", block_number);
     // Record in database that batch indexing has not finished.
     trees
         .root
-        .insert("batch_indexing_complete", &0_u8.to_be_bytes())
-        .unwrap();
+        .insert("batch_indexing_complete", &0_u8.to_be_bytes())?;
 
     let indexer = Indexer::<R>::new(trees.clone(), api);
 
@@ -597,7 +637,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             biased;
 
             _ = exit_rx.changed() => {
-                break;
+                return Ok(());
             }
             Some(msg) = sub_rx.recv() => {
                 let mut sub_map = indexer.sub_map.lock().unwrap();
@@ -611,14 +651,16 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     },
                 };
             }
-            block = blocks_sub.next() => {
-                let block = block.unwrap().unwrap();
+            Some(Ok(block)) = blocks_sub.next() => {
                 let head_block_number:u32 = block.number().into().try_into().unwrap();
-                println!(" ✨ #{head_block_number}");
-                indexer.index_block(head_block_number).await.unwrap();
-                trees.root.insert("last_head_block", &head_block_number.to_be_bytes()).unwrap();
-                if head_start_block == None {
-                    head_start_block = Some(head_block_number);
+                info!("✨ #{head_block_number}");
+                match indexer.index_block(head_block_number).await {
+                    Ok(()) => {
+                        trees.root.insert("last_head_block", &head_block_number.to_be_bytes())?;
+                    },
+                    Err(_) => {
+                        error!("Failed to index #{}", head_block_number);
+                    }
                 }
             }
             _ = interval.tick(), if is_batching => {
@@ -626,8 +668,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     let current_batch_time = SystemTime::now();
                     let duration = (current_batch_time.duration_since(last_batch_time)).unwrap().as_micros();
                     if duration != 0 {
-                        println!(
-                            " 📚 #{}, {:?} blocks/sec",
+                        info!(
+                            "📚 #{}, {:?} blocks/sec",
                             block_number,
                             <u32 as Into<u128>>::into(block_number - last_batch_block) * 1_000_000 / duration
                         );
@@ -637,24 +679,30 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 }
             }
             (result, index, _) = select_all(&mut futures), if is_batching => {
-                futures[index] = Box::pin(indexer.index_block(block_number + queue_depth));
-                block_number += 1;
-
-                if head_start_block == Some(block_number) {
-                    trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes()).unwrap();
-                    println!(" 📚 Finished batch indexing.");
+                if head_start_block == block_number {
+                    trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes())?;
+                    info!("📚 Finished batch indexing.");
                     is_batching = false;
                 }
                 else if block_number % 1000 == 0 {
-                    trees.root.insert("last_batch_block", &block_number.to_be_bytes()).unwrap();
+                    trees.root.insert("last_batch_block", &block_number.to_be_bytes())?;
                 }
                 if let Err(error) = result {
                     match error {
-                        IndexBlockError::NoApi => {}
-                        IndexBlockError::BlockNotFound(_block_number) => {
-                        }
+                        IndexError::BlockNotFound(block_number_not_found) => {
+                            if block_number > head_start_block + queue_depth {
+                                error!("Block not found #{}", block_number_not_found);
+                                is_batching = false;
+                            }
+                        },
+                        _ => {
+                            error!("Batch indexing failed.");
+                            is_batching = false;
+                        },
                     }
                 }
+                futures[index] = Box::pin(indexer.index_block(block_number + queue_depth));
+                block_number += 1;
             }
         }
     }

@@ -8,31 +8,33 @@ use tokio::sync::{
 };
 use tokio_tungstenite::tungstenite;
 
+use log::{error, info};
+
 use subxt::OnlineClient;
 
 use crate::shared::*;
 
-pub fn process_msg_status(trees: &Trees) -> ResponseMessage {
-    ResponseMessage::Status {
-        last_head_block: match trees.root.get("last_head_block").unwrap() {
+pub fn process_msg_status(trees: &Trees) -> Result<ResponseMessage, IndexError> {
+    Ok(ResponseMessage::Status {
+        last_head_block: match trees.root.get("last_head_block")? {
             Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
             None => 0,
         },
-        last_batch_block: match trees.root.get("last_batch_block").unwrap() {
+        last_batch_block: match trees.root.get("last_batch_block")? {
             Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
             None => 0,
         },
-        batch_indexing_complete: match trees.root.get("batch_indexing_complete").unwrap() {
+        batch_indexing_complete: match trees.root.get("batch_indexing_complete")? {
             Some(value) => value.to_vec()[0] == 1,
             None => false,
         },
-    }
+    })
 }
 
 pub async fn process_msg_variants<R: RuntimeIndexer>(
     api: &OnlineClient<R::RuntimeConfig>,
-) -> ResponseMessage {
-    let metadata = api.rpc().metadata_legacy(None).await.unwrap();
+) -> Result<ResponseMessage, IndexError> {
+    let metadata = api.rpc().metadata_legacy(None).await?;
     let mut pallets = Vec::new();
 
     for pallet in metadata.pallets() {
@@ -52,7 +54,7 @@ pub async fn process_msg_variants<R: RuntimeIndexer>(
             pallets.push(pallet_meta);
         }
     }
-    ResponseMessage::Variants(pallets)
+    Ok(ResponseMessage::Variants(pallets))
 }
 
 pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
@@ -358,10 +360,10 @@ pub async fn process_msg<R: RuntimeIndexer>(
     msg: RequestMessage,
     sub_tx: UnboundedSender<SubscribeMessage>,
     sub_response_tx: UnboundedSender<ResponseMessage>,
-) -> ResponseMessage {
-    match msg {
-        RequestMessage::Status => process_msg_status(trees),
-        RequestMessage::Variants => process_msg_variants::<R>(api).await,
+) -> Result<ResponseMessage, IndexError> {
+    Ok(match msg {
+        RequestMessage::Status => process_msg_status(trees)?,
+        RequestMessage::Variants => process_msg_variants::<R>(api).await?,
         RequestMessage::GetEvents { key } => process_msg_get_events(trees, key),
         RequestMessage::SubscribeEvents { key } => {
             let msg = SubscribeMessage {
@@ -371,7 +373,7 @@ pub async fn process_msg<R: RuntimeIndexer>(
             sub_tx.send(msg).unwrap();
             ResponseMessage::Subscribed
         }
-    }
+    })
 }
 
 async fn handle_connection<R: RuntimeIndexer>(
@@ -380,13 +382,10 @@ async fn handle_connection<R: RuntimeIndexer>(
     addr: SocketAddr,
     trees: Trees,
     sub_tx: UnboundedSender<SubscribeMessage>,
-) {
-    println!("Incoming TCP connection from: {}", addr);
-
-    let ws_stream = tokio_tungstenite::accept_async(raw_stream)
-        .await
-        .expect("Error during the websocket handshake occurred");
-    println!("WebSocket connection established: {}", addr);
+) -> Result<(), IndexError> {
+    info!("Incoming TCP connection from: {}", addr);
+    let ws_stream = tokio_tungstenite::accept_async(raw_stream).await?;
+    info!("WebSocket connection established: {}", addr);
 
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
     // Create the channel for the substrate thread to send event messages to this thread.
@@ -394,22 +393,21 @@ async fn handle_connection<R: RuntimeIndexer>(
 
     loop {
         tokio::select! {
-            Some(msg) = ws_receiver.next() => {
-                let msg = msg.unwrap();
+            Some(Ok(msg)) = ws_receiver.next() => {
                 if msg.is_text() || msg.is_binary() {
-                    match serde_json::from_str(msg.to_text().unwrap()) {
+                    match serde_json::from_str(msg.to_text()?) {
                         Ok(request_json) => {
-                            let response_msg = process_msg::<R>(&api, &trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await;
+                            let response_msg = process_msg::<R>(&api, &trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await?;
                             let response_json = serde_json::to_string(&response_msg).unwrap();
-                            ws_sender.send(tungstenite::Message::Text(response_json)).await.unwrap();
+                            ws_sender.send(tungstenite::Message::Text(response_json)).await?;
                         },
-                        Err(error) => println!("{}", error),
+                        Err(error) => error!("{}", error),
                     }
                 }
             },
             Some(msg) = sub_events_rx.recv() => {
                 let response_json = serde_json::to_string(&msg).unwrap();
-                ws_sender.send(tungstenite::Message::Text(response_json)).await.unwrap();
+                ws_sender.send(tungstenite::Message::Text(response_json)).await?;
             },
         }
     }
@@ -428,7 +426,7 @@ pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
     // Create the event loop and TCP listener we'll accept connections on.
     let try_socket = TcpListener::bind(&addr).await;
     let listener = try_socket.expect("Failed to bind");
-    println!("Listening on: {}", addr);
+    info!("Listening on: {}", addr);
 
     // Let's spawn the handling of each connection in a separate task.
     loop {

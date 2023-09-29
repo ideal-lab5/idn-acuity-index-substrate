@@ -3,6 +3,7 @@
 //! A library for indexing events from Substrate blockchains.
 
 use futures::StreamExt;
+use log::{error, info, LevelFilter};
 use signal_hook::{consts::TERM_SIGNALS, flag};
 use signal_hook_tokio::Signals;
 use std::{
@@ -30,29 +31,8 @@ use subxt::OnlineClient;
 #[cfg(test)]
 mod tests;
 
-/// Starts the indexer. Chain is defined by `R`.
-pub async fn start<R: RuntimeIndexer + 'static>(
-    db_path: Option<String>,
-    url: Option<String>,
-    block_number: Option<u32>,
-    queue_depth: u8,
-    port: u16,
-) -> Result<(), Box<dyn Error>> {
-    let name = R::get_name();
-    println!("Indexing {}", name);
-    let genesis_hash_config = R::get_genesis_hash().as_ref().to_vec();
-    // Open database.
-    let db_path = match db_path {
-        Some(db_path) => PathBuf::from(db_path),
-        None => {
-            let mut db_path = home::home_dir().ok_or("No home directory.")?;
-            db_path.push(".local/share/hybrid-indexer");
-            db_path.push(name);
-            db_path.push("db");
-            db_path
-        }
-    };
-    println!("Opening db: {}", db_path.display());
+fn open_trees(db_path: PathBuf) -> Result<Trees, sled::Error> {
+    info!("Opening db: {}", db_path.display());
     let db = sled::open(&db_path)?;
     let trees = Trees {
         root: db.clone(),
@@ -75,8 +55,67 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         session_index: db.open_tree("session_index")?,
         tip_hash: db.open_tree("tip_hash")?,
     };
-    drop(db);
+    Ok(trees)
+}
 
+fn close_trees(trees: Trees) {
+    info!("Closing db.");
+    let _ = trees.root.flush();
+    let _ = trees.variant.flush();
+    let _ = trees.account_id.flush();
+    let _ = trees.account_index.flush();
+    let _ = trees.auction_index.flush();
+    let _ = trees.bounty_index.flush();
+    let _ = trees.candidate_hash.flush();
+    let _ = trees.era_index.flush();
+    let _ = trees.message_id.flush();
+    let _ = trees.para_id.flush();
+    let _ = trees.pool_id.flush();
+    let _ = trees.preimage_hash.flush();
+    let _ = trees.proposal_hash.flush();
+    let _ = trees.proposal_index.flush();
+    let _ = trees.ref_index.flush();
+    let _ = trees.registrar_index.flush();
+    let _ = trees.session_index.flush();
+    let _ = trees.tip_hash.flush();
+}
+
+/// Starts the indexer. Chain is defined by `R`.
+pub async fn start<R: RuntimeIndexer + 'static>(
+    db_path: Option<String>,
+    url: Option<String>,
+    block_number: Option<u32>,
+    queue_depth: u8,
+    port: u16,
+    log_level: LevelFilter,
+) -> Result<(), Box<dyn Error>> {
+    env_logger::Builder::new().filter_level(log_level).init();
+    let name = R::get_name();
+    info!("Indexing {}", name);
+    let genesis_hash_config = R::get_genesis_hash().as_ref().to_vec();
+    // Open database.
+    let db_path = match db_path {
+        Some(db_path) => PathBuf::from(db_path),
+        None => match home::home_dir() {
+            Some(mut db_path) => {
+                db_path.push(".local/share/hybrid-indexer");
+                db_path.push(name);
+                db_path.push("db");
+                db_path
+            }
+            None => {
+                error!("No home directory.");
+                exit(1);
+            }
+        },
+    };
+    let trees = match open_trees(db_path) {
+        Ok(trees) => trees,
+        Err(_) => {
+            error!("Failed to open database.");
+            exit(1);
+        }
+    };
     let genesis_hash_db = match trees.root.get("genesis_hash").unwrap() {
         Some(value) => value.to_vec(),
         //    vector_as_u8_32_array(&value),
@@ -90,27 +129,33 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     };
 
     if genesis_hash_db != genesis_hash_config {
-        eprintln!("Database has wrong genesis hash.");
-        eprintln!("Correct hash:  0x{}", hex::encode(genesis_hash_config));
-        eprintln!("Database hash: 0x{}", hex::encode(genesis_hash_db));
+        error!("Database has wrong genesis hash.");
+        error!("Correct hash:  0x{}", hex::encode(genesis_hash_config));
+        error!("Database hash: 0x{}", hex::encode(genesis_hash_db));
+        close_trees(trees);
         exit(1);
     }
-
+    // Determine url of Substrate node to connect to.
     let url = match url {
         Some(url) => url,
         None => R::get_default_url().to_owned(),
     };
-    println!("Connecting to: {}", url);
-    // Determine url of Substrate node to connect to.
-    let api = OnlineClient::<R::RuntimeConfig>::from_url(&url)
-        .await
-        .unwrap();
+    info!("Connecting to: {}", url);
+    let api = match OnlineClient::<R::RuntimeConfig>::from_url(&url).await {
+        Ok(api) => api,
+        Err(_) => {
+            error!("Failed to connect.");
+            close_trees(trees);
+            exit(1);
+        }
+    };
     let genesis_hash_api = api.genesis_hash().as_ref().to_vec();
 
     if genesis_hash_api != genesis_hash_config {
-        eprintln!("Chain has wrong genesis hash.");
-        eprintln!("Correct hash: 0x{}", hex::encode(genesis_hash_config));
-        eprintln!("Chain hash:   0x{}", hex::encode(genesis_hash_api));
+        error!("Chain has wrong genesis hash.");
+        error!("Correct hash: 0x{}", hex::encode(genesis_hash_config));
+        error!("Chain hash:   0x{}", hex::encode(genesis_hash_api));
+        close_trees(trees);
         exit(1);
     }
     // https://docs.rs/signal-hook/0.3.17/signal_hook/#a-complex-signal-handling-with-a-background-thread
@@ -149,30 +194,11 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     // Wait for signal.
     let mut signals = Signals::new(TERM_SIGNALS)?;
     signals.next().await;
-    println!("Exiting.");
+    info!("Exiting.");
     let _ = exit_tx.send(true);
     // Wait to exit.
     let _result = join!(substrate_index, websockets_task);
     // Close db.
-    println!("Closing db.");
-    let _bytes = trees.root.flush();
-    let _bytes = trees.variant.flush();
-    let _bytes = trees.account_id.flush();
-    let _bytes = trees.account_index.flush();
-    let _bytes = trees.auction_index.flush();
-    let _bytes = trees.bounty_index.flush();
-    let _bytes = trees.candidate_hash.flush();
-    let _bytes = trees.era_index.flush();
-    let _bytes = trees.message_id.flush();
-    let _bytes = trees.para_id.flush();
-    let _bytes = trees.pool_id.flush();
-    let _bytes = trees.preimage_hash.flush();
-    let _bytes = trees.proposal_hash.flush();
-    let _bytes = trees.proposal_index.flush();
-    let _bytes = trees.ref_index.flush();
-    let _bytes = trees.registrar_index.flush();
-    let _bytes = trees.session_index.flush();
-    let _bytes = trees.tip_hash.flush();
-    drop(trees);
+    close_trees(trees);
     Ok(())
 }
