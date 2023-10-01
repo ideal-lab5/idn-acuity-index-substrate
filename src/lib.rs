@@ -7,7 +7,6 @@ use log::{error, info, LevelFilter};
 use signal_hook::{consts::TERM_SIGNALS, flag};
 use signal_hook_tokio::Signals;
 use std::{
-    error::Error,
     path::PathBuf,
     process::exit,
     sync::{atomic::AtomicBool, Arc},
@@ -88,7 +87,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     queue_depth: u8,
     port: u16,
     log_level: LevelFilter,
-) -> Result<(), Box<dyn Error>> {
+) {
     env_logger::Builder::new().filter_level(log_level).init();
     let name = R::get_name();
     info!("Indexing {}", name);
@@ -164,11 +163,11 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     for sig in TERM_SIGNALS {
         // When terminated by a second term signal, exit with exit code 1.
         // This will do nothing the first time (because term_now is false).
-        flag::register_conditional_shutdown(*sig, 1, Arc::clone(&term_now))?;
+        flag::register_conditional_shutdown(*sig, 1, Arc::clone(&term_now)).unwrap();
         // But this will "arm" the above for the second time, by setting it to true.
         // The order of registering these is important, if you put this one first, it will
         // first arm and then terminate ‒ all in the first round.
-        flag::register(*sig, Arc::clone(&term_now))?;
+        flag::register(*sig, Arc::clone(&term_now)).unwrap();
     }
     // Create a watch channel to exit the program.
     let (exit_tx, exit_rx) = watch::channel(false);
@@ -192,7 +191,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         sub_tx,
     ));
     // Wait for signal.
-    let mut signals = Signals::new(TERM_SIGNALS)?;
+    let mut signals = Signals::new(TERM_SIGNALS).unwrap();
     signals.next().await;
     info!("Exiting.");
     let _ = exit_tx.send(true);
@@ -200,5 +199,5 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     let _result = join!(substrate_index, websockets_task);
     // Close db.
     close_trees(trees);
-    Ok(())
+    exit(0);
 }
