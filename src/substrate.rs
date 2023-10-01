@@ -12,7 +12,7 @@ use log::*;
 
 use crate::shared::*;
 
-pub struct Indexer<R: RuntimeIndexer> {
+pub struct Indexer<R: RuntimeIndexer + ?Sized> {
     trees: Trees,
     api: Option<OnlineClient<R::RuntimeConfig>>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
