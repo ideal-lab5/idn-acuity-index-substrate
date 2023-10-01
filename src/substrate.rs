@@ -610,7 +610,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             }
         }
     };
-    info!("Batch indexing from #{}", block_number);
+    info!("📚 Batch indexing from #{}", block_number);
     // Record in database that batch indexing has not finished.
     trees
         .root
@@ -696,12 +696,12 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         match error {
                             IndexError::BlockNotFound(block_number_not_found) => {
                                 if block_number > head_start_block + queue_depth {
-                                    error!("Block not found #{}", block_number_not_found);
+                                    error!("📚 Block not found #{}", block_number_not_found);
                                     is_batching = false;
                                 }
                             },
                             _ => {
-                                error!("Batch indexing failed.");
+                                error!("📚 Batch indexing failed.");
                                 is_batching = false;
                             },
                         }
