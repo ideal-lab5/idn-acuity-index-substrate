@@ -1,35 +1,74 @@
-# Milestone 3 Testing Guide
+# Grant 2 Milestone 1 Testing Guide
 
-## Deliverable 1 - Hybrid Indexer Library
+## Deliverable 1 - Combine head and batch indexer threads
 
-Check out this repository and run the tests:
+Observe that both head and batch indexing is now handled by the same event loop:
+https://github.com/hybrid-explorer/hybrid-indexer/blob/main/src/substrate.rs#L636
 
- ```sh
-git clone https://github.com/hybrid-explorer/hybrid-indexer
-cd hybrid-indexer
-cargo test
+Run polkadot-indexer starting at block 1752000:
+
+```
+git clone https://github.com/hybrid-explorer/polkadot-indexer/
+docker build .
+docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172
 ```
 
-## Deliverable 2 - Polkadot Indexer
+Observe that "Downloading metadata for spec version 9430" only appears once.
 
-1. Follow the [instructions](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/README.md#docker) in polkadot-indexer to run a docker image in a separate console tab for each of polkadot, kusama, rococo & westend.
-1. Observe that all 4 Polakdot chains are being indexed.
+## Deliverable 2 - Check correct chain
 
-## Deliverable 3 - Chain Select
+Attempt to index Polkadot, but connect to a Kusama end point:
 
-1. Follow the [instructions](https://github.com/hybrid-explorer/hybrid-dapp/blob/main/README.md#docker) in hybrid-dapp to run a docker image and launch the dapp in a web browser.
-1. If the chain selector is not visible in the top left, click on the "hamburger" icon.
-1. Switch between the different chains.
-1. Observe that the indexing status at the top changes for each chain.
+```
+docker run --rm -p 8172:8172 [image_hash] -c polkadot -p 8172 -u wss://kusama-rpc.polkadot.io:443
+```
 
-For each chain check that the indexing is working:
-1. Select Pallet / Variant search key.
-1. Select Balances pallet.
-1. Select Transfer variant.
-1. Click Search.
-1. Observe events are found.
-1. Copy an account address from an event to the clipboard.
-1. Select AccountId search key.
-1. Paste account address into AccountId box.
-1. Click Search.
-1. Observe events are found.
+Observe that the indexer detects that the genesis hash is wrong.
+
+## Deliverable 3 - Improved logging
+
+Run the indexer:
+
+```
+docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172
+```
+
+Observe that the batch indexing stats are output every 2 seconds.
+
+Run the indexer in quiet mode:
+
+```
+docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172 -q
+```
+
+Observe there is no output.
+
+Run the indexer in verbose mode:
+
+```
+docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172 -v
+```
+
+Observe there is a lot of output.
+
+## Deliverable 4 - Improved error checking
+
+Observe the new `IndexError` enum: 
+
+https://github.com/hybrid-explorer/hybrid-indexer/blob/main/src/shared.rs#L11
+
+Run the indexer:
+
+```
+docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172
+```
+
+Press ctrl+c. Observe that the indexer exits gracefully, closing the database.
+
+Run the indexer on an invalid block:
+
+```
+docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 20000000 -p 8172
+```
+
+Observe that the error is reported and batch indexing stops.
