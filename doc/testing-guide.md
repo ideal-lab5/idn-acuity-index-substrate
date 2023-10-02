@@ -1,5 +1,14 @@
 # Grant 2 Milestone 1 Testing Guide
 
+To run the unit tests:
+
+```
+git clone https://github.com/hybrid-explorer/hybrid-indexer
+cd hybrid-indexer
+rustup default nightly
+cargo test
+```
+
 ## Deliverable 1 - Combine head and batch indexer threads
 
 Observe that both head and batch indexing is now handled by the same event loop:
