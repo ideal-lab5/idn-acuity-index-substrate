@@ -14,6 +14,8 @@ docker build .
 docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172
 ```
 
+(Replace `[image_hash]` with the hash at the end of the build step.)
+
 Observe that "Downloading metadata for spec version 9430" only appears once.
 
 ## Deliverable 2 - Check correct chain
