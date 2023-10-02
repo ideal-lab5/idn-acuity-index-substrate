@@ -9,6 +9,7 @@ Run polkadot-indexer starting at block 1752000:
 
 ```
 git clone https://github.com/hybrid-explorer/polkadot-indexer/
+cd polkadot-indexer
 docker build .
 docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172
 ```
