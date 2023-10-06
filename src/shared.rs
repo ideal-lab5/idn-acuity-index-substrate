@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::UnboundedSender;
 use tokio_tungstenite::tungstenite;
 
+#[derive(Debug)]
 pub enum IndexError {
     Sled(sled::Error),
     Subxt(subxt::Error),
@@ -53,7 +54,7 @@ pub trait RuntimeIndexer {
         block_number: u32,
         event_index: u16,
         event: subxt::events::EventDetails<Self::RuntimeConfig>,
-    ) -> Result<(), IndexError>;
+    ) -> Result<u32, IndexError>;
 }
 
 #[derive(Clone)]

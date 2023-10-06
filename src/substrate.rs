@@ -39,8 +39,9 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
     }
 
-    async fn index_block(&self, block_number: u32) -> Result<u32, IndexError> {
+    async fn index_block(&self, block_number: u32) -> Result<(u32, u32), IndexError> {
         debug!("Indexing #{}", block_number);
+        let mut key_count = 0;
         let api = self.api.as_ref().unwrap();
 
         let block_hash = match api.rpc().block_hash(Some(block_number.into())).await? {
@@ -89,13 +90,18 @@ impl<R: RuntimeIndexer> Indexer<R> {
                         block_number,
                         event_index,
                     )?;
-                    let _ = R::process_event(self, block_number, event_index, event);
+                    key_count += 1;
+                    if let Ok(event_key_count) =
+                        R::process_event(self, block_number, event_index, event)
+                    {
+                        key_count += event_key_count;
+                    }
                 }
                 Err(error) => error!("Block: {}, error: {}", block_number, error),
             }
         }
 
-        Ok(events.len())
+        Ok((events.len(), key_count))
     }
 
     pub fn notify_subscribers(&self, search_key: Key, event: Event) {
@@ -626,7 +632,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
 
     let mut last_batch_block = block_number;
     let mut last_batch_time = SystemTime::now();
-    let mut batch_event_count: u32 = 0;
+    let mut batch_event_count = 0;
+    let mut batch_key_count = 0;
 
     let mut interval = time::interval(Duration::from_millis(2000));
     interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
@@ -655,9 +662,9 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             Some(Ok(block)) = blocks_sub.next() => {
                 let head_block_number:u32 = block.number().into().try_into().unwrap();
                 match indexer.index_block(head_block_number).await {
-                    Ok(event_count) => {
+                    Ok((event_count, key_count)) => {
                         trees.root.insert("last_head_block", &head_block_number.to_be_bytes())?;
-                        info!("✨ #{head_block_number}, {event_count} events");
+                        info!("✨ #{head_block_number}, {event_count} events, {key_count} keys");
                     },
                     Err(_) => {
                         error!("Failed to index #{}", head_block_number);
@@ -670,14 +677,16 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     let duration = (current_batch_time.duration_since(last_batch_time)).unwrap().as_micros();
                     if duration != 0 {
                         info!(
-                            "📚 #{}, {:?} blocks/sec, {:?} events/sec",
+                            "📚 #{}, {:?} blocks/sec, {:?} events/sec, {:?} keys/sec",
                             block_number,
                             <u32 as Into<u128>>::into(block_number - last_batch_block) * 1_000_000 / duration,
                             <u32 as Into<u128>>::into(batch_event_count) * 1_000_000 / duration,
+                            <u32 as Into<u128>>::into(batch_key_count) * 1_000_000 / duration,
                         );
                     }
                     last_batch_block = block_number;
                     batch_event_count = 0;
+                    batch_key_count = 0;
                     last_batch_time = current_batch_time;
                 }
             }
@@ -691,7 +700,10 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     trees.root.insert("last_batch_block", &block_number.to_be_bytes())?;
                 }
                 match result {
-                    Ok(event_count) => batch_event_count += event_count,
+                    Ok((event_count, key_count)) => {
+                        batch_event_count += event_count;
+                        batch_key_count += key_count;
+                    },
                     Err(error) => {
                         match error {
                             IndexError::BlockNotFound(block_number_not_found) => {
