@@ -1,5 +1,14 @@
 # Grant 2 Milestone 1 Testing Guide
 
+To run the unit tests:
+
+```
+git clone https://github.com/hybrid-explorer/hybrid-indexer
+cd hybrid-indexer
+rustup default nightly
+cargo test
+```
+
 ## Deliverable 1 - Combine head and batch indexer threads
 
 Observe that both head and batch indexing is now handled by the same event loop:
@@ -9,9 +18,12 @@ Run polkadot-indexer starting at block 1752000:
 
 ```
 git clone https://github.com/hybrid-explorer/polkadot-indexer/
+cd polkadot-indexer
 docker build .
 docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172
 ```
+
+(Replace `[image_hash]` with the hash at the end of the build step.)
 
 Observe that "Downloading metadata for spec version 9430" only appears once.
 
