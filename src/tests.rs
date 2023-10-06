@@ -34,8 +34,8 @@ impl RuntimeIndexer for TestIndexer {
         _block_number: u32,
         _event_index: u16,
         _event: subxt::events::EventDetails<Self::RuntimeConfig>,
-    ) -> Result<(), IndexError> {
-        Ok(())
+    ) -> Result<u32, IndexError> {
+        Ok(0)
     }
 }
 
