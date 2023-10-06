@@ -1,6 +1,8 @@
-use subxt::{metadata::Metadata, utils::AccountId32, OnlineClient};
+use subxt::{
+    backend::legacy::LegacyRpcMethods, metadata::Metadata, utils::AccountId32, OnlineClient,
+};
 
-use futures::{future::select_all, StreamExt};
+use futures::future::select_all;
 use std::{collections::HashMap, sync::Mutex, time::SystemTime};
 
 use tokio::{
@@ -15,15 +17,21 @@ use crate::shared::*;
 pub struct Indexer<R: RuntimeIndexer + ?Sized> {
     trees: Trees,
     api: Option<OnlineClient<R::RuntimeConfig>>,
+    rpc: Option<LegacyRpcMethods<R::RuntimeConfig>>,
     metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
     sub_map: Mutex<HashMap<Key, Vec<mpsc::UnboundedSender<ResponseMessage>>>>,
 }
 
 impl<R: RuntimeIndexer> Indexer<R> {
-    fn new(trees: Trees, api: OnlineClient<R::RuntimeConfig>) -> Self {
+    fn new(
+        trees: Trees,
+        api: OnlineClient<R::RuntimeConfig>,
+        rpc: LegacyRpcMethods<R::RuntimeConfig>,
+    ) -> Self {
         Indexer {
             trees,
             api: Some(api),
+            rpc: Some(rpc),
             metadata_map_lock: RwLock::new(HashMap::new()),
             sub_map: HashMap::new().into(),
         }
@@ -34,6 +42,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         Indexer {
             trees,
             api: None,
+            rpc: None,
             metadata_map_lock: RwLock::new(HashMap::new()),
             sub_map: HashMap::new().into(),
         }
@@ -43,13 +52,14 @@ impl<R: RuntimeIndexer> Indexer<R> {
         debug!("Indexing #{}", block_number);
         let mut key_count = 0;
         let api = self.api.as_ref().unwrap();
+        let rpc = self.rpc.as_ref().unwrap();
 
-        let block_hash = match api.rpc().block_hash(Some(block_number.into())).await? {
+        let block_hash = match rpc.chain_get_block_hash(Some(block_number.into())).await? {
             Some(block_hash) => block_hash,
             None => return Err(IndexError::BlockNotFound(block_number)),
         };
         // Get the runtime version of the block.
-        let runtime_version = api.rpc().runtime_version(Some(block_hash)).await?;
+        let runtime_version = rpc.state_get_runtime_version(Some(block_hash)).await?;
 
         let metadata_map = self.metadata_map_lock.read().await;
         let metadata = match metadata_map.get(&runtime_version.spec_version) {
@@ -69,7 +79,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
                             "Downloading metadata for spec version {}",
                             runtime_version.spec_version
                         );
-                        let metadata = api.rpc().metadata_legacy(Some(block_hash)).await?;
+                        let metadata = rpc.state_get_metadata(Some(block_hash)).await?;
                         metadata_map.insert(runtime_version.spec_version, metadata.clone());
                         metadata
                     }
@@ -582,6 +592,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
 pub async fn substrate_index<R: RuntimeIndexer>(
     trees: Trees,
     api: OnlineClient<R::RuntimeConfig>,
+    rpc: LegacyRpcMethods<R::RuntimeConfig>,
     block_number: Option<u32>,
     queue_depth: u32,
     mut exit_rx: watch::Receiver<bool>,
@@ -622,7 +633,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         .root
         .insert("batch_indexing_complete", &0_u8.to_be_bytes())?;
 
-    let indexer = Indexer::<R>::new(trees.clone(), api);
+    let indexer = Indexer::<R>::new(trees.clone(), api, rpc);
 
     let mut futures = Vec::with_capacity(queue_depth.try_into().unwrap());
 

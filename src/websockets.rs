@@ -10,7 +10,7 @@ use tokio_tungstenite::tungstenite;
 
 use log::{error, info};
 
-use subxt::OnlineClient;
+use subxt::backend::legacy::LegacyRpcMethods;
 
 use crate::shared::*;
 
@@ -32,9 +32,9 @@ pub fn process_msg_status(trees: &Trees) -> Result<ResponseMessage, IndexError> 
 }
 
 pub async fn process_msg_variants<R: RuntimeIndexer>(
-    api: &OnlineClient<R::RuntimeConfig>,
+    rpc: &LegacyRpcMethods<R::RuntimeConfig>,
 ) -> Result<ResponseMessage, IndexError> {
-    let metadata = api.rpc().metadata_legacy(None).await?;
+    let metadata = rpc.state_get_metadata(None).await?;
     let mut pallets = Vec::new();
 
     for pallet in metadata.pallets() {
@@ -355,7 +355,7 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 }
 
 pub async fn process_msg<R: RuntimeIndexer>(
-    api: &OnlineClient<R::RuntimeConfig>,
+    rpc: &LegacyRpcMethods<R::RuntimeConfig>,
     trees: &Trees,
     msg: RequestMessage,
     sub_tx: UnboundedSender<SubscribeMessage>,
@@ -363,7 +363,7 @@ pub async fn process_msg<R: RuntimeIndexer>(
 ) -> Result<ResponseMessage, IndexError> {
     Ok(match msg {
         RequestMessage::Status => process_msg_status(trees)?,
-        RequestMessage::Variants => process_msg_variants::<R>(api).await?,
+        RequestMessage::Variants => process_msg_variants::<R>(rpc).await?,
         RequestMessage::GetEvents { key } => process_msg_get_events(trees, key),
         RequestMessage::SubscribeEvents { key } => {
             let msg = SubscribeMessage {
@@ -377,7 +377,7 @@ pub async fn process_msg<R: RuntimeIndexer>(
 }
 
 async fn handle_connection<R: RuntimeIndexer>(
-    api: OnlineClient<R::RuntimeConfig>,
+    rpc: LegacyRpcMethods<R::RuntimeConfig>,
     raw_stream: TcpStream,
     addr: SocketAddr,
     trees: Trees,
@@ -397,7 +397,7 @@ async fn handle_connection<R: RuntimeIndexer>(
                 if msg.is_text() || msg.is_binary() {
                     match serde_json::from_str(msg.to_text()?) {
                         Ok(request_json) => {
-                            let response_msg = process_msg::<R>(&api, &trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await?;
+                            let response_msg = process_msg::<R>(&rpc, &trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await?;
                             let response_json = serde_json::to_string(&response_msg).unwrap();
                             ws_sender.send(tungstenite::Message::Text(response_json)).await?;
                         },
@@ -415,7 +415,7 @@ async fn handle_connection<R: RuntimeIndexer>(
 
 pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
     trees: Trees,
-    api: OnlineClient<R::RuntimeConfig>,
+    rpc: LegacyRpcMethods<R::RuntimeConfig>,
     port: u16,
     mut exit_rx: Receiver<bool>,
     sub_tx: UnboundedSender<SubscribeMessage>,
@@ -438,7 +438,7 @@ pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
             }
             Ok((stream, addr)) = listener.accept() => {
                 tokio::spawn(handle_connection::<R>(
-                    api.clone(),
+                    rpc.clone(),
                     stream,
                     addr,
                     trees.clone(),

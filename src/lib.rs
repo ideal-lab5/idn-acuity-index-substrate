@@ -25,7 +25,10 @@ use crate::shared::*;
 use substrate::*;
 use websockets::websockets_listen;
 
-use subxt::OnlineClient;
+use subxt::{
+    backend::{legacy::LegacyRpcMethods, rpc::RpcClient},
+    OnlineClient,
+};
 
 #[cfg(test)]
 mod tests;
@@ -140,7 +143,15 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         None => R::get_default_url().to_owned(),
     };
     info!("Connecting to: {}", url);
-    let api = match OnlineClient::<R::RuntimeConfig>::from_url(&url).await {
+    let rpc_client = match RpcClient::from_url(&url).await {
+        Ok(rpc_client) => rpc_client,
+        Err(_) => {
+            error!("Failed to connect.");
+            close_trees(trees);
+            exit(1);
+        }
+    };
+    let api = match OnlineClient::<R::RuntimeConfig>::from_rpc_client(rpc_client.clone()).await {
         Ok(api) => api,
         Err(_) => {
             error!("Failed to connect.");
@@ -148,6 +159,8 @@ pub async fn start<R: RuntimeIndexer + 'static>(
             exit(1);
         }
     };
+    let rpc = LegacyRpcMethods::<R::RuntimeConfig>::new(rpc_client);
+
     let genesis_hash_api = api.genesis_hash().as_ref().to_vec();
 
     if genesis_hash_api != genesis_hash_config {
@@ -177,6 +190,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     let substrate_index = spawn(substrate_index::<R>(
         trees.clone(),
         api.clone(),
+        rpc.clone(),
         block_number,
         queue_depth.into(),
         exit_rx.clone(),
@@ -185,7 +199,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     // Spawn websockets task.
     let websockets_task = spawn(websockets_listen::<R>(
         trees.clone(),
-        api,
+        rpc,
         port,
         exit_rx,
         sub_tx,
