@@ -7,6 +7,7 @@ use subxt::utils::AccountId32;
 
 use hex_literal::hex;
 use std::str::FromStr;
+use zerocopy::{AsBytes, FromBytes};
 
 pub struct TestIndexer;
 
@@ -44,11 +45,11 @@ fn test_variant_key() {
     let key1 = VariantKey {
         pallet_index: 3,
         variant_index: 65,
-        block_number: 4,
-        event_index: 5,
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
-    let key2 = VariantKey::unserialize(key1.serialize());
+    let key2 = VariantKey::read_from(key1.as_bytes()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -61,12 +62,12 @@ fn test_index_event_variant() {
     let key1 = VariantKey {
         pallet_index: 3,
         variant_index: 65,
-        block_number: 4,
-        event_index: 5,
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees.variant.scan_prefix([3, 65]).keys().next().unwrap();
-    let key2 = VariantKey::unserialize(k.unwrap().to_vec());
+    let key2 = VariantKey::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -96,15 +97,16 @@ async fn test_process_msg_variant() {
 }
 
 #[test]
-fn test_account_id_key() {
-    let key1: AccountIdKey = AccountIdKey {
-        account_id: AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
-            .unwrap(),
-        block_number: 4,
-        event_index: 5,
+fn test_bytes32_key() {
+    let key1 = Bytes32Key {
+        key: AccountId32::from_str("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+            .unwrap()
+            .0,
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
-    let key2 = AccountIdKey::unserialize(key1.serialize());
+    let key2 = Bytes32Key::read_from(key1.as_bytes()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -118,10 +120,10 @@ fn test_index_event_account_id() {
         .index_event_account_id(account_id.clone(), 4, 5)
         .unwrap();
 
-    let key1 = AccountIdKey {
-        account_id: account_id.clone(),
-        block_number: 4,
-        event_index: 5,
+    let key1 = Bytes32Key {
+        key: account_id.0,
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -130,7 +132,7 @@ fn test_index_event_account_id() {
         .keys()
         .next()
         .unwrap();
-    let key2 = AccountIdKey::unserialize(k.unwrap().to_vec());
+    let key2 = Bytes32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -169,12 +171,12 @@ async fn test_process_msg_account_id() {
 #[test]
 fn test_u32_key() {
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
-    let key2 = U32Key::unserialize(key1.serialize());
+    let key2 = U32Key::read_from(key1.as_bytes()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -185,9 +187,9 @@ fn test_index_event_account_index() {
     indexer.index_event_account_index(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -196,7 +198,7 @@ fn test_index_event_account_index() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -238,9 +240,9 @@ fn test_index_event_auction_index() {
     indexer.index_event_auction_index(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -249,7 +251,7 @@ fn test_index_event_auction_index() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -291,9 +293,9 @@ fn test_index_event_bounty_index() {
     indexer.index_event_bounty_index(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -302,7 +304,7 @@ fn test_index_event_bounty_index() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -338,27 +340,15 @@ async fn test_process_msg_bounty_index() {
 }
 
 #[test]
-fn test_candidate_hash_key() {
-    let key1: CandidateHashKey = CandidateHashKey {
-        candidate_hash: [8; 32],
-        block_number: 4,
-        event_index: 5,
-    };
-
-    let key2 = CandidateHashKey::unserialize(key1.serialize());
-    assert_eq!(key1, key2);
-}
-
-#[test]
 fn test_index_event_candidate_hash() {
     let trees = open_trees("target/debug/test_candidate_hash".into()).unwrap();
     let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_candidate_hash([8; 32], 4, 5).unwrap();
 
-    let key1 = CandidateHashKey {
-        candidate_hash: [8; 32],
-        block_number: 4,
-        event_index: 5,
+    let key1 = Bytes32Key {
+        key: [8; 32],
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -367,7 +357,7 @@ fn test_index_event_candidate_hash() {
         .keys()
         .next()
         .unwrap();
-    let key2 = CandidateHashKey::unserialize(k.unwrap().to_vec());
+    let key2 = Bytes32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -409,9 +399,9 @@ fn test_index_event_era_index() {
     indexer.index_event_era_index(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -420,7 +410,7 @@ fn test_index_event_era_index() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -450,31 +440,19 @@ async fn test_process_msg_era_index() {
 }
 
 #[test]
-fn test_message_id_key() {
-    let key1: MessageIdKey = MessageIdKey {
-        message_id: [8; 32],
-        block_number: 4,
-        event_index: 5,
-    };
-
-    let key2 = MessageIdKey::unserialize(key1.serialize());
-    assert_eq!(key1, key2);
-}
-
-#[test]
 fn test_index_event_message_id() {
     let trees = open_trees("target/debug/test_message_id".into()).unwrap();
     let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_message_id([8; 32], 4, 5).unwrap();
 
-    let key1 = MessageIdKey {
-        message_id: [8; 32],
-        block_number: 4,
-        event_index: 5,
+    let key1 = Bytes32Key {
+        key: [8; 32],
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees.message_id.scan_prefix([8; 32]).keys().next().unwrap();
-    let key2 = MessageIdKey::unserialize(k.unwrap().to_vec());
+    let key2 = Bytes32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -510,9 +488,9 @@ fn test_index_event_para_id() {
     indexer.index_event_para_id(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -521,7 +499,7 @@ fn test_index_event_para_id() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -557,9 +535,9 @@ fn test_index_event_pool_id() {
     indexer.index_event_pool_id(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -568,7 +546,7 @@ fn test_index_event_pool_id() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -598,27 +576,15 @@ async fn test_process_msg_pool_id() {
 }
 
 #[test]
-fn test_preimage_hash_key() {
-    let key1 = HashKey {
-        hash: [8; 32],
-        block_number: 4,
-        event_index: 5,
-    };
-
-    let key2 = HashKey::unserialize(key1.serialize());
-    assert_eq!(key1, key2);
-}
-
-#[test]
 fn test_index_event_preimage_hash() {
     let trees = open_trees("target/debug/test_preimage_hash".into()).unwrap();
     let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_preimage_hash([8; 32], 4, 5).unwrap();
 
-    let key1 = HashKey {
-        hash: [8; 32],
-        block_number: 4,
-        event_index: 5,
+    let key1 = Bytes32Key {
+        key: [8; 32],
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -627,7 +593,7 @@ fn test_index_event_preimage_hash() {
         .keys()
         .next()
         .unwrap();
-    let key2 = HashKey::unserialize(k.unwrap().to_vec());
+    let key2 = Bytes32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -663,27 +629,15 @@ async fn test_process_msg_preimage_hash() {
 }
 
 #[test]
-fn test_proposal_hash_key() {
-    let key1 = HashKey {
-        hash: [8; 32],
-        block_number: 4,
-        event_index: 5,
-    };
-
-    let key2 = HashKey::unserialize(key1.serialize());
-    assert_eq!(key1, key2);
-}
-
-#[test]
 fn test_index_event_proposal_hash() {
     let trees = open_trees("target/debug/test_proposal_hash".into()).unwrap();
     let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_proposal_hash([8; 32], 4, 5).unwrap();
 
-    let key1 = HashKey {
-        hash: [8; 32],
-        block_number: 4,
-        event_index: 5,
+    let key1 = Bytes32Key {
+        key: [8; 32],
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -692,7 +646,7 @@ fn test_index_event_proposal_hash() {
         .keys()
         .next()
         .unwrap();
-    let key2 = HashKey::unserialize(k.unwrap().to_vec());
+    let key2 = Bytes32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -734,9 +688,9 @@ fn test_index_event_proposal_index() {
     indexer.index_event_proposal_index(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -745,7 +699,7 @@ fn test_index_event_proposal_index() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -787,9 +741,9 @@ fn test_index_event_ref_index() {
     indexer.index_event_ref_index(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -798,7 +752,7 @@ fn test_index_event_ref_index() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -834,9 +788,9 @@ fn test_index_event_registrar_index() {
     indexer.index_event_registrar_index(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -845,7 +799,7 @@ fn test_index_event_registrar_index() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -887,9 +841,9 @@ fn test_index_event_session_index() {
     indexer.index_event_session_index(8, 4, 5).unwrap();
 
     let key1 = U32Key {
-        key: 8,
-        block_number: 4,
-        event_index: 5,
+        key: 8.into(),
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees
@@ -898,7 +852,7 @@ fn test_index_event_session_index() {
         .keys()
         .next()
         .unwrap();
-    let key2 = U32Key::unserialize(k.unwrap().to_vec());
+    let key2 = U32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
@@ -934,31 +888,19 @@ async fn test_process_msg_session_index() {
 }
 
 #[test]
-fn test_tip_hash_key() {
-    let key1: TipHashKey = TipHashKey {
-        tip_hash: [8; 32],
-        block_number: 4,
-        event_index: 5,
-    };
-
-    let key2 = TipHashKey::unserialize(key1.serialize());
-    assert_eq!(key1, key2);
-}
-
-#[test]
 fn test_index_event_tip_hash() {
     let trees = open_trees("target/debug/test_tip_hash".into()).unwrap();
     let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     indexer.index_event_tip_hash([8; 32], 4, 5).unwrap();
 
-    let key1 = TipHashKey {
-        tip_hash: [8; 32],
-        block_number: 4,
-        event_index: 5,
+    let key1 = Bytes32Key {
+        key: [8; 32],
+        block_number: 4.into(),
+        event_index: 5.into(),
     };
 
     let k = trees.tip_hash.scan_prefix([8; 32]).keys().next().unwrap();
-    let key2 = TipHashKey::unserialize(k.unwrap().to_vec());
+    let key2 = Bytes32Key::read_from(&k.unwrap()).unwrap();
     assert_eq!(key1, key2);
 }
 
