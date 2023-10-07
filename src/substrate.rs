@@ -11,6 +11,7 @@ use tokio::{
 };
 
 use log::*;
+use zerocopy::AsBytes;
 
 use crate::shared::*;
 
@@ -138,12 +139,11 @@ impl<R: RuntimeIndexer> Indexer<R> {
         let key = VariantKey {
             pallet_index,
             variant_index,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.variant.insert(key, &[])?;
+        self.trees.variant.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::Variant(pallet_index, variant_index);
         self.notify_subscribers(
@@ -163,14 +163,13 @@ impl<R: RuntimeIndexer> Indexer<R> {
         event_index: u16,
     ) -> Result<(), sled::Error> {
         // Generate key
-        let key = AccountIdKey {
-            account_id: account_id.clone(),
-            block_number,
-            event_index,
-        }
-        .serialize();
+        let key = Bytes32Key {
+            key: account_id.0,
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.account_id.insert(key, &[])?;
+        self.trees.account_id.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::AccountId(Bytes32(account_id.0));
         self.notify_subscribers(
@@ -191,13 +190,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: account_index,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: account_index.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.account_index.insert(key, &[])?;
+        self.trees.account_index.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::AccountIndex(account_index);
         self.notify_subscribers(
@@ -218,13 +216,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: auction_index,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: auction_index.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.auction_index.insert(key, &[])?;
+        self.trees.auction_index.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::AuctionIndex(auction_index);
         self.notify_subscribers(
@@ -245,13 +242,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: bounty_index,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: bounty_index.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.bounty_index.insert(key, &[])?;
+        self.trees.bounty_index.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::BountyIndex(bounty_index);
         self.notify_subscribers(
@@ -271,14 +267,13 @@ impl<R: RuntimeIndexer> Indexer<R> {
         event_index: u16,
     ) -> Result<(), sled::Error> {
         // Generate key
-        let key = CandidateHashKey {
-            candidate_hash,
-            block_number,
-            event_index,
-        }
-        .serialize();
+        let key = Bytes32Key {
+            key: candidate_hash,
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.candidate_hash.insert(key, &[])?;
+        self.trees.candidate_hash.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::CandidateHash(Bytes32(candidate_hash));
         self.notify_subscribers(
@@ -299,13 +294,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: era_index,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: era_index.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.era_index.insert(key, &[])?;
+        self.trees.era_index.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::EraIndex(era_index);
         self.notify_subscribers(
@@ -325,14 +319,13 @@ impl<R: RuntimeIndexer> Indexer<R> {
         event_index: u16,
     ) -> Result<(), sled::Error> {
         // Generate key
-        let key = MessageIdKey {
-            message_id,
-            block_number,
-            event_index,
-        }
-        .serialize();
+        let key = Bytes32Key {
+            key: message_id,
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.message_id.insert(key, &[])?;
+        self.trees.message_id.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::MessageId(Bytes32(message_id));
         self.notify_subscribers(
@@ -353,13 +346,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: para_id,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: para_id.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.para_id.insert(key, &[])?;
+        self.trees.para_id.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::ParaId(para_id);
         self.notify_subscribers(
@@ -380,13 +372,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: pool_id,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: pool_id.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.pool_id.insert(key, &[])?;
+        self.trees.pool_id.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::PoolId(pool_id);
         self.notify_subscribers(
@@ -406,14 +397,13 @@ impl<R: RuntimeIndexer> Indexer<R> {
         event_index: u16,
     ) -> Result<(), sled::Error> {
         // Generate key
-        let key = HashKey {
-            hash: preimage_hash,
-            block_number,
-            event_index,
-        }
-        .serialize();
+        let key = Bytes32Key {
+            key: preimage_hash,
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.preimage_hash.insert(key, &[])?;
+        self.trees.preimage_hash.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::PreimageHash(Bytes32(preimage_hash));
         self.notify_subscribers(
@@ -433,14 +423,13 @@ impl<R: RuntimeIndexer> Indexer<R> {
         event_index: u16,
     ) -> Result<(), sled::Error> {
         // Generate key
-        let key = HashKey {
-            hash: proposal_hash,
-            block_number,
-            event_index,
-        }
-        .serialize();
+        let key = Bytes32Key {
+            key: proposal_hash,
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.proposal_hash.insert(key, &[])?;
+        self.trees.proposal_hash.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::ProposalHash(Bytes32(proposal_hash));
         self.notify_subscribers(
@@ -461,13 +450,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: proposal_index,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: proposal_index.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.proposal_index.insert(key, &[])?;
+        self.trees.proposal_index.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::ProposalIndex(proposal_index);
         self.notify_subscribers(
@@ -488,13 +476,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: ref_index,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: ref_index.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.ref_index.insert(key, &[])?;
+        self.trees.ref_index.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::RefIndex(ref_index);
         self.notify_subscribers(
@@ -515,13 +502,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: registrar_index,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: registrar_index.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.registrar_index.insert(key, &[])?;
+        self.trees.registrar_index.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::RegistrarIndex(registrar_index);
         self.notify_subscribers(
@@ -542,13 +528,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
     ) -> Result<(), sled::Error> {
         // Generate key
         let key = U32Key {
-            key: session_index,
-            block_number,
-            event_index,
-        }
-        .serialize();
+            key: session_index.into(),
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.session_index.insert(key, &[])?;
+        self.trees.session_index.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::SessionIndex(session_index);
         self.notify_subscribers(
@@ -568,14 +553,13 @@ impl<R: RuntimeIndexer> Indexer<R> {
         event_index: u16,
     ) -> Result<(), sled::Error> {
         // Generate key
-        let key = TipHashKey {
-            tip_hash,
-            block_number,
-            event_index,
-        }
-        .serialize();
+        let key = Bytes32Key {
+            key: tip_hash,
+            block_number: block_number.into(),
+            event_index: event_index.into(),
+        };
         // Insert record.
-        self.trees.tip_hash.insert(key, &[])?;
+        self.trees.tip_hash.insert(key.as_bytes(), &[])?;
         // Notify subscribers.
         let search_key = Key::TipHash(Bytes32(tip_hash));
         self.notify_subscribers(

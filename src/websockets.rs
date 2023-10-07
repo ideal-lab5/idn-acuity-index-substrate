@@ -11,6 +11,7 @@ use tokio_tungstenite::tungstenite;
 use log::{error, info};
 
 use subxt::backend::legacy::LegacyRpcMethods;
+use zerocopy::FromBytes;
 
 use crate::shared::*;
 
@@ -64,11 +65,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.variant.scan_prefix([pallet_id, variant_id]).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = VariantKey::unserialize(key.to_vec());
+                let key: VariantKey = VariantKey::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -80,11 +81,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.account_id.scan_prefix(account_id).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = AccountIdKey::unserialize(key.to_vec());
+                let key = Bytes32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -99,11 +100,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                 .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -118,11 +119,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                 .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -137,11 +138,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                 .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -153,11 +154,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.candidate_hash.scan_prefix(candidate_hash).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = CandidateHashKey::unserialize(key.to_vec());
+                let key = Bytes32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -169,11 +170,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.era_index.scan_prefix(era_index.to_be_bytes()).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -185,11 +186,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.message_id.scan_prefix(message_id).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = MessageIdKey::unserialize(key.to_vec());
+                let key = Bytes32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -201,11 +202,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.para_id.scan_prefix(para_id.to_be_bytes()).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -217,11 +218,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.pool_id.scan_prefix(pool_id.to_be_bytes()).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -233,11 +234,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.preimage_hash.scan_prefix(preimage_hash).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = HashKey::unserialize(key.to_vec());
+                let key = Bytes32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -249,11 +250,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.proposal_hash.scan_prefix(proposal_hash).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = HashKey::unserialize(key.to_vec());
+                let key = Bytes32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -268,11 +269,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                 .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -284,11 +285,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.ref_index.scan_prefix(ref_index.to_be_bytes()).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -303,11 +304,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                 .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -322,11 +323,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
                 .keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::unserialize(key.to_vec());
+                let key = U32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {
@@ -338,11 +339,11 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
             let mut iter = trees.tip_hash.scan_prefix(tip_hash).keys();
 
             while let Some(Ok(key)) = iter.next_back() {
-                let key = TipHashKey::unserialize(key.to_vec());
+                let key = Bytes32Key::read_from(&key).unwrap();
 
                 events.push(Event {
-                    block_number: key.block_number,
-                    event_index: key.event_index,
+                    block_number: key.block_number.into(),
+                    event_index: key.event_index.into(),
                 });
 
                 if events.len() == 100 {

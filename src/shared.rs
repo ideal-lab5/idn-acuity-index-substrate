@@ -1,6 +1,7 @@
-use subxt::{config::Header, utils::AccountId32, Config, SubstrateConfig};
-
+use byteorder::BigEndian;
 use sled::Tree;
+use zerocopy::byteorder::{U16, U32};
+use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
 
 use parity_scale_codec::{Decode, Encode};
 use serde::{Deserialize, Serialize};
@@ -83,189 +84,29 @@ pub struct Trees {
  * Each tree has its own key format.
  */
 
-#[derive(PartialEq, Debug)]
+#[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
+#[repr(C)]
 pub struct VariantKey {
     pub pallet_index: u8,
     pub variant_index: u8,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub event_index: u16,
+    pub block_number: U32<BigEndian>,
+    pub event_index: U16<BigEndian>,
 }
 
-impl VariantKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.pallet_index.to_be_bytes().to_vec(),
-            self.variant_index.to_be_bytes().to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.event_index.to_be_bytes().to_vec(),
-        ]
-        .concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        VariantKey {
-            pallet_index: vec[0],
-            variant_index: vec[1],
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[2..6])),
-            event_index: u16::from_be_bytes(vector_as_u8_2_array(&vec[6..8])),
-        }
-    }
+#[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
+#[repr(C)]
+pub struct Bytes32Key {
+    pub key: [u8; 32],
+    pub block_number: U32<BigEndian>,
+    pub event_index: U16<BigEndian>,
 }
 
-#[derive(PartialEq, Debug)]
-pub struct AccountIdKey {
-    pub account_id: <SubstrateConfig as Config>::AccountId,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub event_index: u16,
-}
-
-impl AccountIdKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.account_id.0.to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.event_index.to_be_bytes().to_vec(),
-        ]
-        .concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        AccountIdKey {
-            account_id: AccountId32(vector_as_u8_32_array(&vec[0..32])),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            event_index: u16::from_be_bytes(vector_as_u8_2_array(&vec[36..38])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
+#[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
+#[repr(C)]
 pub struct U32Key {
-    pub key: u32,
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub event_index: u16,
-}
-
-impl U32Key {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.key.to_be_bytes().to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.event_index.to_be_bytes().to_vec(),
-        ]
-        .concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        U32Key {
-            key: u32::from_be_bytes(vector_as_u8_4_array(&vec[0..4])),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[4..8])),
-            event_index: u16::from_be_bytes(vector_as_u8_2_array(&vec[8..10])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct CandidateHashKey {
-    pub candidate_hash: [u8; 32],
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub event_index: u16,
-}
-
-impl CandidateHashKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.candidate_hash.to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.event_index.to_be_bytes().to_vec(),
-        ]
-        .concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        CandidateHashKey {
-            candidate_hash: vector_as_u8_32_array(&vec[0..32]),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            event_index: u16::from_be_bytes(vector_as_u8_2_array(&vec[36..38])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct MessageIdKey {
-    pub message_id: [u8; 32],
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub event_index: u16,
-}
-
-impl MessageIdKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.message_id.to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.event_index.to_be_bytes().to_vec(),
-        ]
-        .concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        MessageIdKey {
-            message_id: vector_as_u8_32_array(&vec[0..32]),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            event_index: u16::from_be_bytes(vector_as_u8_2_array(&vec[36..38])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct HashKey {
-    pub hash: [u8; 32],
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub event_index: u16,
-}
-
-impl HashKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.hash.to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.event_index.to_be_bytes().to_vec(),
-        ]
-        .concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        HashKey {
-            hash: vector_as_u8_32_array(&vec[0..32]),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            event_index: u16::from_be_bytes(vector_as_u8_2_array(&vec[36..38])),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct TipHashKey {
-    pub tip_hash: [u8; 32],
-    pub block_number: <<SubstrateConfig as Config>::Header as Header>::Number,
-    pub event_index: u16,
-}
-
-impl TipHashKey {
-    pub fn serialize(&self) -> Vec<u8> {
-        [
-            self.tip_hash.to_vec(),
-            self.block_number.to_be_bytes().to_vec(),
-            self.event_index.to_be_bytes().to_vec(),
-        ]
-        .concat()
-    }
-
-    pub fn unserialize(vec: Vec<u8>) -> Self {
-        TipHashKey {
-            tip_hash: vector_as_u8_32_array(&vec[0..32]),
-            block_number: u32::from_be_bytes(vector_as_u8_4_array(&vec[32..36])),
-            event_index: u16::from_be_bytes(vector_as_u8_2_array(&vec[36..38])),
-        }
-    }
+    pub key: U32<BigEndian>,
+    pub block_number: U32<BigEndian>,
+    pub event_index: U16<BigEndian>,
 }
 
 pub fn vector_as_u8_32_array(vector: &[u8]) -> [u8; 32] {
