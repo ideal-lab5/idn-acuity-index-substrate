@@ -87,7 +87,6 @@ fn close_trees(trees: Trees) {
 pub async fn start<R: RuntimeIndexer + 'static>(
     db_path: Option<String>,
     url: Option<String>,
-    block_number: Option<u32>,
     queue_depth: u8,
     port: u16,
     log_level: LevelFilter,
@@ -192,7 +191,6 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         trees.clone(),
         api.clone(),
         rpc.clone(),
-        block_number,
         queue_depth.into(),
         exit_rx.clone(),
         sub_rx,

@@ -577,14 +577,13 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     trees: Trees,
     api: OnlineClient<R::RuntimeConfig>,
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
-    block_number: Option<u32>,
     queue_depth: u32,
     mut exit_rx: watch::Receiver<bool>,
     mut sub_rx: mpsc::UnboundedReceiver<SubscribeMessage>,
 ) -> Result<(), IndexError> {
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await?;
-    let head_start_block: u32 = blocks_sub
+    let mut block_number: u32 = blocks_sub
         .next()
         .await
         .ok_or(IndexError::BlockNotFound(0))??
@@ -593,36 +592,14 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         .try_into()
         .unwrap();
     // Determine the correct block to start batch indexing.
-    let mut block_number = match block_number {
-        Some(block_height) => block_height,
-        None => {
-            match match trees.root.get("batch_indexing_complete")? {
-                Some(value) => value.to_vec()[0] == 1,
-                None => false,
-            } {
-                true => match trees.root.get("last_head_block")? {
-                    Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
-                    None => R::get_default_start_block(),
-                },
-                false => match trees.root.get("last_batch_block")? {
-                    Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
-                    None => R::get_default_start_block(),
-                },
-            }
-        }
-    };
     info!("📚 Batch indexing from #{}", block_number);
-    // Record in database that batch indexing has not finished.
-    trees
-        .root
-        .insert("batch_indexing_complete", &0_u8.to_be_bytes())?;
 
     let indexer = Indexer::<R>::new(trees.clone(), api, rpc);
 
     let mut futures = Vec::with_capacity(queue_depth.try_into().unwrap());
 
     for n in 0..queue_depth {
-        futures.push(Box::pin(indexer.index_block(block_number + n)));
+        futures.push(Box::pin(indexer.index_block(block_number - n)));
     }
 
     let mut last_batch_block = block_number;
@@ -667,14 +644,14 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 }
             }
             _ = interval.tick(), if is_batching => {
-                if block_number > last_batch_block {
+                if block_number < last_batch_block {
                     let current_batch_time = SystemTime::now();
                     let duration = (current_batch_time.duration_since(last_batch_time)).unwrap().as_micros();
                     if duration != 0 {
                         info!(
                             "📚 #{}, {:?} blocks/sec, {:?} events/sec, {:?} keys/sec",
                             block_number,
-                            <u32 as Into<u128>>::into(block_number - last_batch_block) * 1_000_000 / duration,
+                            <u32 as Into<u128>>::into(last_batch_block - block_number) * 1_000_000 / duration,
                             <u32 as Into<u128>>::into(batch_event_count) * 1_000_000 / duration,
                             <u32 as Into<u128>>::into(batch_key_count) * 1_000_000 / duration,
                         );
@@ -686,14 +663,6 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 }
             }
             (result, index, _) = select_all(&mut futures), if is_batching => {
-                if head_start_block == block_number {
-                    trees.root.insert("batch_indexing_complete", &1_u8.to_be_bytes())?;
-                    info!("📚 Finished batch indexing.");
-                    is_batching = false;
-                }
-                else if block_number % 1000 == 0 {
-                    trees.root.insert("last_batch_block", &block_number.to_be_bytes())?;
-                }
                 match result {
                     Ok((event_count, key_count)) => {
                         batch_event_count += event_count;
@@ -702,10 +671,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     Err(error) => {
                         match error {
                             IndexError::BlockNotFound(block_number_not_found) => {
-                                if block_number > head_start_block + queue_depth {
-                                    error!("📚 Block not found #{}", block_number_not_found);
-                                    is_batching = false;
-                                }
+                                error!("📚 Block not found #{}", block_number_not_found);
+                                is_batching = false;
                             },
                             _ => {
                                 error!("📚 Batch indexing failed.");
@@ -714,8 +681,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         }
                     }
                 }
-                futures[index] = Box::pin(indexer.index_block(block_number + queue_depth));
-                block_number += 1;
+                futures[index] = Box::pin(indexer.index_block(block_number - queue_depth));
+                block_number -= 1;
             }
         }
     }
