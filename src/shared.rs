@@ -61,6 +61,7 @@ pub trait RuntimeIndexer {
 #[derive(Clone)]
 pub struct Trees {
     pub root: sled::Db,
+    pub span: Tree,
     pub variant: Tree,
     pub account_id: Tree,
     pub account_index: Tree,

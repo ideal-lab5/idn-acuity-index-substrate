@@ -49,7 +49,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
     }
 
-    async fn index_block(&self, block_number: u32) -> Result<(u32, u32), IndexError> {
+    async fn index_block(&self, block_number: u32) -> Result<(u32, u32, u32), IndexError> {
         debug!("Indexing #{}", block_number);
         let mut key_count = 0;
         let api = self.api.as_ref().unwrap();
@@ -112,7 +112,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             }
         }
 
-        Ok((events.len(), key_count))
+        Ok((block_number, events.len(), key_count))
     }
 
     pub fn notify_subscribers(&self, search_key: Key, event: Event) {
@@ -583,7 +583,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
 ) -> Result<(), IndexError> {
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await?;
-    let mut block_number: u32 = blocks_sub
+    // Determine the correct block to start batch indexing.
+    let mut next_batch_block: u32 = blocks_sub
         .next()
         .await
         .ok_or(IndexError::BlockNotFound(0))??
@@ -591,18 +592,38 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         .into()
         .try_into()
         .unwrap();
-    // Determine the correct block to start batch indexing.
-    info!("📚 Batch indexing from #{}", block_number);
+    info!("📚 Batch indexing backwards from #{}", next_batch_block);
+
+    let mut next_span: Option<(u32, u32)> = match trees.span.last()? {
+        None => {
+            info!("📚 No record of indexed blocks.");
+            None
+        }
+        Some((end, start)) => {
+            let start = u32::from_be_bytes(start.as_ref().try_into().unwrap());
+            let end = u32::from_be_bytes(end.as_ref().try_into().unwrap());
+            info!(
+                "📚 Previous span of indexed blocks from #{} to #{}.",
+                start, end
+            );
+            Some((start, end))
+        }
+    };
+
+    let mut current_span_start: u32 = next_batch_block + 1;
+    let mut current_span_end: u32 = next_batch_block + 1;
 
     let indexer = Indexer::<R>::new(trees.clone(), api, rpc);
 
+    info!("📚 Queue depth: {}", queue_depth);
     let mut futures = Vec::with_capacity(queue_depth.try_into().unwrap());
 
-    for n in 0..queue_depth {
-        futures.push(Box::pin(indexer.index_block(block_number - n)));
+    for _ in 0..queue_depth {
+        futures.push(Box::pin(indexer.index_block(next_batch_block)));
+        next_batch_block -= 1;
     }
 
-    let mut last_batch_block = block_number;
+    let mut last_batch_block = next_batch_block;
     let mut last_batch_time = SystemTime::now();
     let mut batch_event_count = 0;
     let mut batch_key_count = 0;
@@ -617,6 +638,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             biased;
 
             _ = exit_rx.changed() => {
+                trees.span.insert(current_span_end.to_be_bytes(), &current_span_start.to_be_bytes())?;
+                info!("📚 Recording current indexed span from #{} to #{}", current_span_start, current_span_end);
                 return Ok(());
             }
             Some(msg) = sub_rx.recv() => {
@@ -634,8 +657,10 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             Some(Ok(block)) = blocks_sub.next() => {
                 let head_block_number:u32 = block.number().into().try_into().unwrap();
                 match indexer.index_block(head_block_number).await {
-                    Ok((event_count, key_count)) => {
-                        trees.root.insert("last_head_block", &head_block_number.to_be_bytes())?;
+                    Ok((_block_number, event_count, key_count)) => {
+                        trees.span.remove((head_block_number - 1).to_be_bytes())?;
+                        current_span_end = head_block_number;
+                        trees.span.insert(current_span_end.to_be_bytes(), &current_span_start.to_be_bytes())?;
                         info!("✨ #{head_block_number}, {event_count} events, {key_count} keys");
                     },
                     Err(_) => {
@@ -644,19 +669,19 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 }
             }
             _ = interval.tick(), if is_batching => {
-                if block_number < last_batch_block {
+                if current_span_start < last_batch_block {
                     let current_batch_time = SystemTime::now();
                     let duration = (current_batch_time.duration_since(last_batch_time)).unwrap().as_micros();
                     if duration != 0 {
                         info!(
                             "📚 #{}, {:?} blocks/sec, {:?} events/sec, {:?} keys/sec",
-                            block_number,
-                            <u32 as Into<u128>>::into(last_batch_block - block_number) * 1_000_000 / duration,
+                            current_span_start,
+                            <u32 as Into<u128>>::into(last_batch_block - current_span_start) * 1_000_000 / duration,
                             <u32 as Into<u128>>::into(batch_event_count) * 1_000_000 / duration,
                             <u32 as Into<u128>>::into(batch_key_count) * 1_000_000 / duration,
                         );
                     }
-                    last_batch_block = block_number;
+                    last_batch_block = next_batch_block;
                     batch_event_count = 0;
                     batch_key_count = 0;
                     last_batch_time = current_batch_time;
@@ -664,7 +689,32 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             }
             (result, index, _) = select_all(&mut futures), if is_batching => {
                 match result {
-                    Ok((event_count, key_count)) => {
+                    Ok((block_number, event_count, key_count)) => {
+                        if block_number < current_span_start {
+                            current_span_start = block_number;
+                            if let Some((start, end)) = next_span {
+                                // Have we indexed all the blocks after the span?
+                                if block_number - 1 <= end {
+                                    info!("📚 Skipping already indexed span from #{} to #{}", start, end);
+                                    current_span_start = start;
+                                    // Remove the span.
+                                    trees.span.remove(end.to_be_bytes())?;
+                                    // Load the next one.
+                                    next_span = match trees.span.last()? {
+                                        None => None,
+                                        Some((end, start)) => {
+                                            let start = u32::from_be_bytes(start.as_ref().try_into().unwrap());
+                                            let end = u32::from_be_bytes(end.as_ref().try_into().unwrap());
+                                            info!(
+                                                "📚 New previous span of indexed blocks from #{} to #{}.",
+                                                start, end
+                                            );
+                                            Some((start, end))
+                                        }
+                                    };
+                                }
+                            }
+                        }
                         batch_event_count += event_count;
                         batch_key_count += key_count;
                     },
@@ -681,8 +731,14 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         }
                     }
                 }
-                futures[index] = Box::pin(indexer.index_block(block_number - queue_depth));
-                block_number -= 1;
+                // Figure out the next block to index, skipping the next span if we have reached it.
+                next_batch_block -= 1;
+                if let Some(next_span) = next_span {
+                    if next_batch_block >= next_span.0 && next_batch_block <= next_span.1 {
+                        next_batch_block = next_span.0 - 1;
+                    }
+                }
+                futures[index] = Box::pin(indexer.index_block(next_batch_block));
             }
         }
     }
