@@ -110,24 +110,6 @@ pub struct U32Key {
     pub event_index: U16<BigEndian>,
 }
 
-pub fn vector_as_u8_32_array(vector: &[u8]) -> [u8; 32] {
-    let mut arr = [0u8; 32];
-    arr[..32].copy_from_slice(&vector[..32]);
-    arr
-}
-
-pub fn vector_as_u8_4_array(vector: &[u8]) -> [u8; 4] {
-    let mut arr = [0u8; 4];
-    arr[..4].copy_from_slice(&vector[..4]);
-    arr
-}
-
-pub fn vector_as_u8_2_array(vector: &[u8]) -> [u8; 2] {
-    let mut arr = [0u8; 2];
-    arr[..2].copy_from_slice(&vector[..2]);
-    arr
-}
-
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
 pub struct Bytes32(pub [u8; 32]);
 
@@ -155,7 +137,7 @@ impl<'de> Deserialize<'de> for Bytes32 {
     {
         match String::deserialize(deserializer)?.get(2..66) {
             Some(message_id) => match hex::decode(message_id) {
-                Ok(message_id) => Ok(Bytes32(vector_as_u8_32_array(&message_id))),
+                Ok(message_id) => Ok(Bytes32(message_id.try_into().unwrap())),
                 Err(_error) => Err(serde::de::Error::custom("error")),
             },
             None => Err(serde::de::Error::custom("error")),

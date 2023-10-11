@@ -929,24 +929,6 @@ async fn test_process_msg_tip_hash() {
     assert_eq!(events[2].block_number, 4);
 }
 
-#[test]
-fn test_vector_as_u8_32_array() {
-    let vec: Vec<u8> = [8; 48].to_vec();
-    assert_eq!(vector_as_u8_32_array(&vec), vec[..32]);
-}
-
-#[test]
-fn test_vector_as_u8_4_array() {
-    let vec: Vec<u8> = [8; 48].to_vec();
-    assert_eq!(vector_as_u8_4_array(&vec), vec[..4]);
-}
-
-#[test]
-fn test_vector_as_u8_2_array() {
-    let vec: Vec<u8> = [8; 48].to_vec();
-    assert_eq!(vector_as_u8_2_array(&vec), vec[..2]);
-}
-
 #[tokio::test]
 async fn test_process_msg_status() {
     let trees = open_trees("target/debug/test_process_msg".into()).unwrap();

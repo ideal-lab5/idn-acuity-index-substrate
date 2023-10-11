@@ -18,11 +18,11 @@ use crate::shared::*;
 pub fn process_msg_status(trees: &Trees) -> Result<ResponseMessage, IndexError> {
     Ok(ResponseMessage::Status {
         last_head_block: match trees.root.get("last_head_block")? {
-            Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
+            Some(value) => u32::from_be_bytes(value.as_ref().try_into().unwrap()),
             None => 0,
         },
         last_batch_block: match trees.root.get("last_batch_block")? {
-            Some(value) => u32::from_be_bytes(vector_as_u8_4_array(&value)),
+            Some(value) => u32::from_be_bytes(value.as_ref().try_into().unwrap()),
             None => 0,
         },
         batch_indexing_complete: match trees.root.get("batch_indexing_complete")? {
