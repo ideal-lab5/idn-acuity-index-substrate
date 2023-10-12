@@ -594,21 +594,19 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         .unwrap();
     info!("📚 Batch indexing backwards from #{}", next_batch_block);
 
-    let mut next_span: Option<(u32, u32)> = match trees.span.last()? {
-        None => {
-            info!("📚 No record of indexed blocks.");
-            None
-        }
-        Some((end, start)) => {
+    let mut spans = vec![];
+
+    for span in &trees.span {
+        if let Ok((end, start)) = span {
             let start = u32::from_be_bytes(start.as_ref().try_into().unwrap());
             let end = u32::from_be_bytes(end.as_ref().try_into().unwrap());
+            spans.push((start, end));
             info!(
                 "📚 Previous span of indexed blocks from #{} to #{}.",
                 start, end
             );
-            Some((start, end))
         }
-    };
+    }
 
     let mut current_span_start: u32 = next_batch_block + 1;
     let mut current_span_end: u32 = next_batch_block + 1;
@@ -692,26 +690,14 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     Ok((block_number, event_count, key_count)) => {
                         if block_number < current_span_start {
                             current_span_start = block_number;
-                            if let Some((start, end)) = next_span {
+                            if let Some((start, end)) = spans.last() {
                                 // Have we indexed all the blocks after the span?
-                                if block_number - 1 <= end {
+                                if block_number - 1 <= *end {
                                     info!("📚 Skipping already indexed span from #{} to #{}", start, end);
-                                    current_span_start = start;
+                                    current_span_start = *start;
                                     // Remove the span.
                                     trees.span.remove(end.to_be_bytes())?;
-                                    // Load the next one.
-                                    next_span = match trees.span.last()? {
-                                        None => None,
-                                        Some((end, start)) => {
-                                            let start = u32::from_be_bytes(start.as_ref().try_into().unwrap());
-                                            let end = u32::from_be_bytes(end.as_ref().try_into().unwrap());
-                                            info!(
-                                                "📚 New previous span of indexed blocks from #{} to #{}.",
-                                                start, end
-                                            );
-                                            Some((start, end))
-                                        }
-                                    };
+                                    spans.pop();
                                 }
                             }
                         }
@@ -733,9 +719,9 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 }
                 // Figure out the next block to index, skipping the next span if we have reached it.
                 next_batch_block -= 1;
-                if let Some(next_span) = next_span {
-                    if next_batch_block >= next_span.0 && next_batch_block <= next_span.1 {
-                        next_batch_block = next_span.0 - 1;
+                if let Some((start, end)) = spans.last() {
+                    if next_batch_block >= *start && next_batch_block <= *end {
+                        next_batch_block = *start - 1;
                     }
                 }
                 futures[index] = Box::pin(indexer.index_block(next_batch_block));
