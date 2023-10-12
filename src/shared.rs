@@ -3,7 +3,6 @@ use sled::Tree;
 use zerocopy::byteorder::{U16, U32};
 use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
 
-use parity_scale_codec::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 
 use tokio::sync::mpsc::UnboundedSender;
@@ -34,9 +33,6 @@ impl From<tungstenite::Error> for IndexError {
         IndexError::Tungstenite(err)
     }
 }
-
-#[derive(Encode, Decode, Serialize, Debug, Clone)]
-pub struct ParaId(pub u32);
 
 /// Indexer for a specific chain.
 pub trait RuntimeIndexer {
