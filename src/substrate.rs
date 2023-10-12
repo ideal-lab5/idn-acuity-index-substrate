@@ -2,7 +2,7 @@ use subxt::{
     backend::legacy::LegacyRpcMethods, metadata::Metadata, utils::AccountId32, OnlineClient,
 };
 
-use futures::future::select_all;
+use futures::future;
 use std::{collections::HashMap, sync::Mutex, time::SystemTime};
 
 use tokio::{
@@ -51,7 +51,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
     }
 
     async fn index_block(&self, block_number: u32) -> Result<(u32, u32, u32), IndexError> {
-        debug!("Indexing #{}", block_number);
         let mut key_count = 0;
         let api = self.api.as_ref().unwrap();
         let rpc = self.rpc.as_ref().unwrap();
@@ -574,6 +573,11 @@ impl<R: RuntimeIndexer> Indexer<R> {
     }
 }
 
+struct Span {
+    start: u32,
+    end: u32,
+}
+
 pub async fn substrate_index<R: RuntimeIndexer>(
     trees: Trees,
     api: OnlineClient<R::RuntimeConfig>,
@@ -597,24 +601,27 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         "📚 Batch indexing backwards from #{}",
         next_batch_block.to_formatted_string(&Locale::en)
     );
-
+    // Load already indexed spans from the db.
     let mut spans = vec![];
-
     for span in &trees.span {
         if let Ok((end, start)) = span {
-            let start = u32::from_be_bytes(start.as_ref().try_into().unwrap());
-            let end = u32::from_be_bytes(end.as_ref().try_into().unwrap());
-            spans.push((start, end));
+            let span = Span {
+                start: u32::from_be_bytes(start.as_ref().try_into().unwrap()),
+                end: u32::from_be_bytes(end.as_ref().try_into().unwrap()),
+            };
             info!(
                 "📚 Previous span of indexed blocks from #{} to #{}.",
-                start.to_formatted_string(&Locale::en),
-                end.to_formatted_string(&Locale::en)
+                span.start.to_formatted_string(&Locale::en),
+                span.end.to_formatted_string(&Locale::en)
             );
+            spans.push(span);
         }
     }
-
-    let mut current_span_start: u32 = next_batch_block + 1;
-    let mut current_span_end: u32 = next_batch_block + 1;
+    // Create a span of the first finalized block that will be indexed.
+    let mut current_span = Span {
+        start: next_batch_block + 1,
+        end: next_batch_block + 1,
+    };
 
     let indexer = Indexer::<R>::new(trees.clone(), api, rpc);
 
@@ -623,13 +630,17 @@ pub async fn substrate_index<R: RuntimeIndexer>(
 
     for _ in 0..queue_depth {
         futures.push(Box::pin(indexer.index_block(next_batch_block)));
+        debug!(
+            "⬆️  Block #{} queued.",
+            next_batch_block.to_formatted_string(&Locale::en)
+        );
         next_batch_block -= 1;
     }
 
-    let mut last_batch_block = next_batch_block;
-    let mut last_batch_time = SystemTime::now();
-    let mut batch_event_count = 0;
-    let mut batch_key_count = 0;
+    let mut stats_block_count = 0;
+    let mut stats_event_count = 0;
+    let mut stats_key_count = 0;
+    let mut stats_start_time = SystemTime::now();
 
     let mut interval = time::interval(Duration::from_millis(2000));
     interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
@@ -641,12 +652,14 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             biased;
 
             _ = exit_rx.changed() => {
-                trees.span.insert(current_span_end.to_be_bytes(), &current_span_start.to_be_bytes())?;
-                info!(
-                    "📚 Recording current indexed span from #{} to #{}",
-                    current_span_start.to_formatted_string(&Locale::en),
-                    current_span_end.to_formatted_string(&Locale::en)
-                );
+                if current_span.start != current_span.end {
+                    trees.span.insert(current_span.end.to_be_bytes(), &current_span.start.to_be_bytes())?;
+                    info!(
+                        "📚 Recording current indexed span from #{} to #{}",
+                        current_span.start.to_formatted_string(&Locale::en),
+                        current_span.end.to_formatted_string(&Locale::en)
+                    );
+                }
                 return Ok(());
             }
             Some(msg) = sub_rx.recv() => {
@@ -662,73 +675,78 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 };
             }
             Some(Ok(block)) = blocks_sub.next() => {
-                let head_block_number:u32 = block.number().into().try_into().unwrap();
-                match indexer.index_block(head_block_number).await {
-                    Ok((_block_number, event_count, key_count)) => {
-                        trees.span.remove((head_block_number - 1).to_be_bytes())?;
-                        current_span_end = head_block_number;
-                        trees.span.insert(current_span_end.to_be_bytes(), &current_span_start.to_be_bytes())?;
+                match indexer.index_block(block.number().into().try_into().unwrap()).await {
+                    Ok((block_number, event_count, key_count)) => {
+                        trees.span.remove(current_span.end.to_be_bytes())?;
+                        current_span.end = block_number;
+                        trees.span.insert(current_span.end.to_be_bytes(), &current_span.start.to_be_bytes())?;
                         info!(
                             "✨ #{}: {} events, {} keys",
-                            head_block_number.to_formatted_string(&Locale::en),
+                            block_number.to_formatted_string(&Locale::en),
                             event_count.to_formatted_string(&Locale::en),
                             key_count.to_formatted_string(&Locale::en),
                         );
                     },
-                    Err(_) => {
-                        error!("Failed to index #{}", head_block_number.to_formatted_string(&Locale::en));
-                    }
-                }
+                    Err(error) => {
+                        match error {
+                            IndexError::BlockNotFound(block_number) => {
+                                error!("✨ Block not found #{}", block_number.to_formatted_string(&Locale::en));
+                            },
+                            _ => {
+                                error!("✨ Indexing failed.");
+                            },
+                        }
+                    },
+                };
             }
             _ = interval.tick(), if is_batching => {
-                if current_span_start <= last_batch_block {
-                    let current_batch_time = SystemTime::now();
-                    let duration = (current_batch_time.duration_since(last_batch_time)).unwrap().as_micros();
-                    if duration != 0 {
-                        info!(
-                            "📚 #{}: {} blocks/sec, {} events/sec, {} keys/sec",
-                            current_span_start.to_formatted_string(&Locale::en),
-                            (<u32 as Into<u128>>::into(last_batch_block - current_span_start) * 1_000_000 / duration).to_formatted_string(&Locale::en),
-                            (<u32 as Into<u128>>::into(batch_event_count) * 1_000_000 / duration).to_formatted_string(&Locale::en),
-                            (<u32 as Into<u128>>::into(batch_key_count) * 1_000_000 / duration).to_formatted_string(&Locale::en),
-                        );
-                    }
-                    last_batch_block = next_batch_block;
-                    batch_event_count = 0;
-                    batch_key_count = 0;
-                    last_batch_time = current_batch_time;
+                let current_time = SystemTime::now();
+                let duration = (current_time.duration_since(stats_start_time)).unwrap().as_micros();
+                if duration != 0 {
+                    info!(
+                        "📚 #{}: {} blocks/sec, {} events/sec, {} keys/sec",
+                        current_span.start.to_formatted_string(&Locale::en),
+                        (<u32 as Into<u128>>::into(stats_block_count) * 1_000_000 / duration).to_formatted_string(&Locale::en),
+                        (<u32 as Into<u128>>::into(stats_event_count) * 1_000_000 / duration).to_formatted_string(&Locale::en),
+                        (<u32 as Into<u128>>::into(stats_key_count) * 1_000_000 / duration).to_formatted_string(&Locale::en),
+                    );
                 }
+                stats_block_count = 0;
+                stats_event_count = 0;
+                stats_key_count = 0;
+                stats_start_time = current_time;
             }
-            (result, index, _) = select_all(&mut futures), if is_batching => {
+            (result, index, _) = future::select_all(&mut futures), if is_batching => {
                 match result {
                     Ok((block_number, event_count, key_count)) => {
-                        if block_number < current_span_start {
-                            current_span_start = block_number;
-                            if let Some((start, end)) = spans.last() {
+                        debug!("⬇️  Block #{} indexed.", block_number.to_formatted_string(&Locale::en));
+                        if block_number < current_span.start {
+                            current_span.start = block_number;
+                            if let Some(span) = spans.last() {
                                 // Have we indexed all the blocks after the span?
-                                if block_number - 1 <= *end {
-                                    let skipped = *end - *start;
+                                if block_number - 1 <= span.end {
+                                    let skipped = span.end - span.start + 1;
                                     info!(
                                         "📚 Skipping {} blocks from #{} to #{}",
                                         skipped.to_formatted_string(&Locale::en),
-                                        start.to_formatted_string(&Locale::en),
-                                        end.to_formatted_string(&Locale::en),
+                                        span.start.to_formatted_string(&Locale::en),
+                                        span.end.to_formatted_string(&Locale::en),
                                     );
-                                    last_batch_block -= skipped;
-                                    current_span_start = *start;
+                                    current_span.start = span.start;
                                     // Remove the span.
-                                    trees.span.remove(end.to_be_bytes())?;
+                                    trees.span.remove(span.end.to_be_bytes())?;
                                     spans.pop();
                                 }
                             }
                         }
-                        batch_event_count += event_count;
-                        batch_key_count += key_count;
+                        stats_block_count += 1;
+                        stats_event_count += event_count;
+                        stats_key_count += key_count;
                     },
                     Err(error) => {
                         match error {
-                            IndexError::BlockNotFound(block_number_not_found) => {
-                                error!("📚 Block not found #{}", block_number_not_found.to_formatted_string(&Locale::en));
+                            IndexError::BlockNotFound(block_number) => {
+                                error!("📚 Block not found #{}", block_number.to_formatted_string(&Locale::en));
                                 is_batching = false;
                             },
                             _ => {
@@ -740,12 +758,13 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 }
                 // Figure out the next block to index, skipping the next span if we have reached it.
                 next_batch_block -= 1;
-                if let Some((start, end)) = spans.last() {
-                    if next_batch_block >= *start && next_batch_block <= *end {
-                        next_batch_block = *start - 1;
+                if let Some(span) = spans.last() {
+                    if next_batch_block >= span.start && next_batch_block <= span.end {
+                        next_batch_block = span.start - 1;
                     }
                 }
                 futures[index] = Box::pin(indexer.index_block(next_batch_block));
+                debug!("⬆️  Block #{} queued.", next_batch_block.to_formatted_string(&Locale::en));
             }
         }
     }
