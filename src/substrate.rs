@@ -11,6 +11,7 @@ use tokio::{
 };
 
 use log::*;
+use num_format::{Locale, ToFormattedString};
 use zerocopy::AsBytes;
 
 use crate::shared::*;
@@ -592,7 +593,10 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         .into()
         .try_into()
         .unwrap();
-    info!("📚 Batch indexing backwards from #{}", next_batch_block);
+    info!(
+        "📚 Batch indexing backwards from #{}",
+        next_batch_block.to_formatted_string(&Locale::en)
+    );
 
     let mut spans = vec![];
 
@@ -603,7 +607,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             spans.push((start, end));
             info!(
                 "📚 Previous span of indexed blocks from #{} to #{}.",
-                start, end
+                start.to_formatted_string(&Locale::en),
+                end.to_formatted_string(&Locale::en)
             );
         }
     }
@@ -637,7 +642,11 @@ pub async fn substrate_index<R: RuntimeIndexer>(
 
             _ = exit_rx.changed() => {
                 trees.span.insert(current_span_end.to_be_bytes(), &current_span_start.to_be_bytes())?;
-                info!("📚 Recording current indexed span from #{} to #{}", current_span_start, current_span_end);
+                info!(
+                    "📚 Recording current indexed span from #{} to #{}",
+                    current_span_start.to_formatted_string(&Locale::en),
+                    current_span_end.to_formatted_string(&Locale::en)
+                );
                 return Ok(());
             }
             Some(msg) = sub_rx.recv() => {
@@ -659,10 +668,15 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         trees.span.remove((head_block_number - 1).to_be_bytes())?;
                         current_span_end = head_block_number;
                         trees.span.insert(current_span_end.to_be_bytes(), &current_span_start.to_be_bytes())?;
-                        info!("✨ #{head_block_number}, {event_count} events, {key_count} keys");
+                        info!(
+                            "✨ #{}, {} events, {} keys",
+                            head_block_number.to_formatted_string(&Locale::en),
+                            event_count.to_formatted_string(&Locale::en),
+                            key_count.to_formatted_string(&Locale::en),
+                        );
                     },
                     Err(_) => {
-                        error!("Failed to index #{}", head_block_number);
+                        error!("Failed to index #{}", head_block_number.to_formatted_string(&Locale::en));
                     }
                 }
             }
@@ -672,11 +686,11 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     let duration = (current_batch_time.duration_since(last_batch_time)).unwrap().as_micros();
                     if duration != 0 {
                         info!(
-                            "📚 #{}, {:?} blocks/sec, {:?} events/sec, {:?} keys/sec",
-                            current_span_start,
-                            <u32 as Into<u128>>::into(last_batch_block - current_span_start) * 1_000_000 / duration,
-                            <u32 as Into<u128>>::into(batch_event_count) * 1_000_000 / duration,
-                            <u32 as Into<u128>>::into(batch_key_count) * 1_000_000 / duration,
+                            "📚 #{}, {} blocks/sec, {} events/sec, {} keys/sec",
+                            current_span_start.to_formatted_string(&Locale::en),
+                            (<u32 as Into<u128>>::into(last_batch_block - current_span_start) * 1_000_000 / duration).to_formatted_string(&Locale::en),
+                            (<u32 as Into<u128>>::into(batch_event_count) * 1_000_000 / duration).to_formatted_string(&Locale::en),
+                            (<u32 as Into<u128>>::into(batch_key_count) * 1_000_000 / duration).to_formatted_string(&Locale::en),
                         );
                     }
                     last_batch_block = next_batch_block;
@@ -693,7 +707,11 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                             if let Some((start, end)) = spans.last() {
                                 // Have we indexed all the blocks after the span?
                                 if block_number - 1 <= *end {
-                                    info!("📚 Skipping already indexed span from #{} to #{}", start, end);
+                                    info!(
+                                        "📚 Skipping already indexed span from #{} to #{}",
+                                        start.to_formatted_string(&Locale::en),
+                                        end.to_formatted_string(&Locale::en)
+                                    );
                                     current_span_start = *start;
                                     // Remove the span.
                                     trees.span.remove(end.to_be_bytes())?;
@@ -707,7 +725,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     Err(error) => {
                         match error {
                             IndexError::BlockNotFound(block_number_not_found) => {
-                                error!("📚 Block not found #{}", block_number_not_found);
+                                error!("📚 Block not found #{}", block_number_not_found.to_formatted_string(&Locale::en));
                                 is_batching = false;
                             },
                             _ => {
