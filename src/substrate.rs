@@ -669,7 +669,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         current_span_end = head_block_number;
                         trees.span.insert(current_span_end.to_be_bytes(), &current_span_start.to_be_bytes())?;
                         info!(
-                            "✨ #{}, {} events, {} keys",
+                            "✨ #{}: {} events, {} keys",
                             head_block_number.to_formatted_string(&Locale::en),
                             event_count.to_formatted_string(&Locale::en),
                             key_count.to_formatted_string(&Locale::en),
@@ -681,12 +681,12 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 }
             }
             _ = interval.tick(), if is_batching => {
-                if current_span_start < last_batch_block {
+                if current_span_start <= last_batch_block {
                     let current_batch_time = SystemTime::now();
                     let duration = (current_batch_time.duration_since(last_batch_time)).unwrap().as_micros();
                     if duration != 0 {
                         info!(
-                            "📚 #{}, {} blocks/sec, {} events/sec, {} keys/sec",
+                            "📚 #{}: {} blocks/sec, {} events/sec, {} keys/sec",
                             current_span_start.to_formatted_string(&Locale::en),
                             (<u32 as Into<u128>>::into(last_batch_block - current_span_start) * 1_000_000 / duration).to_formatted_string(&Locale::en),
                             (<u32 as Into<u128>>::into(batch_event_count) * 1_000_000 / duration).to_formatted_string(&Locale::en),
@@ -707,11 +707,14 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                             if let Some((start, end)) = spans.last() {
                                 // Have we indexed all the blocks after the span?
                                 if block_number - 1 <= *end {
+                                    let skipped = *end - *start;
                                     info!(
-                                        "📚 Skipping already indexed span from #{} to #{}",
+                                        "📚 Skipping {} blocks from #{} to #{}",
+                                        skipped.to_formatted_string(&Locale::en),
                                         start.to_formatted_string(&Locale::en),
-                                        end.to_formatted_string(&Locale::en)
+                                        end.to_formatted_string(&Locale::en),
                                     );
+                                    last_batch_block -= skipped;
                                     current_span_start = *start;
                                     // Remove the span.
                                     trees.span.remove(end.to_be_bytes())?;
