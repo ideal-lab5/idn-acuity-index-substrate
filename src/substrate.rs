@@ -10,6 +10,7 @@ use tokio::{
     time::{self, Duration, MissedTickBehavior},
 };
 
+use ahash::AHashMap;
 use log::*;
 use num_format::{Locale, ToFormattedString};
 use zerocopy::AsBytes;
@@ -637,6 +638,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         next_batch_block -= 1;
     }
 
+    let mut orphans: AHashMap<u32, bool> = AHashMap::new();
+
     let mut stats_block_count = 0;
     let mut stats_event_count = 0;
     let mut stats_key_count = 0;
@@ -719,24 +722,35 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             (result, index, _) = future::select_all(&mut futures), if is_batching => {
                 match result {
                     Ok((block_number, event_count, key_count)) => {
-                        debug!("⬇️  Block #{} indexed.", block_number.to_formatted_string(&Locale::en));
-                        if block_number < current_span.start {
+                        // Is the new block contiguous to the current span or an orphan?
+                        if block_number == current_span.start - 1 {
                             current_span.start = block_number;
-                            if let Some(span) = spans.last() {
-                                // Have we indexed all the blocks after the span?
-                                if block_number - 1 <= span.end {
-                                    let skipped = span.end - span.start + 1;
-                                    info!(
-                                        "📚 Skipping {} blocks from #{} to #{}",
-                                        skipped.to_formatted_string(&Locale::en),
-                                        span.start.to_formatted_string(&Locale::en),
-                                        span.end.to_formatted_string(&Locale::en),
-                                    );
-                                    current_span.start = span.start;
-                                    // Remove the span.
-                                    trees.span.remove(span.end.to_be_bytes())?;
-                                    spans.pop();
-                                }
+                            debug!("⬇️  Block #{} indexed.", block_number.to_formatted_string(&Locale::en));
+                            // Check if any orphans are now contiguous.
+                            while orphans.contains_key(&(current_span.start - 1)) {
+                                current_span.start -= 1;
+                                orphans.remove(&current_span.start);
+                                debug!("➡️  Block #{} unorphaned.", current_span.start.to_formatted_string(&Locale::en));
+                            }
+                        }
+                        else {
+                            orphans.insert(block_number, true);
+                            debug!("⬇️  Block #{} indexed and orphaned.", block_number.to_formatted_string(&Locale::en));
+                        }
+                        if let Some(span) = spans.last() {
+                            // Have we indexed all the blocks after the span?
+                            if current_span.start - 1 <= span.end {
+                                let skipped = span.end - span.start + 1;
+                                info!(
+                                    "📚 Skipping {} blocks from #{} to #{}",
+                                    skipped.to_formatted_string(&Locale::en),
+                                    span.start.to_formatted_string(&Locale::en),
+                                    span.end.to_formatted_string(&Locale::en),
+                                );
+                                current_span.start = span.start;
+                                // Remove the span.
+                                trees.span.remove(span.end.to_be_bytes())?;
+                                spans.pop();
                             }
                         }
                         stats_block_count += 1;
