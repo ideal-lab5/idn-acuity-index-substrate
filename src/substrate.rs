@@ -574,6 +574,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
     }
 }
 
+#[derive(Debug)]
 struct Span {
     start: u32,
     end: u32,
@@ -630,6 +631,13 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     let mut futures = Vec::with_capacity(queue_depth.try_into().unwrap());
 
     for _ in 0..queue_depth {
+        let mut i = spans.len();
+        while i != 0 {
+            i -= 1;
+            if next_batch_block >= spans[i].start && next_batch_block <= spans[i].end {
+                next_batch_block = spans[i].start - 1;
+            }
+        }
         futures.push(Box::pin(indexer.index_block(next_batch_block)));
         debug!(
             "⬆️  Block #{} queued.",
@@ -726,32 +734,54 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         if block_number == current_span.start - 1 {
                             current_span.start = block_number;
                             debug!("⬇️  Block #{} indexed.", block_number.to_formatted_string(&Locale::en));
+                            while let Some(span) = spans.last() {
+                                // Have we indexed all the blocks after the span?
+                                if current_span.start - 1 >= span.start && current_span.start - 1 <= span.end {
+                                    let skipped = span.end - span.start + 1;
+                                    info!(
+                                        "📚 Skipping {} blocks from #{} to #{}",
+                                        skipped.to_formatted_string(&Locale::en),
+                                        span.start.to_formatted_string(&Locale::en),
+                                        span.end.to_formatted_string(&Locale::en),
+                                    );
+                                    current_span.start = span.start;
+                                    // Remove the span.
+                                    trees.span.remove(span.end.to_be_bytes())?;
+                                    spans.pop();
+                                }
+                                else {
+                                    break;
+                                }
+                            }
                             // Check if any orphans are now contiguous.
                             while orphans.contains_key(&(current_span.start - 1)) {
                                 current_span.start -= 1;
                                 orphans.remove(&current_span.start);
                                 debug!("➡️  Block #{} unorphaned.", current_span.start.to_formatted_string(&Locale::en));
+                                while let Some(span) = spans.last() {
+                                    // Have we indexed all the blocks after the span?
+                                    if current_span.start - 1 >= span.start && current_span.start - 1 <= span.end {
+                                        let skipped = span.end - span.start + 1;
+                                        info!(
+                                            "📚 Skipping {} blocks from #{} to #{}",
+                                            skipped.to_formatted_string(&Locale::en),
+                                            span.start.to_formatted_string(&Locale::en),
+                                            span.end.to_formatted_string(&Locale::en),
+                                        );
+                                        current_span.start = span.start;
+                                        // Remove the span.
+                                        trees.span.remove(span.end.to_be_bytes())?;
+                                        spans.pop();
+                                    }
+                                    else {
+                                        break;
+                                    }
+                                }
                             }
                         }
                         else {
                             orphans.insert(block_number, true);
                             debug!("⬇️  Block #{} indexed and orphaned.", block_number.to_formatted_string(&Locale::en));
-                        }
-                        if let Some(span) = spans.last() {
-                            // Have we indexed all the blocks after the span?
-                            if current_span.start - 1 <= span.end {
-                                let skipped = span.end - span.start + 1;
-                                info!(
-                                    "📚 Skipping {} blocks from #{} to #{}",
-                                    skipped.to_formatted_string(&Locale::en),
-                                    span.start.to_formatted_string(&Locale::en),
-                                    span.end.to_formatted_string(&Locale::en),
-                                );
-                                current_span.start = span.start;
-                                // Remove the span.
-                                trees.span.remove(span.end.to_be_bytes())?;
-                                spans.pop();
-                            }
                         }
                         stats_block_count += 1;
                         stats_event_count += event_count;
@@ -771,14 +801,16 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     }
                 }
                 // Figure out the next block to index, skipping the next span if we have reached it.
-                next_batch_block -= 1;
-                if let Some(span) = spans.last() {
-                    if next_batch_block >= span.start && next_batch_block <= span.end {
-                        next_batch_block = span.start - 1;
+                let mut i = spans.len();
+                while i != 0 {
+                    i -= 1;
+                    if next_batch_block >= spans[i].start && next_batch_block <= spans[i].end {
+                        next_batch_block = spans[i].start - 1;
                     }
                 }
                 futures[index] = Box::pin(indexer.index_block(next_batch_block));
                 debug!("⬆️  Block #{} queued.", next_batch_block.to_formatted_string(&Locale::en));
+                next_batch_block -= 1;
             }
         }
     }
