@@ -21,7 +21,7 @@ pub struct Indexer<R: RuntimeIndexer + ?Sized> {
     trees: Trees,
     api: Option<OnlineClient<R::RuntimeConfig>>,
     rpc: Option<LegacyRpcMethods<R::RuntimeConfig>>,
-    metadata_map_lock: RwLock<HashMap<u32, Metadata>>,
+    metadata_map_lock: RwLock<AHashMap<u32, Metadata>>,
     sub_map: Mutex<HashMap<Key, Vec<mpsc::UnboundedSender<ResponseMessage>>>>,
 }
 
@@ -35,7 +35,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             trees,
             api: Some(api),
             rpc: Some(rpc),
-            metadata_map_lock: RwLock::new(HashMap::new()),
+            metadata_map_lock: RwLock::new(AHashMap::new()),
             sub_map: HashMap::new().into(),
         }
     }
@@ -46,7 +46,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             trees,
             api: None,
             rpc: None,
-            metadata_map_lock: RwLock::new(HashMap::new()),
+            metadata_map_lock: RwLock::new(AHashMap::new()),
             sub_map: HashMap::new().into(),
         }
     }
