@@ -574,7 +574,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Span {
     start: u32,
     end: u32,
@@ -619,10 +619,27 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             spans.push(span);
         }
     }
-    // Create a span of the first finalized block that will be indexed.
-    let mut current_span = Span {
-        start: next_batch_block + 1,
-        end: next_batch_block + 1,
+    // If the first head block to be indexed will be touching the last span (the indexer was restarted), set the current span to the last span. Otherwise there will be no batch block indexed to connect the current span to the last span.
+    let mut current_span = if let Some(span) = spans.last() && span.end == next_batch_block {
+        let span = span.clone();
+        let skipped = span.end - span.start + 1;
+        info!(
+            "📚 Skipping {} blocks from #{} to #{}",
+            skipped.to_formatted_string(&Locale::en),
+            span.start.to_formatted_string(&Locale::en),
+            span.end.to_formatted_string(&Locale::en),
+        );
+        // Remove the span.
+        trees.span.remove(span.end.to_be_bytes())?;
+        spans.pop();
+        next_batch_block = span.start - 1;
+        span
+    }
+    else {
+        Span {
+            start: next_batch_block + 1,
+            end: next_batch_block + 1,
+        }
     };
 
     let indexer = Indexer::<R>::new(trees.clone(), api, rpc);

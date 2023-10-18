@@ -3,6 +3,7 @@
 //! A library for indexing events from Substrate blockchains.
 
 #![feature(trivial_bounds)]
+#![feature(let_chains)]
 use futures::StreamExt;
 use log::{error, info, LevelFilter};
 use signal_hook::{consts::TERM_SIGNALS, flag};
