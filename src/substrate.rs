@@ -3,11 +3,11 @@ use subxt::{
 };
 
 use futures::future;
-use std::{collections::HashMap, sync::Mutex, time::SystemTime};
+use std::{collections::HashMap, sync::Mutex};
 
 use tokio::{
     sync::{mpsc, watch, RwLock},
-    time::{self, Duration, MissedTickBehavior},
+    time::{self, Duration, Instant, MissedTickBehavior},
 };
 
 use ahash::AHashMap;
@@ -651,9 +651,10 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     let mut stats_block_count = 0;
     let mut stats_event_count = 0;
     let mut stats_key_count = 0;
-    let mut stats_start_time = SystemTime::now();
+    let mut stats_start_time = Instant::now();
 
-    let mut interval = time::interval(Duration::from_millis(2000));
+    let interval_duration = Duration::from_millis(2000);
+    let mut interval = time::interval_at(Instant::now() + interval_duration, interval_duration);
     interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
 
     let mut is_batching = true;
@@ -711,8 +712,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 };
             }
             _ = interval.tick(), if is_batching => {
-                let current_time = SystemTime::now();
-                let duration = (current_time.duration_since(stats_start_time)).unwrap().as_micros();
+                let current_time = Instant::now();
+                let duration = (current_time.duration_since(stats_start_time)).as_micros();
                 if duration != 0 {
                     info!(
                         "📚 #{}: {} blocks/sec, {} events/sec, {} keys/sec",
