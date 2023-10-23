@@ -11,9 +11,12 @@ use tokio::{
 };
 
 use ahash::AHashMap;
+use byteorder::BigEndian;
 use log::*;
 use num_format::{Locale, ToFormattedString};
-use zerocopy::AsBytes;
+use zerocopy::byteorder::{U16, U32};
+use zerocopy::{AsBytes, FromBytes};
+use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
 
 use crate::shared::*;
 
@@ -580,6 +583,13 @@ struct Span {
     end: u32,
 }
 
+#[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
+#[repr(C)]
+struct SpanDbValue {
+    start: U32<BigEndian>,
+    version: U16<BigEndian>,
+}
+
 pub async fn substrate_index<R: RuntimeIndexer>(
     trees: Trees,
     api: OnlineClient<R::RuntimeConfig>,
@@ -605,16 +615,31 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     );
     // Load already indexed spans from the db.
     let mut spans = vec![];
-    for span in &trees.span {
-        if let Ok((end, start)) = span {
-            let span = Span {
-                start: u32::from_be_bytes(start.as_ref().try_into().unwrap()),
-                end: u32::from_be_bytes(end.as_ref().try_into().unwrap()),
-            };
+    'span: for span in &trees.span {
+        if let Ok((key, value)) = span {
+            let value = SpanDbValue::read_from(&value).unwrap();
+            let start: u32 = value.start.into();
+            let end: u32 = u32::from_be_bytes(key.as_ref().try_into().unwrap());
+            let span_version: u16 = value.version.into();
+            // Determine if the span is valid.
+            // Loop through each indexer version.
+            for (version, block_number) in R::get_versions().iter().enumerate() {
+                if span_version < version.try_into().unwrap() && end >= *block_number {
+                    // Delete the span.
+                    trees.span.remove(key)?;
+                    info!(
+                        "📚 Re-indexing span of indexed blocks from #{} to #{}.",
+                        start.to_formatted_string(&Locale::en),
+                        end.to_formatted_string(&Locale::en)
+                    );
+                    continue 'span;
+                }
+            }
+            let span = Span { start, end };
             info!(
                 "📚 Previous span of indexed blocks from #{} to #{}.",
-                span.start.to_formatted_string(&Locale::en),
-                span.end.to_formatted_string(&Locale::en)
+                start.to_formatted_string(&Locale::en),
+                end.to_formatted_string(&Locale::en)
             );
             spans.push(span);
         }
@@ -682,7 +707,11 @@ pub async fn substrate_index<R: RuntimeIndexer>(
 
             _ = exit_rx.changed() => {
                 if current_span.start != current_span.end {
-                    trees.span.insert(current_span.end.to_be_bytes(), &current_span.start.to_be_bytes())?;
+                    let value = SpanDbValue {
+                        start: current_span.start.into(),
+                        version: (R::get_versions().len() - 1).try_into().unwrap(),
+                    };
+                    trees.span.insert(current_span.end.to_be_bytes(), value.as_bytes())?;
                     info!(
                         "📚 Recording current indexed span from #{} to #{}",
                         current_span.start.to_formatted_string(&Locale::en),
@@ -708,7 +737,11 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     Ok((block_number, event_count, key_count)) => {
                         trees.span.remove(current_span.end.to_be_bytes())?;
                         current_span.end = block_number;
-                        trees.span.insert(current_span.end.to_be_bytes(), &current_span.start.to_be_bytes())?;
+                        let value = SpanDbValue {
+                            start: current_span.start.into(),
+                            version: (R::get_versions().len() - 1).try_into().unwrap(),
+                        };
+                        trees.span.insert(current_span.end.to_be_bytes(), value.as_bytes())?;
                         info!(
                             "✨ #{}: {} events, {} keys",
                             block_number.to_formatted_string(&Locale::en),

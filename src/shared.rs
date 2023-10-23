@@ -42,9 +42,9 @@ pub trait RuntimeIndexer {
 
     fn get_genesis_hash() -> <Self::RuntimeConfig as subxt::Config>::Hash;
 
-    fn get_default_url() -> &'static str;
+    fn get_versions() -> &'static [u32];
 
-    fn get_default_start_block() -> u32;
+    fn get_default_url() -> &'static str;
 
     fn process_event(
         indexer: &crate::Indexer<Self>,
