@@ -635,6 +635,32 @@ fn load_spans<R: RuntimeIndexer>(span_db: &Tree) -> Result<Vec<Span>, IndexError
     Ok(spans)
 }
 
+fn check_span(
+    span_db: &Tree,
+    spans: &mut Vec<Span>,
+    current_span: &mut Span,
+) -> Result<(), IndexError> {
+    while let Some(span) = spans.last() {
+        // Have we indexed all the blocks after the span?
+        if current_span.start - 1 >= span.start && current_span.start - 1 <= span.end {
+            let skipped = span.end - span.start + 1;
+            info!(
+                "📚 Skipping {} blocks from #{} to #{}",
+                skipped.to_formatted_string(&Locale::en),
+                span.start.to_formatted_string(&Locale::en),
+                span.end.to_formatted_string(&Locale::en),
+            );
+            current_span.start = span.start;
+            // Remove the span.
+            span_db.remove(span.end.to_be_bytes())?;
+            spans.pop();
+        } else {
+            break;
+        }
+    }
+    Ok(())
+}
+
 pub async fn substrate_index<R: RuntimeIndexer>(
     trees: Trees,
     api: OnlineClient<R::RuntimeConfig>,
@@ -801,49 +827,13 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         if block_number == current_span.start - 1 {
                             current_span.start = block_number;
                             debug!("⬇️  Block #{} indexed.", block_number.to_formatted_string(&Locale::en));
-                            while let Some(span) = spans.last() {
-                                // Have we indexed all the blocks after the span?
-                                if current_span.start - 1 >= span.start && current_span.start - 1 <= span.end {
-                                    let skipped = span.end - span.start + 1;
-                                    info!(
-                                        "📚 Skipping {} blocks from #{} to #{}",
-                                        skipped.to_formatted_string(&Locale::en),
-                                        span.start.to_formatted_string(&Locale::en),
-                                        span.end.to_formatted_string(&Locale::en),
-                                    );
-                                    current_span.start = span.start;
-                                    // Remove the span.
-                                    trees.span.remove(span.end.to_be_bytes())?;
-                                    spans.pop();
-                                }
-                                else {
-                                    break;
-                                }
-                            }
+                            check_span(&trees.span, &mut spans, &mut current_span)?;
                             // Check if any orphans are now contiguous.
                             while orphans.contains_key(&(current_span.start - 1)) {
                                 current_span.start -= 1;
                                 orphans.remove(&current_span.start);
                                 debug!("➡️  Block #{} unorphaned.", current_span.start.to_formatted_string(&Locale::en));
-                                while let Some(span) = spans.last() {
-                                    // Have we indexed all the blocks after the span?
-                                    if current_span.start - 1 >= span.start && current_span.start - 1 <= span.end {
-                                        let skipped = span.end - span.start + 1;
-                                        info!(
-                                            "📚 Skipping {} blocks from #{} to #{}",
-                                            skipped.to_formatted_string(&Locale::en),
-                                            span.start.to_formatted_string(&Locale::en),
-                                            span.end.to_formatted_string(&Locale::en),
-                                        );
-                                        current_span.start = span.start;
-                                        // Remove the span.
-                                        trees.span.remove(span.end.to_be_bytes())?;
-                                        spans.pop();
-                                    }
-                                    else {
-                                        break;
-                                    }
-                                }
+                                check_span(&trees.span, &mut spans, &mut current_span)?;
                             }
                         }
                         else {
