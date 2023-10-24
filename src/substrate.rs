@@ -661,6 +661,17 @@ fn check_span(
     Ok(())
 }
 
+fn check_next_batch_block(spans: &Vec<Span>, next_batch_block: &mut u32) {
+    // Figure out the next block to index, skipping the next span if we have reached it.
+    let mut i = spans.len();
+    while i != 0 {
+        i -= 1;
+        if *next_batch_block >= spans[i].start && *next_batch_block <= spans[i].end {
+            *next_batch_block = spans[i].start - 1;
+        }
+    }
+}
+
 pub async fn substrate_index<R: RuntimeIndexer>(
     trees: Trees,
     api: OnlineClient<R::RuntimeConfig>,
@@ -715,13 +726,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     let mut futures = Vec::with_capacity(queue_depth.try_into().unwrap());
 
     for _ in 0..queue_depth {
-        let mut i = spans.len();
-        while i != 0 {
-            i -= 1;
-            if next_batch_block >= spans[i].start && next_batch_block <= spans[i].end {
-                next_batch_block = spans[i].start - 1;
-            }
-        }
+        check_next_batch_block(&spans, &mut next_batch_block);
         futures.push(Box::pin(indexer.index_block(next_batch_block)));
         debug!(
             "⬆️  Block #{} queued.",
@@ -857,14 +862,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         }
                     }
                 }
-                // Figure out the next block to index, skipping the next span if we have reached it.
-                let mut i = spans.len();
-                while i != 0 {
-                    i -= 1;
-                    if next_batch_block >= spans[i].start && next_batch_block <= spans[i].end {
-                        next_batch_block = spans[i].start - 1;
-                    }
-                }
+                check_next_batch_block(&spans, &mut next_batch_block);
                 futures[index] = Box::pin(indexer.index_block(next_batch_block));
                 debug!("⬆️  Block #{} queued.", next_batch_block.to_formatted_string(&Locale::en));
                 next_batch_block -= 1;
