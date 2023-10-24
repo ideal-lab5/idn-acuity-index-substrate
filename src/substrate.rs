@@ -617,22 +617,32 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     let mut spans = vec![];
     'span: for span in &trees.span {
         if let Ok((key, value)) = span {
-            let value = SpanDbValue::read_from(&value).unwrap();
-            let start: u32 = value.start.into();
-            let end: u32 = u32::from_be_bytes(key.as_ref().try_into().unwrap());
-            let span_version: u16 = value.version.into();
-            // Determine if the span is valid.
+            let span_value = SpanDbValue::read_from(&value).unwrap();
+            let start: u32 = span_value.start.into();
+            let mut end: u32 = u32::from_be_bytes(key.as_ref().try_into().unwrap());
+            let span_version: u16 = span_value.version.into();
             // Loop through each indexer version.
             for (version, block_number) in R::get_versions().iter().enumerate() {
                 if span_version < version.try_into().unwrap() && end >= *block_number {
-                    // Delete the span.
                     trees.span.remove(key)?;
-                    info!(
-                        "📚 Re-indexing span of indexed blocks from #{} to #{}.",
-                        start.to_formatted_string(&Locale::en),
-                        end.to_formatted_string(&Locale::en)
-                    );
-                    continue 'span;
+                    if start >= *block_number {
+                        info!(
+                            "📚 Re-indexing span of blocks from #{} to #{}.",
+                            start.to_formatted_string(&Locale::en),
+                            end.to_formatted_string(&Locale::en)
+                        );
+                        continue 'span;
+                    } else {
+                        info!(
+                            "📚 Re-indexing span of blocks from #{} to #{}.",
+                            block_number.to_formatted_string(&Locale::en),
+                            end.to_formatted_string(&Locale::en)
+                        );
+                        // Truncate the span.
+                        end = block_number - 1;
+                        trees.span.insert(end.to_be_bytes(), value)?;
+                        break;
+                    }
                 }
             }
             let span = Span { start, end };
