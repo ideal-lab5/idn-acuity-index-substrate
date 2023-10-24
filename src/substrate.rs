@@ -14,6 +14,7 @@ use ahash::AHashMap;
 use byteorder::BigEndian;
 use log::*;
 use num_format::{Locale, ToFormattedString};
+use sled::Tree;
 use zerocopy::byteorder::{U16, U32};
 use zerocopy::{AsBytes, FromBytes};
 use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
@@ -590,6 +591,50 @@ struct SpanDbValue {
     version: U16<BigEndian>,
 }
 
+fn load_spans<R: RuntimeIndexer>(span_db: &Tree) -> Result<Vec<Span>, IndexError> {
+    let mut spans = vec![];
+    'span: for span in span_db {
+        if let Ok((key, value)) = span {
+            let span_value = SpanDbValue::read_from(&value).unwrap();
+            let start: u32 = span_value.start.into();
+            let mut end: u32 = u32::from_be_bytes(key.as_ref().try_into().unwrap());
+            let span_version: u16 = span_value.version.into();
+            // Loop through each indexer version.
+            for (version, block_number) in R::get_versions().iter().enumerate() {
+                if span_version < version.try_into().unwrap() && end >= *block_number {
+                    span_db.remove(key)?;
+                    if start >= *block_number {
+                        info!(
+                            "📚 Re-indexing span of blocks from #{} to #{}.",
+                            start.to_formatted_string(&Locale::en),
+                            end.to_formatted_string(&Locale::en)
+                        );
+                        continue 'span;
+                    } else {
+                        info!(
+                            "📚 Re-indexing span of blocks from #{} to #{}.",
+                            block_number.to_formatted_string(&Locale::en),
+                            end.to_formatted_string(&Locale::en)
+                        );
+                        // Truncate the span.
+                        end = block_number - 1;
+                        span_db.insert(end.to_be_bytes(), value)?;
+                        break;
+                    }
+                }
+            }
+            let span = Span { start, end };
+            info!(
+                "📚 Previous span of indexed blocks from #{} to #{}.",
+                start.to_formatted_string(&Locale::en),
+                end.to_formatted_string(&Locale::en)
+            );
+            spans.push(span);
+        }
+    }
+    Ok(spans)
+}
+
 pub async fn substrate_index<R: RuntimeIndexer>(
     trees: Trees,
     api: OnlineClient<R::RuntimeConfig>,
@@ -614,46 +659,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         next_batch_block.to_formatted_string(&Locale::en)
     );
     // Load already indexed spans from the db.
-    let mut spans = vec![];
-    'span: for span in &trees.span {
-        if let Ok((key, value)) = span {
-            let span_value = SpanDbValue::read_from(&value).unwrap();
-            let start: u32 = span_value.start.into();
-            let mut end: u32 = u32::from_be_bytes(key.as_ref().try_into().unwrap());
-            let span_version: u16 = span_value.version.into();
-            // Loop through each indexer version.
-            for (version, block_number) in R::get_versions().iter().enumerate() {
-                if span_version < version.try_into().unwrap() && end >= *block_number {
-                    trees.span.remove(key)?;
-                    if start >= *block_number {
-                        info!(
-                            "📚 Re-indexing span of blocks from #{} to #{}.",
-                            start.to_formatted_string(&Locale::en),
-                            end.to_formatted_string(&Locale::en)
-                        );
-                        continue 'span;
-                    } else {
-                        info!(
-                            "📚 Re-indexing span of blocks from #{} to #{}.",
-                            block_number.to_formatted_string(&Locale::en),
-                            end.to_formatted_string(&Locale::en)
-                        );
-                        // Truncate the span.
-                        end = block_number - 1;
-                        trees.span.insert(end.to_be_bytes(), value)?;
-                        break;
-                    }
-                }
-            }
-            let span = Span { start, end };
-            info!(
-                "📚 Previous span of indexed blocks from #{} to #{}.",
-                start.to_formatted_string(&Locale::en),
-                end.to_formatted_string(&Locale::en)
-            );
-            spans.push(span);
-        }
-    }
+    let mut spans = load_spans::<R>(&trees.span)?;
     // If the first head block to be indexed will be touching the last span (the indexer was restarted), set the current span to the last span. Otherwise there will be no batch block indexed to connect the current span to the last span.
     let mut current_span = if let Some(span) = spans.last() && span.end == next_batch_block {
         let span = span.clone();
