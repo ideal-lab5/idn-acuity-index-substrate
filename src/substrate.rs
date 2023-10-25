@@ -578,20 +578,20 @@ impl<R: RuntimeIndexer> Indexer<R> {
     }
 }
 
-#[derive(Debug, Clone)]
-struct Span {
-    start: u32,
-    end: u32,
+#[derive(Debug, Clone, PartialEq)]
+pub struct Span {
+    pub start: u32,
+    pub end: u32,
 }
 
 #[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
 #[repr(C)]
-struct SpanDbValue {
-    start: U32<BigEndian>,
-    version: U16<BigEndian>,
+pub struct SpanDbValue {
+    pub start: U32<BigEndian>,
+    pub version: U16<BigEndian>,
 }
 
-fn load_spans<R: RuntimeIndexer>(span_db: &Tree) -> Result<Vec<Span>, IndexError> {
+pub fn load_spans<R: RuntimeIndexer>(span_db: &Tree) -> Result<Vec<Span>, IndexError> {
     let mut spans = vec![];
     'span: for span in span_db {
         if let Ok((key, value)) = span {
@@ -698,7 +698,9 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     // Load already indexed spans from the db.
     let mut spans = load_spans::<R>(&trees.span)?;
     // If the first head block to be indexed will be touching the last span (the indexer was restarted), set the current span to the last span. Otherwise there will be no batch block indexed to connect the current span to the last span.
-    let mut current_span = if let Some(span) = spans.last() && span.end == next_batch_block {
+    let mut current_span = if let Some(span) = spans.last()
+        && span.end == next_batch_block
+    {
         let span = span.clone();
         let skipped = span.end - span.start + 1;
         info!(
@@ -712,8 +714,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         spans.pop();
         next_batch_block = span.start - 1;
         span
-    }
-    else {
+    } else {
         Span {
             start: next_batch_block + 1,
             end: next_batch_block + 1,

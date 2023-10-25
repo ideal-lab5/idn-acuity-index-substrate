@@ -40,6 +40,37 @@ impl RuntimeIndexer for TestIndexer {
     }
 }
 
+pub struct TestIndexer2;
+
+impl RuntimeIndexer for TestIndexer2 {
+    type RuntimeConfig = subxt::PolkadotConfig;
+
+    fn get_name() -> &'static str {
+        "test"
+    }
+
+    fn get_genesis_hash() -> <Self::RuntimeConfig as subxt::Config>::Hash {
+        hex!["91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"].into()
+    }
+
+    fn get_versions() -> &'static [u32] {
+        &[0, 500]
+    }
+
+    fn get_default_url() -> &'static str {
+        ""
+    }
+
+    fn process_event(
+        _indexer: &Indexer<Self>,
+        _block_number: u32,
+        _event_index: u16,
+        _event: subxt::events::EventDetails<Self::RuntimeConfig>,
+    ) -> Result<u32, IndexError> {
+        Ok(0)
+    }
+}
+
 #[test]
 fn test_variant_key() {
     let key1 = VariantKey {
@@ -955,4 +986,173 @@ async fn test_process_msg_status() {
 }
 
 #[test]
-fn test_check_span() {}
+fn test_load_spans() {
+    let trees = open_trees("target/debug/test_check_span".into()).unwrap();
+    trees.span.clear().unwrap();
+    let spans = load_spans::<TestIndexer>(&trees.span).unwrap();
+    assert_eq!(trees.span.len(), 0);
+    assert_eq!(spans.len(), 0);
+    let value = SpanDbValue {
+        start: 80_u32.into(),
+        version: 0_u16.into(),
+    };
+    trees
+        .span
+        .insert(100_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+    let spans = load_spans::<TestIndexer>(&trees.span).unwrap();
+    assert_eq!(trees.span.len(), 1);
+    assert_eq!(spans.len(), 1);
+    assert_eq!(
+        spans[0],
+        Span {
+            start: 80,
+            end: 100
+        }
+    );
+    let value = SpanDbValue {
+        start: 180_u32.into(),
+        version: 0_u16.into(),
+    };
+    trees
+        .span
+        .insert(200_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+    let spans = load_spans::<TestIndexer>(&trees.span).unwrap();
+    assert_eq!(trees.span.len(), 2);
+    assert_eq!(spans.len(), 2);
+    assert_eq!(
+        spans[0],
+        Span {
+            start: 80,
+            end: 100
+        }
+    );
+    assert_eq!(
+        spans[1],
+        Span {
+            start: 180,
+            end: 200
+        }
+    );
+    let spans = load_spans::<TestIndexer2>(&trees.span).unwrap();
+    assert_eq!(trees.span.len(), 2);
+    assert_eq!(spans.len(), 2);
+    assert_eq!(
+        spans[0],
+        Span {
+            start: 80,
+            end: 100
+        }
+    );
+    assert_eq!(
+        spans[1],
+        Span {
+            start: 180,
+            end: 200
+        }
+    );
+    let value = SpanDbValue {
+        start: 400_u32.into(),
+        version: 0_u16.into(),
+    };
+    trees
+        .span
+        .insert(600_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+    let spans = load_spans::<TestIndexer2>(&trees.span).unwrap();
+    assert_eq!(trees.span.len(), 3);
+    assert_eq!(spans.len(), 3);
+    assert_eq!(
+        spans[0],
+        Span {
+            start: 80,
+            end: 100
+        }
+    );
+    assert_eq!(
+        spans[1],
+        Span {
+            start: 180,
+            end: 200
+        }
+    );
+    assert_eq!(
+        spans[2],
+        Span {
+            start: 400,
+            end: 499
+        }
+    );
+    let value = SpanDbValue {
+        start: 500_u32.into(),
+        version: 0_u16.into(),
+    };
+    trees
+        .span
+        .insert(600_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+    let spans = load_spans::<TestIndexer2>(&trees.span).unwrap();
+    assert_eq!(trees.span.len(), 3);
+    assert_eq!(spans.len(), 3);
+    assert_eq!(
+        spans[0],
+        Span {
+            start: 80,
+            end: 100
+        }
+    );
+    assert_eq!(
+        spans[1],
+        Span {
+            start: 180,
+            end: 200
+        }
+    );
+    assert_eq!(
+        spans[2],
+        Span {
+            start: 400,
+            end: 499
+        }
+    );
+    let value = SpanDbValue {
+        start: 500_u32.into(),
+        version: 1_u16.into(),
+    };
+    trees
+        .span
+        .insert(600_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+    let spans = load_spans::<TestIndexer2>(&trees.span).unwrap();
+    assert_eq!(trees.span.len(), 4);
+    assert_eq!(spans.len(), 4);
+    assert_eq!(
+        spans[0],
+        Span {
+            start: 80,
+            end: 100
+        }
+    );
+    assert_eq!(
+        spans[1],
+        Span {
+            start: 180,
+            end: 200
+        }
+    );
+    assert_eq!(
+        spans[2],
+        Span {
+            start: 400,
+            end: 499
+        }
+    );
+    assert_eq!(
+        spans[3],
+        Span {
+            start: 500,
+            end: 600
+        }
+    );
+}
