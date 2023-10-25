@@ -661,7 +661,7 @@ pub fn check_span(
     Ok(())
 }
 
-fn check_next_batch_block(spans: &Vec<Span>, next_batch_block: &mut u32) {
+pub fn check_next_batch_block(spans: &Vec<Span>, next_batch_block: &mut u32) {
     // Figure out the next block to index, skipping the next span if we have reached it.
     let mut i = spans.len();
     while i != 0 {

@@ -1217,3 +1217,18 @@ fn test_check_span() {
         }
     );
 }
+
+#[test]
+fn test_check_next_batch_block() {
+    let mut spans = Vec::new();
+    let mut next_batch_block = 50;
+
+    check_next_batch_block(&spans, &mut next_batch_block);
+    assert_eq!(next_batch_block, 50);
+    spans.push(Span { start: 20, end: 30 });
+    check_next_batch_block(&spans, &mut next_batch_block);
+    assert_eq!(next_batch_block, 50);
+    spans.push(Span { start: 45, end: 50 });
+    check_next_batch_block(&spans, &mut next_batch_block);
+    assert_eq!(next_batch_block, 44);
+}
