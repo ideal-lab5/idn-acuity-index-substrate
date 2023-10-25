@@ -1,4 +1,4 @@
-# Grant 2 Milestone 1 Testing Guide
+# Grant 2 Milestone 2 Testing Guide
 
 To run the unit tests:
 
@@ -9,78 +9,49 @@ rustup default nightly
 cargo test
 ```
 
-## Deliverable 1 - Combine head and batch indexer threads
+## Deliverable 1 - Index backwards
 
-Observe that both head and batch indexing is now handled by the same event loop:
-https://github.com/hybrid-explorer/hybrid-indexer/blob/main/src/substrate.rs#L636
-
-Run polkadot-indexer starting at block 1752000:
+Run the docker image:
 
 ```
 git clone https://github.com/hybrid-explorer/polkadot-indexer/
 cd polkadot-indexer
 docker build .
-docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172
+docker run -it [image_hash] /bin/bash
 ```
 
 (Replace `[image_hash]` with the hash at the end of the build step.)
 
-Observe that "Downloading metadata for spec version 9430" only appears once.
-
-## Deliverable 2 - Check correct chain
-
-Attempt to index Polkadot, but connect to a Kusama end point:
+Run polkadot-indexer:
 
 ```
-docker run --rm -p 8172:8172 [image_hash] -c polkadot -p 8172 -u wss://kusama-rpc.polkadot.io:443
+./target/release/polkadot-indexer  
 ```
 
-Observe that the indexer detects that the genesis hash is wrong.
+Observe that batch indexing starts at the head block and works backwards.
 
-## Deliverable 3 - Improved logging
+Press ctrl+c to stop the indexer.
 
-Run the indexer:
+## Deliverable 2 - Store indexed spans
 
-```
-docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172
-```
-
-Observe that the batch indexing stats are output every 2 seconds.
-
-Run the indexer in quiet mode:
+Run polkadot-indexer again:
 
 ```
-docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172 -q
+./target/release/polkadot-indexer  
 ```
 
-Observe there is no output.
+Observe that it detects the previous span of indexed blocks and skips over it.
 
-Run the indexer in verbose mode:
+Press ctrl+c to stop the indexer.
 
-```
-docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172 -v
-```
+## Deliverable 3 - Declare indexer start blocks
 
-Observe there is a lot of output.
-
-## Deliverable 4 - Improved error checking
-
-Observe the new `IndexError` enum: 
-
-https://github.com/hybrid-explorer/hybrid-indexer/blob/main/src/shared.rs#L11
-
-Run the indexer:
+Run polkadot-indexer again with a higher indexer version:
 
 ```
-docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 17520000 -p 8172
+./target/release/polkadot-indexer -c polkadot2
 ```
 
-Press ctrl+c. Observe that the indexer exits gracefully, closing the database.
+Observe that it detects the previous span of indexed blocks and re-indexes it.
 
-Run the indexer on an invalid block:
-
-```
-docker run --rm -p 8172:8172 [image_hash] -c polkadot -b 20000000 -p 8172
-```
-
-Observe that the error is reported and batch indexing stops.
+Press ctrl+c to stop the indexer.
