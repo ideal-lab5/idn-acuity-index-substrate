@@ -987,7 +987,7 @@ async fn test_process_msg_status() {
 
 #[test]
 fn test_load_spans() {
-    let trees = open_trees("target/debug/test_check_span".into()).unwrap();
+    let trees = open_trees("target/debug/test_load_spans".into()).unwrap();
     trees.span.clear().unwrap();
     let spans = load_spans::<TestIndexer>(&trees.span).unwrap();
     assert_eq!(trees.span.len(), 0);
@@ -1153,6 +1153,67 @@ fn test_load_spans() {
         Span {
             start: 500,
             end: 600
+        }
+    );
+}
+
+#[test]
+fn test_check_span() {
+    let trees = open_trees("target/debug/test_check_span".into()).unwrap();
+    trees.span.clear().unwrap();
+    let mut spans = Vec::new();
+    let mut span = Span {
+        start: 100,
+        end: 120,
+    };
+    check_span(&trees.span, &mut spans, &mut span).unwrap();
+    assert_eq!(trees.span.len(), 0);
+    assert_eq!(spans.len(), 0);
+    assert_eq!(
+        span,
+        Span {
+            start: 100,
+            end: 120
+        }
+    );
+    let value = SpanDbValue {
+        start: 10_u32.into(),
+        version: 0_u16.into(),
+    };
+    trees
+        .span
+        .insert(20_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+    spans.push(Span { start: 10, end: 20 });
+    check_span(&trees.span, &mut spans, &mut span).unwrap();
+    assert_eq!(trees.span.len(), 1);
+    assert_eq!(spans.len(), 1);
+    assert_eq!(spans[0], Span { start: 10, end: 20 });
+    assert_eq!(
+        span,
+        Span {
+            start: 100,
+            end: 120
+        }
+    );
+    let value = SpanDbValue {
+        start: 30_u32.into(),
+        version: 0_u16.into(),
+    };
+    trees
+        .span
+        .insert(99_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+    spans.push(Span { start: 30, end: 99 });
+    check_span(&trees.span, &mut spans, &mut span).unwrap();
+    assert_eq!(trees.span.len(), 1);
+    assert_eq!(spans.len(), 1);
+    assert_eq!(spans[0], Span { start: 10, end: 20 });
+    assert_eq!(
+        span,
+        Span {
+            start: 30,
+            end: 120
         }
     );
 }

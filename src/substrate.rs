@@ -635,7 +635,7 @@ pub fn load_spans<R: RuntimeIndexer>(span_db: &Tree) -> Result<Vec<Span>, IndexE
     Ok(spans)
 }
 
-fn check_span(
+pub fn check_span(
     span_db: &Tree,
     spans: &mut Vec<Span>,
     current_span: &mut Span,
