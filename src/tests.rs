@@ -953,3 +953,6 @@ async fn test_process_msg_status() {
         assert!(!batch_indexing_complete);
     }
 }
+
+#[test]
+fn test_check_span() {}

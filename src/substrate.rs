@@ -735,7 +735,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         next_batch_block -= 1;
     }
 
-    let mut orphans: AHashMap<u32, bool> = AHashMap::new();
+    let mut orphans: AHashMap<u32, ()> = AHashMap::new();
 
     let mut stats_block_count = 0;
     let mut stats_event_count = 0;
@@ -842,7 +842,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                             }
                         }
                         else {
-                            orphans.insert(block_number, true);
+                            orphans.insert(block_number, ());
                             debug!("⬇️  Block #{} indexed and orphaned.", block_number.to_formatted_string(&Locale::en));
                         }
                         stats_block_count += 1;
