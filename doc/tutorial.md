@@ -29,7 +29,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-subxt = "0.30.1"
+subxt = "0.32"
 ```
 
 `metadata/src/lib/rs`
@@ -58,8 +58,6 @@ impl Config for MyChainConfig {
 
 Each chain to be indexed by the indexer has a separate struct that implements the [RuntimeIndexer](https://docs.rs/hybrid-indexer/0.1.0/hybrid_indexer/shared/trait.RuntimeIndexer.html) trait. For example, look at [KusamaIndexer](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/indexer/src/kusama/mod.rs#L40).
 
-subxt may not be able to process older blocks. Experiment with get_default_start_block()
-
 Every event to be indexed is passed to `process_event()`. It needs to determine which pallet the event is from and use the correct macro to index it. Macros for Substrate pallets are provided by hybrid-indexer. Additional pallet macros can be provided.
 
 ```rust
@@ -74,12 +72,12 @@ impl hybrid_indexer::shared::RuntimeIndexer for MyChainIndexer {
         hex!["91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"].into()
     }
 
-    fn get_default_url() -> &'static str {
-        "wss://rpc.mychain.io:443"
+    fn get_versions() -> &'static [u32] {
+        &[0]
     }
 
-    fn get_default_start_block() -> u32 {
-        0
+    fn get_default_url() -> &'static str {
+        "wss://rpc.mychain.io:443"
     }
 
     fn process_event(
