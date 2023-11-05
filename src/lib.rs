@@ -35,9 +35,8 @@ use subxt::{
 #[cfg(test)]
 mod tests;
 
-fn open_trees(db_path: PathBuf) -> Result<Trees, sled::Error> {
-    info!("Opening db: {}", db_path.display());
-    let db = sled::open(&db_path)?;
+fn open_trees(db_config: sled::Config) -> Result<Trees, sled::Error> {
+    let db = db_config.open()?;
     let trees = Trees {
         root: db.clone(),
         span: db.open_tree(b"span")?,
@@ -89,6 +88,7 @@ fn close_trees(trees: Trees) {
 /// Starts the indexer. Chain is defined by `R`.
 pub async fn start<R: RuntimeIndexer + 'static>(
     db_path: Option<String>,
+    db_mode: sled::Mode,
     url: Option<String>,
     queue_depth: u8,
     port: u16,
@@ -114,7 +114,10 @@ pub async fn start<R: RuntimeIndexer + 'static>(
             }
         },
     };
-    let trees = match open_trees(db_path) {
+    info!("Database path: {}", db_path.display());
+    info!("Database mode: {:?}", db_mode);
+    let db_config = sled::Config::new().path(db_path).mode(db_mode);
+    let trees = match open_trees(db_config) {
         Ok(trees) => trees,
         Err(_) => {
             error!("Failed to open database.");
