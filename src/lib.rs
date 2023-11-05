@@ -4,6 +4,7 @@
 
 #![feature(trivial_bounds)]
 #![feature(let_chains)]
+use byte_unit::Byte;
 use futures::StreamExt;
 use log::{error, info, LevelFilter};
 use signal_hook::{consts::TERM_SIGNALS, flag};
@@ -89,6 +90,7 @@ fn close_trees(trees: Trees) {
 pub async fn start<R: RuntimeIndexer + 'static>(
     db_path: Option<String>,
     db_mode: sled::Mode,
+    db_cache_capacity: u64,
     url: Option<String>,
     queue_depth: u8,
     port: u16,
@@ -116,7 +118,14 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     };
     info!("Database path: {}", db_path.display());
     info!("Database mode: {:?}", db_mode);
-    let db_config = sled::Config::new().path(db_path).mode(db_mode);
+    info!(
+        "Database cache capacity: {}",
+        Byte::from_bytes(db_cache_capacity.into()).get_appropriate_unit(true)
+    );
+    let db_config = sled::Config::new()
+        .path(db_path)
+        .mode(db_mode)
+        .cache_capacity(db_cache_capacity);
     let trees = match open_trees(db_config) {
         Ok(trees) => trees,
         Err(_) => {
