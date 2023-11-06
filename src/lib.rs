@@ -93,6 +93,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     db_cache_capacity: u64,
     url: Option<String>,
     queue_depth: u8,
+    index_variant: bool,
     port: u16,
     log_level: LevelFilter,
 ) {
@@ -207,6 +208,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         api.clone(),
         rpc.clone(),
         queue_depth.into(),
+        index_variant,
         exit_rx.clone(),
         sub_rx,
     ));
