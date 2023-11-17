@@ -14,6 +14,10 @@ use std::{
     process::exit,
     sync::{atomic::AtomicBool, Arc},
 };
+use subxt::{
+    backend::{legacy::LegacyRpcMethods, rpc::RpcClient},
+    OnlineClient,
+};
 use tokio::{
     join, spawn,
     sync::{mpsc, watch},
@@ -27,11 +31,6 @@ mod websockets;
 use crate::shared::*;
 use substrate::*;
 use websockets::websockets_listen;
-
-use subxt::{
-    backend::{legacy::LegacyRpcMethods, rpc::RpcClient},
-    OnlineClient,
-};
 
 #[cfg(test)]
 mod tests;

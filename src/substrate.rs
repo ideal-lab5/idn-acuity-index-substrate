@@ -613,6 +613,7 @@ pub fn load_spans<R: RuntimeIndexer>(
                 start.to_formatted_string(&Locale::en),
                 end.to_formatted_string(&Locale::en)
             );
+            info!("📚 Reason: event variants not indexed.");
             continue;
         }
         let span_version: u16 = span_value.version.into();
@@ -697,6 +698,13 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     mut exit_rx: watch::Receiver<bool>,
     mut sub_rx: mpsc::UnboundedReceiver<SubscribeMessage>,
 ) -> Result<(), IndexError> {
+    info!(
+        "📇 Event variant indexing: {}",
+        match index_variant {
+            false => "disabled",
+            true => "enabled",
+        },
+    );
     // Subscribe to all finalized blocks:
     let mut blocks_sub = api.blocks().subscribe_finalized().await?;
     // Determine the correct block to start batch indexing.
@@ -711,13 +719,6 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     info!(
         "📚 Indexing backwards from #{}",
         next_batch_block.to_formatted_string(&Locale::en)
-    );
-    info!(
-        "📚 Event variant indexing: {}",
-        match index_variant {
-            false => "disabled",
-            true => "enabled",
-        },
     );
     // Load already indexed spans from the db.
     let mut spans = load_spans::<R>(&trees.span, index_variant)?;
