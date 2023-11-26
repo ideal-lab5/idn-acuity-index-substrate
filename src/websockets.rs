@@ -1,19 +1,16 @@
+use crate::shared::*;
 use futures::{SinkExt, StreamExt};
+use log::{error, info};
+use sled::Tree;
 use std::net::SocketAddr;
+use subxt::backend::legacy::LegacyRpcMethods;
 use tokio::net::{TcpListener, TcpStream};
-
 use tokio::sync::{
     mpsc::{unbounded_channel, UnboundedSender},
     watch::Receiver,
 };
 use tokio_tungstenite::tungstenite;
-
-use log::{error, info};
-
-use subxt::backend::legacy::LegacyRpcMethods;
 use zerocopy::FromBytes;
-
-use crate::shared::*;
 
 pub fn process_msg_status(trees: &Trees) -> Result<ResponseMessage, IndexError> {
     Ok(ResponseMessage::Status {
@@ -58,299 +55,88 @@ pub async fn process_msg_variants<R: RuntimeIndexer>(
     Ok(ResponseMessage::Variants(pallets))
 }
 
-pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
+pub fn get_events_variant(tree: &Tree, pallet_id: u8, variant_id: u8) -> Vec<Event> {
     let mut events = Vec::new();
-    match key {
+    let mut iter = tree.scan_prefix([pallet_id, variant_id]).keys();
+
+    while let Some(Ok(key)) = iter.next_back() {
+        let key = VariantKey::read_from(&key).unwrap();
+
+        events.push(Event {
+            block_number: key.block_number.into(),
+            event_index: key.event_index.into(),
+        });
+
+        if events.len() == 100 {
+            break;
+        }
+    }
+    events
+}
+
+pub fn get_events_bytes32(tree: &Tree, key: Bytes32) -> Vec<Event> {
+    let mut events = Vec::new();
+    let mut iter = tree.scan_prefix(key).keys();
+
+    while let Some(Ok(key)) = iter.next_back() {
+        let key = Bytes32Key::read_from(&key).unwrap();
+
+        events.push(Event {
+            block_number: key.block_number.into(),
+            event_index: key.event_index.into(),
+        });
+
+        if events.len() == 100 {
+            break;
+        }
+    }
+    events
+}
+
+pub fn get_events_u32(tree: &Tree, key: u32) -> Vec<Event> {
+    let mut events = Vec::new();
+    let mut iter = tree.scan_prefix(key.to_be_bytes()).keys();
+
+    while let Some(Ok(key)) = iter.next_back() {
+        let key = U32Key::read_from(&key).unwrap();
+
+        events.push(Event {
+            block_number: key.block_number.into(),
+            event_index: key.event_index.into(),
+        });
+
+        if events.len() == 100 {
+            break;
+        }
+    }
+    events
+}
+
+pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
+    let events = match key {
         Key::Variant(pallet_id, variant_id) => {
-            let mut iter = trees.variant.scan_prefix([pallet_id, variant_id]).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key: VariantKey = VariantKey::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
+            get_events_variant(&trees.variant, pallet_id, variant_id)
         }
-        Key::AccountId(account_id) => {
-            let mut iter = trees.account_id.scan_prefix(account_id).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = Bytes32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::AccountIndex(account_index) => {
-            let mut iter = trees
-                .account_index
-                .scan_prefix(account_index.to_be_bytes())
-                .keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::AuctionIndex(auction_index) => {
-            let mut iter = trees
-                .auction_index
-                .scan_prefix(auction_index.to_be_bytes())
-                .keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::BountyIndex(bounty_index) => {
-            let mut iter = trees
-                .bounty_index
-                .scan_prefix(bounty_index.to_be_bytes())
-                .keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
+        Key::AccountId(account_id) => get_events_bytes32(&trees.account_id, account_id),
+        Key::AccountIndex(account_index) => get_events_u32(&trees.account_index, account_index),
+        Key::AuctionIndex(auction_index) => get_events_u32(&trees.auction_index, auction_index),
+        Key::BountyIndex(bounty_index) => get_events_u32(&trees.bounty_index, bounty_index),
         Key::CandidateHash(candidate_hash) => {
-            let mut iter = trees.candidate_hash.scan_prefix(candidate_hash).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = Bytes32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
+            get_events_bytes32(&trees.candidate_hash, candidate_hash)
         }
-        Key::EraIndex(era_index) => {
-            let mut iter = trees.era_index.scan_prefix(era_index.to_be_bytes()).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::MessageId(message_id) => {
-            let mut iter = trees.message_id.scan_prefix(message_id).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = Bytes32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::ParaId(para_id) => {
-            let mut iter = trees.para_id.scan_prefix(para_id.to_be_bytes()).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::PoolId(pool_id) => {
-            let mut iter = trees.pool_id.scan_prefix(pool_id.to_be_bytes()).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::PreimageHash(preimage_hash) => {
-            let mut iter = trees.preimage_hash.scan_prefix(preimage_hash).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = Bytes32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::ProposalHash(proposal_hash) => {
-            let mut iter = trees.proposal_hash.scan_prefix(proposal_hash).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = Bytes32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::ProposalIndex(proposal_index) => {
-            let mut iter = trees
-                .proposal_index
-                .scan_prefix(proposal_index.to_be_bytes())
-                .keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::RefIndex(ref_index) => {
-            let mut iter = trees.ref_index.scan_prefix(ref_index.to_be_bytes()).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
+        Key::EraIndex(era_index) => get_events_u32(&trees.era_index, era_index),
+        Key::MessageId(message_id) => get_events_bytes32(&trees.message_id, message_id),
+        Key::ParaId(para_id) => get_events_u32(&trees.para_id, para_id),
+        Key::PoolId(pool_id) => get_events_u32(&trees.pool_id, pool_id),
+        Key::PreimageHash(preimage_hash) => get_events_bytes32(&trees.preimage_hash, preimage_hash),
+        Key::ProposalHash(proposal_hash) => get_events_bytes32(&trees.proposal_hash, proposal_hash),
+        Key::ProposalIndex(proposal_index) => get_events_u32(&trees.proposal_index, proposal_index),
+        Key::RefIndex(ref_index) => get_events_u32(&trees.ref_index, ref_index),
         Key::RegistrarIndex(registrar_index) => {
-            let mut iter = trees
-                .registrar_index
-                .scan_prefix(registrar_index.to_be_bytes())
-                .keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
+            get_events_u32(&trees.registrar_index, registrar_index)
         }
-        Key::SessionIndex(session_index) => {
-            let mut iter = trees
-                .session_index
-                .scan_prefix(session_index.to_be_bytes())
-                .keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = U32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
-        Key::TipHash(tip_hash) => {
-            let mut iter = trees.tip_hash.scan_prefix(tip_hash).keys();
-
-            while let Some(Ok(key)) = iter.next_back() {
-                let key = Bytes32Key::read_from(&key).unwrap();
-
-                events.push(Event {
-                    block_number: key.block_number.into(),
-                    event_index: key.event_index.into(),
-                });
-
-                if events.len() == 100 {
-                    break;
-                }
-            }
-        }
+        Key::SessionIndex(session_index) => get_events_u32(&trees.session_index, session_index),
+        Key::TipHash(tip_hash) => get_events_bytes32(&trees.tip_hash, tip_hash),
     };
     ResponseMessage::Events { key, events }
 }
