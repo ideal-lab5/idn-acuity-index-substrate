@@ -12,7 +12,7 @@ use tokio::sync::{
 use tokio_tungstenite::tungstenite;
 use zerocopy::FromBytes;
 
-pub fn process_msg_status(trees: &Trees) -> Result<ResponseMessage, IndexError> {
+pub fn process_msg_status(trees: &Trees) -> Result<ResponseMessage<ChainKey>, IndexError> {
     Ok(ResponseMessage::Status {
         last_head_block: match trees.root.get("last_head_block")? {
             Some(value) => u32::from_be_bytes(value.as_ref().try_into().unwrap()),
@@ -31,7 +31,7 @@ pub fn process_msg_status(trees: &Trees) -> Result<ResponseMessage, IndexError> 
 
 pub async fn process_msg_variants<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
-) -> Result<ResponseMessage, IndexError> {
+) -> Result<ResponseMessage<ChainKey>, IndexError> {
     let metadata = rpc.state_get_metadata(None).await?;
     let mut pallets = Vec::new();
 
@@ -156,7 +156,7 @@ pub fn process_msg_get_events_chain(trees: &Trees, key: &ChainKey) -> Vec<Event>
     }
 }
 
-pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
+pub fn process_msg_get_events(trees: &Trees, key: Key<ChainKey>) -> ResponseMessage<ChainKey> {
     let events = match key {
         Key::Variant(pallet_id, variant_id) => {
             get_events_variant(&trees.variant, pallet_id, variant_id)
@@ -170,10 +170,10 @@ pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
 pub async fn process_msg<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
     trees: &Trees,
-    msg: RequestMessage,
-    sub_tx: UnboundedSender<SubscribeMessage>,
-    sub_response_tx: UnboundedSender<ResponseMessage>,
-) -> Result<ResponseMessage, IndexError> {
+    msg: RequestMessage<ChainKey>,
+    sub_tx: UnboundedSender<SubscribeMessage<ChainKey>>,
+    sub_response_tx: UnboundedSender<ResponseMessage<ChainKey>>,
+) -> Result<ResponseMessage<ChainKey>, IndexError> {
     Ok(match msg {
         RequestMessage::Status => process_msg_status(trees)?,
         RequestMessage::Variants => process_msg_variants::<R>(rpc).await?,
@@ -194,7 +194,7 @@ async fn handle_connection<R: RuntimeIndexer>(
     raw_stream: TcpStream,
     addr: SocketAddr,
     trees: Trees,
-    sub_tx: UnboundedSender<SubscribeMessage>,
+    sub_tx: UnboundedSender<SubscribeMessage<ChainKey>>,
 ) -> Result<(), IndexError> {
     info!("Incoming TCP connection from: {}", addr);
     let ws_stream = tokio_tungstenite::accept_async(raw_stream).await?;
@@ -231,7 +231,7 @@ pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
     port: u16,
     mut exit_rx: Receiver<bool>,
-    sub_tx: UnboundedSender<SubscribeMessage>,
+    sub_tx: UnboundedSender<SubscribeMessage<ChainKey>>,
 ) {
     let mut addr = "0.0.0.0:".to_string();
     addr.push_str(&port.to_string());

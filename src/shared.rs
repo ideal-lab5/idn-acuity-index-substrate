@@ -289,8 +289,8 @@ pub enum ChainKey {
     ParaId(u32),
 }
 
-impl ChainKey {
-    pub fn write_db_key(
+impl IndexKey for ChainKey {
+    fn write_db_key(
         &self,
         trees: &Trees,
         block_number: u32,
@@ -328,15 +328,24 @@ impl ChainKey {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
-#[serde(tag = "type", content = "value")]
-pub enum Key {
-    Variant(u8, u8),
-    Substrate(SubstrateKey),
-    Chain(ChainKey),
+pub trait IndexKey {
+    fn write_db_key(
+        &self,
+        trees: &Trees,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error>;
 }
 
-impl Key {
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
+#[serde(tag = "type", content = "value")]
+pub enum Key<CK: IndexKey> {
+    Variant(u8, u8),
+    Substrate(SubstrateKey),
+    Chain(CK),
+}
+
+impl<CK: IndexKey> Key<CK> {
     pub fn write_db_key(
         &self,
         trees: &Trees,
@@ -366,11 +375,11 @@ impl Key {
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
-pub enum RequestMessage {
+pub enum RequestMessage<CK: IndexKey> {
     Status,
     Variants,
-    GetEvents { key: Key },
-    SubscribeEvents { key: Key },
+    GetEvents { key: Key<CK> },
+    SubscribeEvents { key: Key<CK> },
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -396,7 +405,7 @@ pub struct PalletMeta {
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "type", content = "data")]
 #[serde(rename_all = "camelCase")]
-pub enum ResponseMessage {
+pub enum ResponseMessage<CK: IndexKey> {
     #[serde(rename_all = "camelCase")]
     Status {
         last_head_block: u32,
@@ -405,7 +414,7 @@ pub enum ResponseMessage {
     },
     Variants(Vec<PalletMeta>),
     Events {
-        key: Key,
+        key: Key<CK>,
         events: Vec<Event>,
     },
     Subscribed,
@@ -413,7 +422,7 @@ pub enum ResponseMessage {
 }
 
 #[derive(Debug)]
-pub struct SubscribeMessage {
-    pub key: Key,
-    pub sub_response_tx: UnboundedSender<ResponseMessage>,
+pub struct SubscribeMessage<CK: IndexKey> {
+    pub key: Key<CK>,
+    pub sub_response_tx: UnboundedSender<ResponseMessage<CK>>,
 }

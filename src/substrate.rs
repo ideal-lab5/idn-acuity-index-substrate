@@ -24,7 +24,7 @@ pub struct Indexer<R: RuntimeIndexer + ?Sized> {
     rpc: Option<LegacyRpcMethods<R::RuntimeConfig>>,
     index_variant: bool,
     metadata_map_lock: RwLock<AHashMap<u32, Metadata>>,
-    sub_map: Mutex<HashMap<Key, Vec<mpsc::UnboundedSender<ResponseMessage>>>>,
+    sub_map: Mutex<HashMap<Key<ChainKey>, Vec<mpsc::UnboundedSender<ResponseMessage<ChainKey>>>>>,
 }
 
 impl<R: RuntimeIndexer> Indexer<R> {
@@ -123,7 +123,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         Ok((block_number, events.len(), key_count))
     }
 
-    pub fn notify_subscribers(&self, search_key: Key, event: Event) {
+    pub fn notify_subscribers(&self, search_key: Key<ChainKey>, event: Event) {
         let sub_map = self.sub_map.lock().unwrap();
         if let Some(txs) = sub_map.get(&search_key) {
             let msg = ResponseMessage::Events {
@@ -138,7 +138,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
 
     pub fn index_event(
         &self,
-        key: Key,
+        key: Key<ChainKey>,
         block_number: u32,
         event_index: u16,
     ) -> Result<(), sled::Error> {
@@ -569,7 +569,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     queue_depth: u32,
     index_variant: bool,
     mut exit_rx: watch::Receiver<bool>,
-    mut sub_rx: mpsc::UnboundedReceiver<SubscribeMessage>,
+    mut sub_rx: mpsc::UnboundedReceiver<SubscribeMessage<ChainKey>>,
 ) -> Result<(), IndexError> {
     info!(
         "📇 Event variant indexing: {}",
