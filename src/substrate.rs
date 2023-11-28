@@ -136,6 +136,23 @@ impl<R: RuntimeIndexer> Indexer<R> {
         }
     }
 
+    pub fn index_event(
+        &self,
+        key: Key,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
+        key.write_db_key(&self.trees, block_number, event_index)?;
+        self.notify_subscribers(
+            key,
+            Event {
+                block_number,
+                event_index,
+            },
+        );
+        Ok(())
+    }
+
     pub fn index_event_variant(
         &self,
         pallet_index: u8,
@@ -178,15 +195,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.account_id.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::AccountId(Bytes32(account_id.0));
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -204,15 +212,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.account_index.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::AccountIndex(account_index);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -230,15 +229,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.auction_index.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::AuctionIndex(auction_index);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -256,15 +246,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.bounty_index.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::BountyIndex(bounty_index);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -282,15 +263,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.candidate_hash.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::CandidateHash(Bytes32(candidate_hash));
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -308,15 +280,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.era_index.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::EraIndex(era_index);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -334,15 +297,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.message_id.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::MessageId(Bytes32(message_id));
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -360,15 +314,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.para_id.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::ParaId(para_id);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -386,15 +331,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.pool_id.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::PoolId(pool_id);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -412,15 +348,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.preimage_hash.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::PreimageHash(Bytes32(preimage_hash));
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -438,15 +365,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.proposal_hash.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::ProposalHash(Bytes32(proposal_hash));
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -464,15 +382,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.proposal_index.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::ProposalIndex(proposal_index);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -490,15 +399,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.ref_index.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::RefIndex(ref_index);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -516,15 +416,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.registrar_index.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::RegistrarIndex(registrar_index);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -542,15 +433,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.session_index.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::SessionIndex(session_index);
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 
@@ -568,15 +450,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees.tip_hash.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::TipHash(Bytes32(tip_hash));
-        self.notify_subscribers(
-            search_key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
         Ok(())
     }
 }

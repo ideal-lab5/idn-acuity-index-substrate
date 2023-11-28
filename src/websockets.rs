@@ -74,7 +74,7 @@ pub fn get_events_variant(tree: &Tree, pallet_id: u8, variant_id: u8) -> Vec<Eve
     events
 }
 
-pub fn get_events_bytes32(tree: &Tree, key: Bytes32) -> Vec<Event> {
+pub fn get_events_bytes32(tree: &Tree, key: &Bytes32) -> Vec<Event> {
     let mut events = Vec::new();
     let mut iter = tree.scan_prefix(key).keys();
 
@@ -112,31 +112,57 @@ pub fn get_events_u32(tree: &Tree, key: u32) -> Vec<Event> {
     events
 }
 
+pub fn process_msg_get_events_substrate(trees: &Trees, key: &SubstrateKey) -> Vec<Event> {
+    match key {
+        SubstrateKey::AccountId(account_id) => get_events_bytes32(&trees.account_id, account_id),
+        SubstrateKey::AccountIndex(account_index) => {
+            get_events_u32(&trees.account_index, *account_index)
+        }
+        SubstrateKey::BountyIndex(bounty_index) => {
+            get_events_u32(&trees.bounty_index, *bounty_index)
+        }
+        SubstrateKey::EraIndex(era_index) => get_events_u32(&trees.era_index, *era_index),
+        SubstrateKey::MessageId(message_id) => get_events_bytes32(&trees.message_id, message_id),
+        SubstrateKey::PoolId(pool_id) => get_events_u32(&trees.pool_id, *pool_id),
+        SubstrateKey::PreimageHash(preimage_hash) => {
+            get_events_bytes32(&trees.preimage_hash, preimage_hash)
+        }
+        SubstrateKey::ProposalHash(proposal_hash) => {
+            get_events_bytes32(&trees.proposal_hash, proposal_hash)
+        }
+        SubstrateKey::ProposalIndex(proposal_index) => {
+            get_events_u32(&trees.proposal_index, *proposal_index)
+        }
+        SubstrateKey::RefIndex(ref_index) => get_events_u32(&trees.ref_index, *ref_index),
+        SubstrateKey::RegistrarIndex(registrar_index) => {
+            get_events_u32(&trees.registrar_index, *registrar_index)
+        }
+        SubstrateKey::SessionIndex(session_index) => {
+            get_events_u32(&trees.session_index, *session_index)
+        }
+        SubstrateKey::TipHash(tip_hash) => get_events_bytes32(&trees.tip_hash, tip_hash),
+    }
+}
+
+pub fn process_msg_get_events_chain(trees: &Trees, key: &ChainKey) -> Vec<Event> {
+    match key {
+        ChainKey::AuctionIndex(auction_index) => {
+            get_events_u32(&trees.auction_index, *auction_index)
+        }
+        ChainKey::CandidateHash(candidate_hash) => {
+            get_events_bytes32(&trees.candidate_hash, candidate_hash)
+        }
+        ChainKey::ParaId(para_id) => get_events_u32(&trees.para_id, *para_id),
+    }
+}
+
 pub fn process_msg_get_events(trees: &Trees, key: Key) -> ResponseMessage {
     let events = match key {
         Key::Variant(pallet_id, variant_id) => {
             get_events_variant(&trees.variant, pallet_id, variant_id)
         }
-        Key::AccountId(account_id) => get_events_bytes32(&trees.account_id, account_id),
-        Key::AccountIndex(account_index) => get_events_u32(&trees.account_index, account_index),
-        Key::AuctionIndex(auction_index) => get_events_u32(&trees.auction_index, auction_index),
-        Key::BountyIndex(bounty_index) => get_events_u32(&trees.bounty_index, bounty_index),
-        Key::CandidateHash(candidate_hash) => {
-            get_events_bytes32(&trees.candidate_hash, candidate_hash)
-        }
-        Key::EraIndex(era_index) => get_events_u32(&trees.era_index, era_index),
-        Key::MessageId(message_id) => get_events_bytes32(&trees.message_id, message_id),
-        Key::ParaId(para_id) => get_events_u32(&trees.para_id, para_id),
-        Key::PoolId(pool_id) => get_events_u32(&trees.pool_id, pool_id),
-        Key::PreimageHash(preimage_hash) => get_events_bytes32(&trees.preimage_hash, preimage_hash),
-        Key::ProposalHash(proposal_hash) => get_events_bytes32(&trees.proposal_hash, proposal_hash),
-        Key::ProposalIndex(proposal_index) => get_events_u32(&trees.proposal_index, proposal_index),
-        Key::RefIndex(ref_index) => get_events_u32(&trees.ref_index, ref_index),
-        Key::RegistrarIndex(registrar_index) => {
-            get_events_u32(&trees.registrar_index, registrar_index)
-        }
-        Key::SessionIndex(session_index) => get_events_u32(&trees.session_index, session_index),
-        Key::TipHash(tip_hash) => get_events_bytes32(&trees.tip_hash, tip_hash),
+        Key::Substrate(ref key) => process_msg_get_events_substrate(trees, &key),
+        Key::Chain(ref key) => process_msg_get_events_chain(trees, &key),
     };
     ResponseMessage::Events { key, events }
 }

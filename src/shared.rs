@@ -1,6 +1,9 @@
 use byteorder::BigEndian;
 use sled::Tree;
-use zerocopy::byteorder::{U16, U32};
+use zerocopy::{
+    byteorder::{U16, U32},
+    AsBytes,
+};
 use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
 
 use serde::{Deserialize, Serialize};
@@ -143,15 +146,12 @@ impl<'de> Deserialize<'de> for Bytes32 {
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
 #[serde(tag = "type", content = "value")]
-pub enum Key {
+pub enum SubstrateKey {
     AccountId(Bytes32),
     AccountIndex(u32),
-    AuctionIndex(u32),
     BountyIndex(u32),
-    CandidateHash(Bytes32),
     EraIndex(u32),
     MessageId(Bytes32),
-    ParaId(u32),
     PoolId(u32),
     PreimageHash(Bytes32),
     ProposalHash(Bytes32),
@@ -160,7 +160,208 @@ pub enum Key {
     RegistrarIndex(u32),
     SessionIndex(u32),
     TipHash(Bytes32),
+}
+
+impl SubstrateKey {
+    pub fn write_db_key(
+        &self,
+        trees: &Trees,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
+        let block_number = block_number.into();
+        let event_index = event_index.into();
+        match self {
+            SubstrateKey::AccountId(account_id) => {
+                let key = Bytes32Key {
+                    key: account_id.0,
+                    block_number,
+                    event_index,
+                };
+                trees.account_id.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::AccountIndex(account_index) => {
+                let key = U32Key {
+                    key: (*account_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.account_index.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::BountyIndex(bounty_index) => {
+                let key = U32Key {
+                    key: (*bounty_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.bounty_index.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::EraIndex(era_index) => {
+                let key = U32Key {
+                    key: (*era_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.era_index.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::MessageId(message_id) => {
+                let key = Bytes32Key {
+                    key: message_id.0,
+                    block_number,
+                    event_index,
+                };
+                trees.message_id.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::PoolId(pool_id) => {
+                let key = U32Key {
+                    key: (*pool_id).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.pool_id.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::PreimageHash(preimage_hash) => {
+                let key = Bytes32Key {
+                    key: preimage_hash.0,
+                    block_number,
+                    event_index,
+                };
+                trees.preimage_hash.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::ProposalHash(proposal_hash) => {
+                let key = Bytes32Key {
+                    key: proposal_hash.0,
+                    block_number,
+                    event_index,
+                };
+                trees.proposal_hash.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::ProposalIndex(proposal_index) => {
+                let key = U32Key {
+                    key: (*proposal_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.proposal_index.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::RefIndex(ref_index) => {
+                let key = U32Key {
+                    key: (*ref_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.ref_index.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::RegistrarIndex(registrar_index) => {
+                let key = U32Key {
+                    key: (*registrar_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.registrar_index.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::SessionIndex(session_index) => {
+                let key = U32Key {
+                    key: (*session_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.session_index.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::TipHash(tip_hash) => {
+                let key = Bytes32Key {
+                    key: tip_hash.0,
+                    block_number,
+                    event_index,
+                };
+                trees.tip_hash.insert(key.as_bytes(), &[])?
+            }
+        };
+        Ok(())
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
+#[serde(tag = "type", content = "value")]
+pub enum ChainKey {
+    AuctionIndex(u32),
+    CandidateHash(Bytes32),
+    ParaId(u32),
+}
+
+impl ChainKey {
+    pub fn write_db_key(
+        &self,
+        trees: &Trees,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
+        let block_number = block_number.into();
+        let event_index = event_index.into();
+        match self {
+            ChainKey::AuctionIndex(auction_index) => {
+                let key = U32Key {
+                    key: (*auction_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.auction_index.insert(key.as_bytes(), &[])?
+            }
+            ChainKey::CandidateHash(candidate_hash) => {
+                let key = Bytes32Key {
+                    key: candidate_hash.0,
+                    block_number,
+                    event_index,
+                };
+                trees.candidate_hash.insert(key.as_bytes(), &[])?
+            }
+            ChainKey::ParaId(para_id) => {
+                let key = U32Key {
+                    key: (*para_id).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.para_id.insert(key.as_bytes(), &[])?
+            }
+        };
+        Ok(())
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
+#[serde(tag = "type", content = "value")]
+pub enum Key {
     Variant(u8, u8),
+    Substrate(SubstrateKey),
+    Chain(ChainKey),
+}
+
+impl Key {
+    pub fn write_db_key(
+        &self,
+        trees: &Trees,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
+        match self {
+            Key::Variant(pallet_index, variant_index) => {
+                let key = VariantKey {
+                    pallet_index: *pallet_index,
+                    variant_index: *variant_index,
+                    block_number: block_number.into(),
+                    event_index: event_index.into(),
+                };
+                trees.variant.insert(key.as_bytes(), &[])?;
+            }
+            Key::Substrate(substrate_key) => {
+                substrate_key.write_db_key(trees, block_number, event_index)?;
+            }
+            Key::Chain(chain_key) => {
+                chain_key.write_db_key(trees, block_number, event_index)?;
+            }
+        };
+        Ok(())
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
