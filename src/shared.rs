@@ -1,15 +1,14 @@
 use byteorder::BigEndian;
+use serde::{Deserialize, Serialize};
 use sled::Tree;
+use std::hash::Hash;
+use tokio::sync::mpsc::UnboundedSender;
+use tokio_tungstenite::tungstenite;
 use zerocopy::{
     byteorder::{U16, U32},
     AsBytes,
 };
 use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
-
-use serde::{Deserialize, Serialize};
-
-use tokio::sync::mpsc::UnboundedSender;
-use tokio_tungstenite::tungstenite;
 
 #[derive(Debug)]
 pub enum IndexError {
@@ -40,6 +39,14 @@ impl From<tungstenite::Error> for IndexError {
 /// Indexer for a specific chain.
 pub trait RuntimeIndexer {
     type RuntimeConfig: subxt::Config;
+    type ChainKey: IndexKey
+        + Serialize
+        + for<'a> Deserialize<'a>
+        + Clone
+        + Eq
+        + PartialEq
+        + Hash
+        + Send;
 
     fn get_name() -> &'static str;
 
@@ -275,53 +282,6 @@ impl SubstrateKey {
                     event_index,
                 };
                 trees.tip_hash.insert(key.as_bytes(), &[])?
-            }
-        };
-        Ok(())
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
-#[serde(tag = "type", content = "value")]
-pub enum ChainKey {
-    AuctionIndex(u32),
-    CandidateHash(Bytes32),
-    ParaId(u32),
-}
-
-impl IndexKey for ChainKey {
-    fn write_db_key(
-        &self,
-        trees: &Trees,
-        block_number: u32,
-        event_index: u16,
-    ) -> Result<(), sled::Error> {
-        let block_number = block_number.into();
-        let event_index = event_index.into();
-        match self {
-            ChainKey::AuctionIndex(auction_index) => {
-                let key = U32Key {
-                    key: (*auction_index).into(),
-                    block_number,
-                    event_index,
-                };
-                trees.auction_index.insert(key.as_bytes(), &[])?
-            }
-            ChainKey::CandidateHash(candidate_hash) => {
-                let key = Bytes32Key {
-                    key: candidate_hash.0,
-                    block_number,
-                    event_index,
-                };
-                trees.candidate_hash.insert(key.as_bytes(), &[])?
-            }
-            ChainKey::ParaId(para_id) => {
-                let key = U32Key {
-                    key: (*para_id).into(),
-                    block_number,
-                    event_index,
-                };
-                trees.para_id.insert(key.as_bytes(), &[])?
             }
         };
         Ok(())

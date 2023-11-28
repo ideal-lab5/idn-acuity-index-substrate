@@ -12,7 +12,9 @@ use tokio::sync::{
 use tokio_tungstenite::tungstenite;
 use zerocopy::FromBytes;
 
-pub fn process_msg_status(trees: &Trees) -> Result<ResponseMessage<ChainKey>, IndexError> {
+pub fn process_msg_status<R: RuntimeIndexer>(
+    trees: &Trees,
+) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
     Ok(ResponseMessage::Status {
         last_head_block: match trees.root.get("last_head_block")? {
             Some(value) => u32::from_be_bytes(value.as_ref().try_into().unwrap()),
@@ -31,7 +33,7 @@ pub fn process_msg_status(trees: &Trees) -> Result<ResponseMessage<ChainKey>, In
 
 pub async fn process_msg_variants<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
-) -> Result<ResponseMessage<ChainKey>, IndexError> {
+) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
     let metadata = rpc.state_get_metadata(None).await?;
     let mut pallets = Vec::new();
 
@@ -144,7 +146,11 @@ pub fn process_msg_get_events_substrate(trees: &Trees, key: &SubstrateKey) -> Ve
     }
 }
 
-pub fn process_msg_get_events_chain(trees: &Trees, key: &ChainKey) -> Vec<Event> {
+/*
+pub fn process_msg_get_events_chain<R: RuntimeIndexer>(
+    trees: &Trees,
+    key: &R::ChainKey,
+) -> Vec<Event> {
     match key {
         ChainKey::AuctionIndex(auction_index) => {
             get_events_u32(&trees.auction_index, *auction_index)
@@ -155,14 +161,19 @@ pub fn process_msg_get_events_chain(trees: &Trees, key: &ChainKey) -> Vec<Event>
         ChainKey::ParaId(para_id) => get_events_u32(&trees.para_id, *para_id),
     }
 }
+*/
 
-pub fn process_msg_get_events(trees: &Trees, key: Key<ChainKey>) -> ResponseMessage<ChainKey> {
+pub fn process_msg_get_events<R: RuntimeIndexer>(
+    trees: &Trees,
+    key: Key<R::ChainKey>,
+) -> ResponseMessage<R::ChainKey> {
     let events = match key {
         Key::Variant(pallet_id, variant_id) => {
             get_events_variant(&trees.variant, pallet_id, variant_id)
         }
         Key::Substrate(ref key) => process_msg_get_events_substrate(trees, &key),
-        Key::Chain(ref key) => process_msg_get_events_chain(trees, &key),
+        //        Key::Chain(ref key) => process_msg_get_events_chain::<R>(trees, &key),
+        Key::Chain(_) => todo!(),
     };
     ResponseMessage::Events { key, events }
 }
@@ -170,14 +181,14 @@ pub fn process_msg_get_events(trees: &Trees, key: Key<ChainKey>) -> ResponseMess
 pub async fn process_msg<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
     trees: &Trees,
-    msg: RequestMessage<ChainKey>,
-    sub_tx: UnboundedSender<SubscribeMessage<ChainKey>>,
-    sub_response_tx: UnboundedSender<ResponseMessage<ChainKey>>,
-) -> Result<ResponseMessage<ChainKey>, IndexError> {
+    msg: RequestMessage<R::ChainKey>,
+    sub_tx: UnboundedSender<SubscribeMessage<R::ChainKey>>,
+    sub_response_tx: UnboundedSender<ResponseMessage<R::ChainKey>>,
+) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
     Ok(match msg {
-        RequestMessage::Status => process_msg_status(trees)?,
+        RequestMessage::Status => process_msg_status::<R>(trees)?,
         RequestMessage::Variants => process_msg_variants::<R>(rpc).await?,
-        RequestMessage::GetEvents { key } => process_msg_get_events(trees, key),
+        RequestMessage::GetEvents { key } => process_msg_get_events::<R>(trees, key),
         RequestMessage::SubscribeEvents { key } => {
             let msg = SubscribeMessage {
                 key,
@@ -194,7 +205,7 @@ async fn handle_connection<R: RuntimeIndexer>(
     raw_stream: TcpStream,
     addr: SocketAddr,
     trees: Trees,
-    sub_tx: UnboundedSender<SubscribeMessage<ChainKey>>,
+    sub_tx: UnboundedSender<SubscribeMessage<R::ChainKey>>,
 ) -> Result<(), IndexError> {
     info!("Incoming TCP connection from: {}", addr);
     let ws_stream = tokio_tungstenite::accept_async(raw_stream).await?;
@@ -231,7 +242,7 @@ pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
     port: u16,
     mut exit_rx: Receiver<bool>,
-    sub_tx: UnboundedSender<SubscribeMessage<ChainKey>>,
+    sub_tx: UnboundedSender<SubscribeMessage<R::ChainKey>>,
 ) {
     let mut addr = "0.0.0.0:".to_string();
     addr.push_str(&port.to_string());
