@@ -19,7 +19,7 @@ use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
 use crate::shared::*;
 
 pub struct Indexer<R: RuntimeIndexer + ?Sized> {
-    trees: Trees,
+    trees: Trees<ChainTrees>,
     api: Option<OnlineClient<R::RuntimeConfig>>,
     rpc: Option<LegacyRpcMethods<R::RuntimeConfig>>,
     index_variant: bool,
@@ -30,7 +30,7 @@ pub struct Indexer<R: RuntimeIndexer + ?Sized> {
 
 impl<R: RuntimeIndexer> Indexer<R> {
     fn new(
-        trees: Trees,
+        trees: Trees<ChainTrees>,
         api: OnlineClient<R::RuntimeConfig>,
         rpc: LegacyRpcMethods<R::RuntimeConfig>,
         index_variant: bool,
@@ -594,7 +594,7 @@ pub fn check_next_batch_block(spans: &Vec<Span>, next_batch_block: &mut u32) {
 }
 
 pub async fn substrate_index<R: RuntimeIndexer>(
-    trees: Trees,
+    trees: Trees<ChainTrees>,
     api: OnlineClient<R::RuntimeConfig>,
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
     queue_depth: u32,

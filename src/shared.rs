@@ -150,12 +150,12 @@ impl IndexTrees for ChainTrees {
 }
 
 #[derive(Clone)]
-pub struct Trees {
+pub struct Trees<CT> {
     pub root: sled::Db,
     pub span: Tree,
     pub variant: Tree,
     pub substrate: SubstrateTrees,
-    pub chain: ChainTrees,
+    pub chain: CT,
 }
 
 /**
@@ -243,7 +243,7 @@ pub enum SubstrateKey {
 impl SubstrateKey {
     pub fn write_db_key(
         &self,
-        trees: &Trees,
+        trees: &Trees<ChainTrees>,
         block_number: u32,
         event_index: u16,
     ) -> Result<(), sled::Error> {
@@ -365,12 +365,12 @@ impl SubstrateKey {
 pub trait IndexKey {
     fn write_db_key(
         &self,
-        trees: &Trees,
+        trees: &Trees<ChainTrees>,
         block_number: u32,
         event_index: u16,
     ) -> Result<(), sled::Error>;
 
-    fn get_key_events(&self, trees: &Trees) -> Vec<Event>;
+    fn get_key_events(&self, trees: &Trees<ChainTrees>) -> Vec<Event>;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
@@ -384,7 +384,7 @@ pub enum Key<CK: IndexKey> {
 impl<CK: IndexKey> Key<CK> {
     pub fn write_db_key(
         &self,
-        trees: &Trees,
+        trees: &Trees<ChainTrees>,
         block_number: u32,
         event_index: u16,
     ) -> Result<(), sled::Error> {

@@ -35,7 +35,7 @@ use websockets::websockets_listen;
 #[cfg(test)]
 mod tests;
 
-fn open_trees(db_config: sled::Config) -> Result<Trees, sled::Error> {
+fn open_trees(db_config: sled::Config) -> Result<Trees<ChainTrees>, sled::Error> {
     let db = db_config.open()?;
     let trees = Trees {
         root: db.clone(),
@@ -48,7 +48,7 @@ fn open_trees(db_config: sled::Config) -> Result<Trees, sled::Error> {
     Ok(trees)
 }
 
-fn close_trees(trees: Trees) -> Result<(), sled::Error> {
+fn close_trees(trees: Trees<ChainTrees>) -> Result<(), sled::Error> {
     info!("Closing db.");
     trees.root.flush()?;
     trees.span.flush()?;
