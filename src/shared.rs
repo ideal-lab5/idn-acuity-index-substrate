@@ -65,10 +65,7 @@ pub trait RuntimeIndexer {
 }
 
 #[derive(Clone)]
-pub struct Trees {
-    pub root: sled::Db,
-    pub span: Tree,
-    pub variant: Tree,
+pub struct SubstrateTrees {
     pub account_id: Tree,
     pub account_index: Tree,
     pub auction_index: Tree,
@@ -85,6 +82,14 @@ pub struct Trees {
     pub registrar_index: Tree,
     pub session_index: Tree,
     pub tip_hash: Tree,
+}
+
+#[derive(Clone)]
+pub struct Trees {
+    pub root: sled::Db,
+    pub span: Tree,
+    pub variant: Tree,
+    pub substrate: SubstrateTrees,
 }
 
 /**
@@ -185,7 +190,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.account_id.insert(key.as_bytes(), &[])?
+                trees.substrate.account_id.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::AccountIndex(account_index) => {
                 let key = U32Key {
@@ -193,7 +198,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.account_index.insert(key.as_bytes(), &[])?
+                trees.substrate.account_index.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::BountyIndex(bounty_index) => {
                 let key = U32Key {
@@ -201,7 +206,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.bounty_index.insert(key.as_bytes(), &[])?
+                trees.substrate.bounty_index.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::EraIndex(era_index) => {
                 let key = U32Key {
@@ -209,7 +214,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.era_index.insert(key.as_bytes(), &[])?
+                trees.substrate.era_index.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::MessageId(message_id) => {
                 let key = Bytes32Key {
@@ -217,7 +222,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.message_id.insert(key.as_bytes(), &[])?
+                trees.substrate.message_id.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::PoolId(pool_id) => {
                 let key = U32Key {
@@ -225,7 +230,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.pool_id.insert(key.as_bytes(), &[])?
+                trees.substrate.pool_id.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::PreimageHash(preimage_hash) => {
                 let key = Bytes32Key {
@@ -233,7 +238,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.preimage_hash.insert(key.as_bytes(), &[])?
+                trees.substrate.preimage_hash.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::ProposalHash(proposal_hash) => {
                 let key = Bytes32Key {
@@ -241,7 +246,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.proposal_hash.insert(key.as_bytes(), &[])?
+                trees.substrate.proposal_hash.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::ProposalIndex(proposal_index) => {
                 let key = U32Key {
@@ -249,7 +254,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.proposal_index.insert(key.as_bytes(), &[])?
+                trees.substrate.proposal_index.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::RefIndex(ref_index) => {
                 let key = U32Key {
@@ -257,7 +262,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.ref_index.insert(key.as_bytes(), &[])?
+                trees.substrate.ref_index.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::RegistrarIndex(registrar_index) => {
                 let key = U32Key {
@@ -265,7 +270,10 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.registrar_index.insert(key.as_bytes(), &[])?
+                trees
+                    .substrate
+                    .registrar_index
+                    .insert(key.as_bytes(), &[])?
             }
             SubstrateKey::SessionIndex(session_index) => {
                 let key = U32Key {
@@ -273,7 +281,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.session_index.insert(key.as_bytes(), &[])?
+                trees.substrate.session_index.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::TipHash(tip_hash) => {
                 let key = Bytes32Key {
@@ -281,7 +289,7 @@ impl SubstrateKey {
                     block_number,
                     event_index,
                 };
-                trees.tip_hash.insert(key.as_bytes(), &[])?
+                trees.substrate.tip_hash.insert(key.as_bytes(), &[])?
             }
         };
         Ok(())

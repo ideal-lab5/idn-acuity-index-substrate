@@ -195,7 +195,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.account_id.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .account_id
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -212,7 +215,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.account_index.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .account_index
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -229,7 +235,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.auction_index.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .auction_index
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -246,7 +255,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.bounty_index.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .bounty_index
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -263,7 +275,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.candidate_hash.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .candidate_hash
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -280,7 +295,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.era_index.insert(key.as_bytes(), &[])?;
+        self.trees.substrate.era_index.insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -297,7 +312,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.message_id.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .message_id
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -314,7 +332,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.para_id.insert(key.as_bytes(), &[])?;
+        self.trees.substrate.para_id.insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -331,7 +349,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.pool_id.insert(key.as_bytes(), &[])?;
+        self.trees.substrate.pool_id.insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -348,7 +366,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.preimage_hash.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .preimage_hash
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -365,7 +386,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.proposal_hash.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .proposal_hash
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -382,7 +406,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.proposal_index.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .proposal_index
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -399,7 +426,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.ref_index.insert(key.as_bytes(), &[])?;
+        self.trees.substrate.ref_index.insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -416,7 +443,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.registrar_index.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .registrar_index
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -433,7 +463,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.session_index.insert(key.as_bytes(), &[])?;
+        self.trees
+            .substrate
+            .session_index
+            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -450,7 +483,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.tip_hash.insert(key.as_bytes(), &[])?;
+        self.trees.substrate.tip_hash.insert(key.as_bytes(), &[])?;
         Ok(())
     }
 }

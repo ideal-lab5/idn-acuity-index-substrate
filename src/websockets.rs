@@ -116,33 +116,37 @@ pub fn get_events_u32(tree: &Tree, key: u32) -> Vec<Event> {
 
 pub fn process_msg_get_events_substrate(trees: &Trees, key: &SubstrateKey) -> Vec<Event> {
     match key {
-        SubstrateKey::AccountId(account_id) => get_events_bytes32(&trees.account_id, account_id),
+        SubstrateKey::AccountId(account_id) => {
+            get_events_bytes32(&trees.substrate.account_id, account_id)
+        }
         SubstrateKey::AccountIndex(account_index) => {
-            get_events_u32(&trees.account_index, *account_index)
+            get_events_u32(&trees.substrate.account_index, *account_index)
         }
         SubstrateKey::BountyIndex(bounty_index) => {
-            get_events_u32(&trees.bounty_index, *bounty_index)
+            get_events_u32(&trees.substrate.bounty_index, *bounty_index)
         }
-        SubstrateKey::EraIndex(era_index) => get_events_u32(&trees.era_index, *era_index),
-        SubstrateKey::MessageId(message_id) => get_events_bytes32(&trees.message_id, message_id),
-        SubstrateKey::PoolId(pool_id) => get_events_u32(&trees.pool_id, *pool_id),
+        SubstrateKey::EraIndex(era_index) => get_events_u32(&trees.substrate.era_index, *era_index),
+        SubstrateKey::MessageId(message_id) => {
+            get_events_bytes32(&trees.substrate.message_id, message_id)
+        }
+        SubstrateKey::PoolId(pool_id) => get_events_u32(&trees.substrate.pool_id, *pool_id),
         SubstrateKey::PreimageHash(preimage_hash) => {
-            get_events_bytes32(&trees.preimage_hash, preimage_hash)
+            get_events_bytes32(&trees.substrate.preimage_hash, preimage_hash)
         }
         SubstrateKey::ProposalHash(proposal_hash) => {
-            get_events_bytes32(&trees.proposal_hash, proposal_hash)
+            get_events_bytes32(&trees.substrate.proposal_hash, proposal_hash)
         }
         SubstrateKey::ProposalIndex(proposal_index) => {
-            get_events_u32(&trees.proposal_index, *proposal_index)
+            get_events_u32(&trees.substrate.proposal_index, *proposal_index)
         }
-        SubstrateKey::RefIndex(ref_index) => get_events_u32(&trees.ref_index, *ref_index),
+        SubstrateKey::RefIndex(ref_index) => get_events_u32(&trees.substrate.ref_index, *ref_index),
         SubstrateKey::RegistrarIndex(registrar_index) => {
-            get_events_u32(&trees.registrar_index, *registrar_index)
+            get_events_u32(&trees.substrate.registrar_index, *registrar_index)
         }
         SubstrateKey::SessionIndex(session_index) => {
-            get_events_u32(&trees.session_index, *session_index)
+            get_events_u32(&trees.substrate.session_index, *session_index)
         }
-        SubstrateKey::TipHash(tip_hash) => get_events_bytes32(&trees.tip_hash, tip_hash),
+        SubstrateKey::TipHash(tip_hash) => get_events_bytes32(&trees.substrate.tip_hash, tip_hash),
     }
 }
 

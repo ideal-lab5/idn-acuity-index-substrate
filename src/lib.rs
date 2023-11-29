@@ -42,22 +42,24 @@ fn open_trees(db_config: sled::Config) -> Result<Trees, sled::Error> {
         span: db.open_tree(b"span")?,
         variant: db.open_tree(b"variant")?,
         // Each event parameter to be indexed has its own tree.
-        account_id: db.open_tree(b"account_id")?,
-        account_index: db.open_tree(b"account_index")?,
-        auction_index: db.open_tree(b"auction_index")?,
-        bounty_index: db.open_tree(b"bounty_index")?,
-        candidate_hash: db.open_tree(b"candiate_hash")?,
-        era_index: db.open_tree(b"era_index")?,
-        message_id: db.open_tree(b"message_id")?,
-        para_id: db.open_tree(b"para_id")?,
-        pool_id: db.open_tree(b"pool_id")?,
-        preimage_hash: db.open_tree(b"preimage_hash")?,
-        proposal_hash: db.open_tree(b"proposal_hash")?,
-        proposal_index: db.open_tree(b"proposal_index")?,
-        ref_index: db.open_tree(b"ref_index")?,
-        registrar_index: db.open_tree(b"registrar_index")?,
-        session_index: db.open_tree(b"session_index")?,
-        tip_hash: db.open_tree(b"tip_hash")?,
+        substrate: SubstrateTrees {
+            account_id: db.open_tree(b"account_id")?,
+            account_index: db.open_tree(b"account_index")?,
+            auction_index: db.open_tree(b"auction_index")?,
+            bounty_index: db.open_tree(b"bounty_index")?,
+            candidate_hash: db.open_tree(b"candiate_hash")?,
+            era_index: db.open_tree(b"era_index")?,
+            message_id: db.open_tree(b"message_id")?,
+            para_id: db.open_tree(b"para_id")?,
+            pool_id: db.open_tree(b"pool_id")?,
+            preimage_hash: db.open_tree(b"preimage_hash")?,
+            proposal_hash: db.open_tree(b"proposal_hash")?,
+            proposal_index: db.open_tree(b"proposal_index")?,
+            ref_index: db.open_tree(b"ref_index")?,
+            registrar_index: db.open_tree(b"registrar_index")?,
+            session_index: db.open_tree(b"session_index")?,
+            tip_hash: db.open_tree(b"tip_hash")?,
+        },
     };
     Ok(trees)
 }
@@ -67,22 +69,22 @@ fn close_trees(trees: Trees) {
     let _ = trees.root.flush();
     let _ = trees.span.flush();
     let _ = trees.variant.flush();
-    let _ = trees.account_id.flush();
-    let _ = trees.account_index.flush();
-    let _ = trees.auction_index.flush();
-    let _ = trees.bounty_index.flush();
-    let _ = trees.candidate_hash.flush();
-    let _ = trees.era_index.flush();
-    let _ = trees.message_id.flush();
-    let _ = trees.para_id.flush();
-    let _ = trees.pool_id.flush();
-    let _ = trees.preimage_hash.flush();
-    let _ = trees.proposal_hash.flush();
-    let _ = trees.proposal_index.flush();
-    let _ = trees.ref_index.flush();
-    let _ = trees.registrar_index.flush();
-    let _ = trees.session_index.flush();
-    let _ = trees.tip_hash.flush();
+    let _ = trees.substrate.account_id.flush();
+    let _ = trees.substrate.account_index.flush();
+    let _ = trees.substrate.auction_index.flush();
+    let _ = trees.substrate.bounty_index.flush();
+    let _ = trees.substrate.candidate_hash.flush();
+    let _ = trees.substrate.era_index.flush();
+    let _ = trees.substrate.message_id.flush();
+    let _ = trees.substrate.para_id.flush();
+    let _ = trees.substrate.pool_id.flush();
+    let _ = trees.substrate.preimage_hash.flush();
+    let _ = trees.substrate.proposal_hash.flush();
+    let _ = trees.substrate.proposal_index.flush();
+    let _ = trees.substrate.ref_index.flush();
+    let _ = trees.substrate.registrar_index.flush();
+    let _ = trees.substrate.session_index.flush();
+    let _ = trees.substrate.tip_hash.flush();
 }
 
 /// Starts the indexer. Chain is defined by `R`.
