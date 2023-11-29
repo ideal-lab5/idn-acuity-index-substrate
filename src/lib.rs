@@ -26,7 +26,7 @@ use tokio::{
 pub mod shared;
 pub mod substrate;
 pub mod substrate_pallets;
-mod websockets;
+pub mod websockets;
 
 use crate::shared::*;
 use substrate::*;

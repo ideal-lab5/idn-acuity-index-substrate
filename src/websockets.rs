@@ -146,23 +146,6 @@ pub fn process_msg_get_events_substrate(trees: &Trees, key: &SubstrateKey) -> Ve
     }
 }
 
-/*
-pub fn process_msg_get_events_chain<R: RuntimeIndexer>(
-    trees: &Trees,
-    key: &R::ChainKey,
-) -> Vec<Event> {
-    match key {
-        ChainKey::AuctionIndex(auction_index) => {
-            get_events_u32(&trees.auction_index, *auction_index)
-        }
-        ChainKey::CandidateHash(candidate_hash) => {
-            get_events_bytes32(&trees.candidate_hash, candidate_hash)
-        }
-        ChainKey::ParaId(para_id) => get_events_u32(&trees.para_id, *para_id),
-    }
-}
-*/
-
 pub fn process_msg_get_events<R: RuntimeIndexer>(
     trees: &Trees,
     key: Key<R::ChainKey>,
@@ -172,8 +155,7 @@ pub fn process_msg_get_events<R: RuntimeIndexer>(
             get_events_variant(&trees.variant, pallet_id, variant_id)
         }
         Key::Substrate(ref key) => process_msg_get_events_substrate(trees, &key),
-        //        Key::Chain(ref key) => process_msg_get_events_chain::<R>(trees, &key),
-        Key::Chain(_) => todo!(),
+        Key::Chain(ref key) => key.get_key_events(trees),
     };
     ResponseMessage::Events { key, events }
 }

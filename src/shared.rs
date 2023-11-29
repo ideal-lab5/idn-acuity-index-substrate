@@ -295,6 +295,8 @@ pub trait IndexKey {
         block_number: u32,
         event_index: u16,
     ) -> Result<(), sled::Error>;
+
+    fn get_key_events(&self, trees: &Trees) -> Vec<Event>;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
