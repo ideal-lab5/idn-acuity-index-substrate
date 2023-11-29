@@ -42,49 +42,18 @@ fn open_trees(db_config: sled::Config) -> Result<Trees, sled::Error> {
         span: db.open_tree(b"span")?,
         variant: db.open_tree(b"variant")?,
         // Each event parameter to be indexed has its own tree.
-        substrate: SubstrateTrees {
-            account_id: db.open_tree(b"account_id")?,
-            account_index: db.open_tree(b"account_index")?,
-            auction_index: db.open_tree(b"auction_index")?,
-            bounty_index: db.open_tree(b"bounty_index")?,
-            candidate_hash: db.open_tree(b"candiate_hash")?,
-            era_index: db.open_tree(b"era_index")?,
-            message_id: db.open_tree(b"message_id")?,
-            para_id: db.open_tree(b"para_id")?,
-            pool_id: db.open_tree(b"pool_id")?,
-            preimage_hash: db.open_tree(b"preimage_hash")?,
-            proposal_hash: db.open_tree(b"proposal_hash")?,
-            proposal_index: db.open_tree(b"proposal_index")?,
-            ref_index: db.open_tree(b"ref_index")?,
-            registrar_index: db.open_tree(b"registrar_index")?,
-            session_index: db.open_tree(b"session_index")?,
-            tip_hash: db.open_tree(b"tip_hash")?,
-        },
+        substrate: SubstrateTrees::open(db)?,
     };
     Ok(trees)
 }
 
-fn close_trees(trees: Trees) {
+fn close_trees(trees: Trees) -> Result<(), sled::Error> {
     info!("Closing db.");
-    let _ = trees.root.flush();
-    let _ = trees.span.flush();
-    let _ = trees.variant.flush();
-    let _ = trees.substrate.account_id.flush();
-    let _ = trees.substrate.account_index.flush();
-    let _ = trees.substrate.auction_index.flush();
-    let _ = trees.substrate.bounty_index.flush();
-    let _ = trees.substrate.candidate_hash.flush();
-    let _ = trees.substrate.era_index.flush();
-    let _ = trees.substrate.message_id.flush();
-    let _ = trees.substrate.para_id.flush();
-    let _ = trees.substrate.pool_id.flush();
-    let _ = trees.substrate.preimage_hash.flush();
-    let _ = trees.substrate.proposal_hash.flush();
-    let _ = trees.substrate.proposal_index.flush();
-    let _ = trees.substrate.ref_index.flush();
-    let _ = trees.substrate.registrar_index.flush();
-    let _ = trees.substrate.session_index.flush();
-    let _ = trees.substrate.tip_hash.flush();
+    trees.root.flush()?;
+    trees.span.flush()?;
+    trees.variant.flush()?;
+    trees.substrate.flush()?;
+    Ok(())
 }
 
 /// Starts the indexer. Chain is defined by `R`.
@@ -151,7 +120,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         error!("Database has wrong genesis hash.");
         error!("Correct hash:  0x{}", hex::encode(genesis_hash_config));
         error!("Database hash: 0x{}", hex::encode(genesis_hash_db));
-        close_trees(trees);
+        let _ = close_trees(trees);
         exit(1);
     }
     // Determine url of Substrate node to connect to.
@@ -164,7 +133,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         Ok(rpc_client) => rpc_client,
         Err(_) => {
             error!("Failed to connect.");
-            close_trees(trees);
+            let _ = close_trees(trees);
             exit(1);
         }
     };
@@ -172,7 +141,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         Ok(api) => api,
         Err(_) => {
             error!("Failed to connect.");
-            close_trees(trees);
+            let _ = close_trees(trees);
             exit(1);
         }
     };
@@ -184,7 +153,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         error!("Chain has wrong genesis hash.");
         error!("Correct hash: 0x{}", hex::encode(genesis_hash_config));
         error!("Chain hash:   0x{}", hex::encode(genesis_hash_api));
-        close_trees(trees);
+        let _ = close_trees(trees);
         exit(1);
     }
     // https://docs.rs/signal-hook/0.3.17/signal_hook/#a-complex-signal-handling-with-a-background-thread
@@ -229,6 +198,6 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     // Wait to exit.
     let _result = join!(substrate_index, websockets_task);
     // Close db.
-    close_trees(trees);
+    let _ = close_trees(trees);
     exit(0);
 }

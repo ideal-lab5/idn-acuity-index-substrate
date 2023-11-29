@@ -1,6 +1,6 @@
 use byteorder::BigEndian;
 use serde::{Deserialize, Serialize};
-use sled::Tree;
+use sled::{Db, Tree};
 use std::hash::Hash;
 use tokio::sync::mpsc::UnboundedSender;
 use tokio_tungstenite::tungstenite;
@@ -82,6 +82,49 @@ pub struct SubstrateTrees {
     pub registrar_index: Tree,
     pub session_index: Tree,
     pub tip_hash: Tree,
+}
+
+impl SubstrateTrees {
+    pub fn open(db: Db) -> Result<Self, sled::Error> {
+        Ok(SubstrateTrees {
+            account_id: db.open_tree(b"account_id")?,
+            account_index: db.open_tree(b"account_index")?,
+            auction_index: db.open_tree(b"auction_index")?,
+            bounty_index: db.open_tree(b"bounty_index")?,
+            candidate_hash: db.open_tree(b"candiate_hash")?,
+            era_index: db.open_tree(b"era_index")?,
+            message_id: db.open_tree(b"message_id")?,
+            para_id: db.open_tree(b"para_id")?,
+            pool_id: db.open_tree(b"pool_id")?,
+            preimage_hash: db.open_tree(b"preimage_hash")?,
+            proposal_hash: db.open_tree(b"proposal_hash")?,
+            proposal_index: db.open_tree(b"proposal_index")?,
+            ref_index: db.open_tree(b"ref_index")?,
+            registrar_index: db.open_tree(b"registrar_index")?,
+            session_index: db.open_tree(b"session_index")?,
+            tip_hash: db.open_tree(b"tip_hash")?,
+        })
+    }
+
+    pub fn flush(&self) -> Result<(), sled::Error> {
+        self.account_id.flush()?;
+        self.account_index.flush()?;
+        self.auction_index.flush()?;
+        self.bounty_index.flush()?;
+        self.candidate_hash.flush()?;
+        self.era_index.flush()?;
+        self.message_id.flush()?;
+        self.para_id.flush()?;
+        self.pool_id.flush()?;
+        self.preimage_hash.flush()?;
+        self.proposal_hash.flush()?;
+        self.proposal_index.flush()?;
+        self.ref_index.flush()?;
+        self.registrar_index.flush()?;
+        self.session_index.flush()?;
+        self.tip_hash.flush()?;
+        Ok(())
+    }
 }
 
 #[derive(Clone)]
