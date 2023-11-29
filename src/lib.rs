@@ -42,7 +42,8 @@ fn open_trees(db_config: sled::Config) -> Result<Trees, sled::Error> {
         span: db.open_tree(b"span")?,
         variant: db.open_tree(b"variant")?,
         // Each event parameter to be indexed has its own tree.
-        substrate: SubstrateTrees::open(db)?,
+        substrate: SubstrateTrees::open(&db)?,
+        chain: ChainTrees::open(&db)?,
     };
     Ok(trees)
 }

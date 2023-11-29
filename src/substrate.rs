@@ -235,10 +235,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees
-            .substrate
-            .auction_index
-            .insert(key.as_bytes(), &[])?;
+        self.trees.chain.auction_index.insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -276,7 +273,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
         // Insert record.
         self.trees
-            .substrate
+            .chain
             .candidate_hash
             .insert(key.as_bytes(), &[])?;
         Ok(())
@@ -332,7 +329,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.substrate.para_id.insert(key.as_bytes(), &[])?;
+        self.trees.chain.para_id.insert(key.as_bytes(), &[])?;
         Ok(())
     }
 

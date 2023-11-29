@@ -68,12 +68,9 @@ pub trait RuntimeIndexer {
 pub struct SubstrateTrees {
     pub account_id: Tree,
     pub account_index: Tree,
-    pub auction_index: Tree,
     pub bounty_index: Tree,
-    pub candidate_hash: Tree,
     pub era_index: Tree,
     pub message_id: Tree,
-    pub para_id: Tree,
     pub pool_id: Tree,
     pub preimage_hash: Tree,
     pub proposal_hash: Tree,
@@ -85,16 +82,13 @@ pub struct SubstrateTrees {
 }
 
 impl SubstrateTrees {
-    pub fn open(db: Db) -> Result<Self, sled::Error> {
+    pub fn open(db: &Db) -> Result<Self, sled::Error> {
         Ok(SubstrateTrees {
             account_id: db.open_tree(b"account_id")?,
             account_index: db.open_tree(b"account_index")?,
-            auction_index: db.open_tree(b"auction_index")?,
             bounty_index: db.open_tree(b"bounty_index")?,
-            candidate_hash: db.open_tree(b"candiate_hash")?,
             era_index: db.open_tree(b"era_index")?,
             message_id: db.open_tree(b"message_id")?,
-            para_id: db.open_tree(b"para_id")?,
             pool_id: db.open_tree(b"pool_id")?,
             preimage_hash: db.open_tree(b"preimage_hash")?,
             proposal_hash: db.open_tree(b"proposal_hash")?,
@@ -109,12 +103,9 @@ impl SubstrateTrees {
     pub fn flush(&self) -> Result<(), sled::Error> {
         self.account_id.flush()?;
         self.account_index.flush()?;
-        self.auction_index.flush()?;
         self.bounty_index.flush()?;
-        self.candidate_hash.flush()?;
         self.era_index.flush()?;
         self.message_id.flush()?;
-        self.para_id.flush()?;
         self.pool_id.flush()?;
         self.preimage_hash.flush()?;
         self.proposal_hash.flush()?;
@@ -128,11 +119,36 @@ impl SubstrateTrees {
 }
 
 #[derive(Clone)]
+pub struct ChainTrees {
+    pub auction_index: Tree,
+    pub candidate_hash: Tree,
+    pub para_id: Tree,
+}
+
+impl ChainTrees {
+    pub fn open(db: &Db) -> Result<Self, sled::Error> {
+        Ok(ChainTrees {
+            auction_index: db.open_tree(b"auction_index")?,
+            candidate_hash: db.open_tree(b"candiate_hash")?,
+            para_id: db.open_tree(b"para_id")?,
+        })
+    }
+
+    pub fn flush(&self) -> Result<(), sled::Error> {
+        self.auction_index.flush()?;
+        self.candidate_hash.flush()?;
+        self.para_id.flush()?;
+        Ok(())
+    }
+}
+
+#[derive(Clone)]
 pub struct Trees {
     pub root: sled::Db,
     pub span: Tree,
     pub variant: Tree,
     pub substrate: SubstrateTrees,
+    pub chain: ChainTrees,
 }
 
 /**
