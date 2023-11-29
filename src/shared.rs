@@ -64,6 +64,13 @@ pub trait RuntimeIndexer {
     ) -> Result<u32, IndexError>;
 }
 
+pub trait IndexTrees {
+    fn open(db: &Db) -> Result<Self, sled::Error>
+    where
+        Self: Sized;
+    fn flush(&self) -> Result<(), sled::Error>;
+}
+
 #[derive(Clone)]
 pub struct SubstrateTrees {
     pub account_id: Tree,
@@ -125,8 +132,8 @@ pub struct ChainTrees {
     pub para_id: Tree,
 }
 
-impl ChainTrees {
-    pub fn open(db: &Db) -> Result<Self, sled::Error> {
+impl IndexTrees for ChainTrees {
+    fn open(db: &Db) -> Result<Self, sled::Error> {
         Ok(ChainTrees {
             auction_index: db.open_tree(b"auction_index")?,
             candidate_hash: db.open_tree(b"candiate_hash")?,
@@ -134,7 +141,7 @@ impl ChainTrees {
         })
     }
 
-    pub fn flush(&self) -> Result<(), sled::Error> {
+    fn flush(&self) -> Result<(), sled::Error> {
         self.auction_index.flush()?;
         self.candidate_hash.flush()?;
         self.para_id.flush()?;
