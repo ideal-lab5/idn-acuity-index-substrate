@@ -35,7 +35,9 @@ use websockets::websockets_listen;
 #[cfg(test)]
 mod tests;
 
-fn open_trees(db_config: sled::Config) -> Result<Trees<ChainTrees>, sled::Error> {
+fn open_trees<R: RuntimeIndexer>(
+    db_config: sled::Config,
+) -> Result<Trees<<R::ChainKey as IndexKey>::ChainTrees>, sled::Error> {
     let db = db_config.open()?;
     let trees = Trees {
         root: db.clone(),
@@ -43,12 +45,14 @@ fn open_trees(db_config: sled::Config) -> Result<Trees<ChainTrees>, sled::Error>
         variant: db.open_tree(b"variant")?,
         // Each event parameter to be indexed has its own tree.
         substrate: SubstrateTrees::open(&db)?,
-        chain: ChainTrees::open(&db)?,
+        chain: <R::ChainKey as IndexKey>::ChainTrees::open(&db)?,
     };
     Ok(trees)
 }
 
-fn close_trees(trees: Trees<ChainTrees>) -> Result<(), sled::Error> {
+fn close_trees<R: RuntimeIndexer>(
+    trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
+) -> Result<(), sled::Error> {
     info!("Closing db.");
     trees.root.flush()?;
     trees.span.flush()?;
@@ -98,7 +102,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         .path(db_path)
         .mode(db_mode)
         .cache_capacity(db_cache_capacity);
-    let trees = match open_trees(db_config) {
+    let trees = match open_trees::<R>(db_config) {
         Ok(trees) => trees,
         Err(_) => {
             error!("Failed to open database.");
@@ -121,7 +125,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         error!("Database has wrong genesis hash.");
         error!("Correct hash:  0x{}", hex::encode(genesis_hash_config));
         error!("Database hash: 0x{}", hex::encode(genesis_hash_db));
-        let _ = close_trees(trees);
+        let _ = close_trees::<R>(trees);
         exit(1);
     }
     // Determine url of Substrate node to connect to.
@@ -134,7 +138,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         Ok(rpc_client) => rpc_client,
         Err(_) => {
             error!("Failed to connect.");
-            let _ = close_trees(trees);
+            let _ = close_trees::<R>(trees);
             exit(1);
         }
     };
@@ -142,7 +146,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         Ok(api) => api,
         Err(_) => {
             error!("Failed to connect.");
-            let _ = close_trees(trees);
+            let _ = close_trees::<R>(trees);
             exit(1);
         }
     };
@@ -154,7 +158,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         error!("Chain has wrong genesis hash.");
         error!("Correct hash: 0x{}", hex::encode(genesis_hash_config));
         error!("Chain hash:   0x{}", hex::encode(genesis_hash_api));
-        let _ = close_trees(trees);
+        let _ = close_trees::<R>(trees);
         exit(1);
     }
     // https://docs.rs/signal-hook/0.3.17/signal_hook/#a-complex-signal-handling-with-a-background-thread
@@ -199,6 +203,6 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     // Wait to exit.
     let _result = join!(substrate_index, websockets_task);
     // Close db.
-    let _ = close_trees(trees);
+    let _ = close_trees::<R>(trees);
     exit(0);
 }

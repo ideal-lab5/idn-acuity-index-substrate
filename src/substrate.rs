@@ -19,7 +19,7 @@ use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
 use crate::shared::*;
 
 pub struct Indexer<R: RuntimeIndexer + ?Sized> {
-    trees: Trees<ChainTrees>,
+    trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     api: Option<OnlineClient<R::RuntimeConfig>>,
     rpc: Option<LegacyRpcMethods<R::RuntimeConfig>>,
     index_variant: bool,
@@ -30,7 +30,7 @@ pub struct Indexer<R: RuntimeIndexer + ?Sized> {
 
 impl<R: RuntimeIndexer> Indexer<R> {
     fn new(
-        trees: Trees<ChainTrees>,
+        trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
         api: OnlineClient<R::RuntimeConfig>,
         rpc: LegacyRpcMethods<R::RuntimeConfig>,
         index_variant: bool,
@@ -235,7 +235,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.chain.auction_index.insert(key.as_bytes(), &[])?;
+        //        self.trees.chain.auction_index.insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -272,10 +272,11 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees
-            .chain
-            .candidate_hash
-            .insert(key.as_bytes(), &[])?;
+        /*        self.trees
+                  .chain
+                  .candidate_hash
+                  .insert(key.as_bytes(), &[])?;
+        */
         Ok(())
     }
 
@@ -329,7 +330,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             event_index: event_index.into(),
         };
         // Insert record.
-        self.trees.chain.para_id.insert(key.as_bytes(), &[])?;
+        //     self.trees.chain.para_id.insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
@@ -594,7 +595,7 @@ pub fn check_next_batch_block(spans: &Vec<Span>, next_batch_block: &mut u32) {
 }
 
 pub async fn substrate_index<R: RuntimeIndexer>(
-    trees: Trees<ChainTrees>,
+    trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     api: OnlineClient<R::RuntimeConfig>,
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
     queue_depth: u32,

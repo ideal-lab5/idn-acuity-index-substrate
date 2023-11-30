@@ -13,7 +13,7 @@ use tokio_tungstenite::tungstenite;
 use zerocopy::FromBytes;
 
 pub fn process_msg_status<R: RuntimeIndexer>(
-    trees: &Trees<ChainTrees>,
+    trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
 ) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
     Ok(ResponseMessage::Status {
         last_head_block: match trees.root.get("last_head_block")? {
@@ -114,8 +114,8 @@ pub fn get_events_u32(tree: &Tree, key: u32) -> Vec<Event> {
     events
 }
 
-pub fn process_msg_get_events_substrate(
-    trees: &Trees<ChainTrees>,
+pub fn process_msg_get_events_substrate<R: RuntimeIndexer>(
+    trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     key: &SubstrateKey,
 ) -> Vec<Event> {
     match key {
@@ -154,22 +154,22 @@ pub fn process_msg_get_events_substrate(
 }
 
 pub fn process_msg_get_events<R: RuntimeIndexer>(
-    trees: &Trees<ChainTrees>,
+    trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     key: Key<R::ChainKey>,
 ) -> ResponseMessage<R::ChainKey> {
     let events = match key {
         Key::Variant(pallet_id, variant_id) => {
             get_events_variant(&trees.variant, pallet_id, variant_id)
         }
-        Key::Substrate(ref key) => process_msg_get_events_substrate(trees, &key),
-        Key::Chain(ref key) => key.get_key_events(trees),
+        Key::Substrate(ref key) => process_msg_get_events_substrate::<R>(trees, &key),
+        Key::Chain(ref key) => key.get_key_events(&trees.chain),
     };
     ResponseMessage::Events { key, events }
 }
 
 pub async fn process_msg<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
-    trees: &Trees<ChainTrees>,
+    trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     msg: RequestMessage<R::ChainKey>,
     sub_tx: UnboundedSender<SubscribeMessage<R::ChainKey>>,
     sub_response_tx: UnboundedSender<ResponseMessage<R::ChainKey>>,
@@ -193,7 +193,7 @@ async fn handle_connection<R: RuntimeIndexer>(
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
     raw_stream: TcpStream,
     addr: SocketAddr,
-    trees: Trees<ChainTrees>,
+    trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     sub_tx: UnboundedSender<SubscribeMessage<R::ChainKey>>,
 ) -> Result<(), IndexError> {
     info!("Incoming TCP connection from: {}", addr);
@@ -227,7 +227,7 @@ async fn handle_connection<R: RuntimeIndexer>(
 }
 
 pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
-    trees: Trees<ChainTrees>,
+    trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
     port: u16,
     mut exit_rx: Receiver<bool>,
