@@ -103,9 +103,8 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 Ok(event) => {
                     let event_index = i.try_into().unwrap();
                     if self.index_variant {
-                        self.index_event_variant(
-                            event.pallet_index(),
-                            event.variant_index(),
+                        self.index_event(
+                            Key::Variant(event.pallet_index(), event.variant_index()),
                             block_number,
                             event_index,
                         )?;
@@ -146,34 +145,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         key.write_db_key(&self.trees, block_number, event_index)?;
         self.notify_subscribers(
             key,
-            Event {
-                block_number,
-                event_index,
-            },
-        );
-        Ok(())
-    }
-
-    pub fn index_event_variant(
-        &self,
-        pallet_index: u8,
-        variant_index: u8,
-        block_number: u32,
-        event_index: u16,
-    ) -> Result<(), sled::Error> {
-        // Generate key
-        let key = VariantKey {
-            pallet_index,
-            variant_index,
-            block_number: block_number.into(),
-            event_index: event_index.into(),
-        };
-        // Insert record.
-        self.trees.variant.insert(key.as_bytes(), &[])?;
-        // Notify subscribers.
-        let search_key = Key::Variant(pallet_index, variant_index);
-        self.notify_subscribers(
-            search_key,
             Event {
                 block_number,
                 event_index,
