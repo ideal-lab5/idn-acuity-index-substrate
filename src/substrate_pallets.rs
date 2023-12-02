@@ -480,16 +480,16 @@ macro_rules! index_democracy_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_proposal_hash(
-                    proposal_hash.into(),
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
                     $event_index,
                 )?;
                 2
             }
             <$event_enum>::Blacklisted { proposal_hash } => {
-                $indexer.index_event_proposal_hash(
-                    proposal_hash.into(),
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
                     $event_index,
                 )?;
@@ -567,8 +567,8 @@ macro_rules! index_collective_event {
                     $event_index,
                 )?;
                 $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
-                $indexer.index_event_proposal_hash(
-                    proposal_hash.into(),
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
                     $event_index,
                 )?;
@@ -584,48 +584,48 @@ macro_rules! index_collective_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_proposal_hash(
-                    proposal_hash.into(),
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
                     $event_index,
                 )?;
                 2
             }
             <$event_enum>::Approved { proposal_hash } => {
-                $indexer.index_event_proposal_hash(
-                    proposal_hash.into(),
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
                     $event_index,
                 )?;
                 1
             }
             <$event_enum>::Disapproved { proposal_hash } => {
-                $indexer.index_event_proposal_hash(
-                    proposal_hash.into(),
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
                     $event_index,
                 )?;
                 1
             }
             <$event_enum>::Executed { proposal_hash, .. } => {
-                $indexer.index_event_proposal_hash(
-                    proposal_hash.into(),
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
                     $event_index,
                 )?;
                 1
             }
             <$event_enum>::MemberExecuted { proposal_hash, .. } => {
-                $indexer.index_event_proposal_hash(
-                    proposal_hash.into(),
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
                     $event_index,
                 )?;
                 1
             }
             <$event_enum>::Closed { proposal_hash, .. } => {
-                $indexer.index_event_proposal_hash(
-                    proposal_hash.into(),
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
                     $event_index,
                 )?;
