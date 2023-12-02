@@ -428,11 +428,19 @@ macro_rules! index_democracy_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::Proposed { proposal_index, .. } => {
-                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalIndex(proposal_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Tabled { proposal_index, .. } => {
-                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalIndex(proposal_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Started { ref_index, .. } => {
@@ -515,11 +523,19 @@ macro_rules! index_democracy_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_proposal_index(prop_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalIndex(prop_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::ProposalCanceled { prop_index } => {
-                $indexer.index_event_proposal_index(prop_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalIndex(prop_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::MetadataSet { hash, .. } => {
@@ -566,7 +582,11 @@ macro_rules! index_collective_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalIndex(proposal_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::ProposalHash(Bytes32(proposal_hash.into()))),
                     $block_number,
@@ -692,7 +712,11 @@ macro_rules! index_treasury_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::Proposed { proposal_index } => {
-                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalIndex(proposal_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Awarded {
@@ -700,7 +724,11 @@ macro_rules! index_treasury_event {
                 account,
                 ..
             } => {
-                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalIndex(proposal_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
                     $block_number,
@@ -709,7 +737,11 @@ macro_rules! index_treasury_event {
                 2
             }
             <$event_enum>::Rejected { proposal_index, .. } => {
-                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalIndex(proposal_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::SpendApproved {
@@ -717,7 +749,11 @@ macro_rules! index_treasury_event {
                 beneficiary,
                 ..
             } => {
-                $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::ProposalIndex(proposal_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
                     $block_number,
