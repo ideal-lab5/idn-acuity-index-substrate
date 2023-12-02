@@ -1111,19 +1111,35 @@ macro_rules! index_bounties_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::BountyProposed { index } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::BountyRejected { index, .. } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::BountyBecameActive { index } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::BountyAwarded { index, beneficiary } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
                     $block_number,
@@ -1134,7 +1150,11 @@ macro_rules! index_bounties_event {
             <$event_enum>::BountyClaimed {
                 index, beneficiary, ..
             } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
                     $block_number,
@@ -1143,11 +1163,19 @@ macro_rules! index_bounties_event {
                 2
             }
             <$event_enum>::BountyCanceled { index } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::BountyExtended { index } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -1160,8 +1188,16 @@ macro_rules! index_child_bounties_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::Added { index, child_index } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
-                $indexer.index_event_bounty_index(child_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(child_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Awarded {
@@ -1169,8 +1205,16 @@ macro_rules! index_child_bounties_event {
                 child_index,
                 beneficiary,
             } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
-                $indexer.index_event_bounty_index(child_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(child_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
                     $block_number,
@@ -1184,8 +1228,16 @@ macro_rules! index_child_bounties_event {
                 beneficiary,
                 ..
             } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
-                $indexer.index_event_bounty_index(child_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(child_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
                     $block_number,
@@ -1194,8 +1246,16 @@ macro_rules! index_child_bounties_event {
                 3
             }
             <$event_enum>::Canceled { index, child_index } => {
-                $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
-                $indexer.index_event_bounty_index(child_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(child_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             _ => 0,
