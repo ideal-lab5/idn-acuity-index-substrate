@@ -151,26 +151,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         Ok(())
     }
 
-    pub fn index_event_preimage_hash(
-        &self,
-        preimage_hash: [u8; 32],
-        block_number: u32,
-        event_index: u16,
-    ) -> Result<(), sled::Error> {
-        // Generate key
-        let key = Bytes32Key {
-            key: preimage_hash,
-            block_number: block_number.into(),
-            event_index: event_index.into(),
-        };
-        // Insert record.
-        self.trees
-            .substrate
-            .preimage_hash
-            .insert(key.as_bytes(), &[])?;
-        Ok(())
-    }
-
     pub fn index_event_proposal_hash(
         &self,
         proposal_hash: [u8; 32],

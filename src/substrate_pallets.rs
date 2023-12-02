@@ -28,15 +28,27 @@ macro_rules! index_preimage_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::Noted { hash } => {
-                $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PreimageHash(Bytes32(hash.into()))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Requested { hash } => {
-                $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PreimageHash(Bytes32(hash.into()))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Cleared { hash } => {
-                $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PreimageHash(Bytes32(hash.into()))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -511,15 +523,27 @@ macro_rules! index_democracy_event {
                 1
             }
             <$event_enum>::MetadataSet { hash, .. } => {
-                $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PreimageHash(Bytes32(hash.into()))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::MetadataCleared { hash, .. } => {
-                $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PreimageHash(Bytes32(hash.into()))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::MetadataTransferred { hash, .. } => {
-                $indexer.index_event_preimage_hash(hash.into(), $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PreimageHash(Bytes32(hash.into()))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
