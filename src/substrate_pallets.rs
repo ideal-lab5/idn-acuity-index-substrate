@@ -11,7 +11,11 @@ macro_rules! index_system_event {
                 1
             }
             <$event_enum>::KilledAccount { account } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -45,7 +49,11 @@ macro_rules! index_indices_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::IndexAssigned { who, index } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_account_index(index, $block_number, $event_index)?;
                 2
             }
@@ -55,7 +63,11 @@ macro_rules! index_indices_event {
             }
             <$event_enum>::IndexFrozen { index, who } => {
                 $indexer.index_event_account_index(index, $block_number, $event_index)?;
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             _ => 0,
@@ -68,81 +80,165 @@ macro_rules! index_balances_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::Endowed { account, .. } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::DustLost { account, .. } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Transfer { from, to, .. } => {
-                $indexer.index_event_account_id(from, $block_number, $event_index)?;
-                $indexer.index_event_account_id(to, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(from.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(to.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::BalanceSet { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Reserved { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Unreserved { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::ReserveRepatriated { from, to, .. } => {
-                $indexer.index_event_account_id(from, $block_number, $event_index)?;
-                $indexer.index_event_account_id(to, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(from.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(to.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Deposit { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Withdraw { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Slashed { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Minted { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Burned { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Suspended { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Restored { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Upgraded { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Locked { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Unlocked { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Frozen { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Thawed { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -155,7 +251,11 @@ macro_rules! index_transaction_payment_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::TransactionFeePaid { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -172,11 +272,19 @@ macro_rules! index_staking_event {
                 1
             }
             <$event_enum>::Rewarded { stash, .. } => {
-                $indexer.index_event_account_id(stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Slashed { staker, .. } => {
-                $indexer.index_event_account_id(staker, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(staker.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::SlashReported {
@@ -184,7 +292,11 @@ macro_rules! index_staking_event {
                 slash_era,
                 ..
             } => {
-                $indexer.index_event_account_id(validator, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(validator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_era_index(slash_era, $block_number, $event_index)?;
                 2
             }
@@ -193,24 +305,48 @@ macro_rules! index_staking_event {
                 1
             }
             <$event_enum>::Bonded { stash, .. } => {
-                $indexer.index_event_account_id(stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Unbonded { stash, .. } => {
-                $indexer.index_event_account_id(stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Withdrawn { stash, .. } => {
-                $indexer.index_event_account_id(stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Kicked { nominator, stash } => {
-                $indexer.index_event_account_id(nominator, $block_number, $event_index)?;
-                $indexer.index_event_account_id(stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(nominator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Chilled { stash, .. } => {
-                $indexer.index_event_account_id(stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::PayoutStarted {
@@ -218,11 +354,19 @@ macro_rules! index_staking_event {
                 validator_stash,
             } => {
                 $indexer.index_event_era_index(era_index, $block_number, $event_index)?;
-                $indexer.index_event_account_id(validator_stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(validator_stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::ValidatorPrefsSet { stash, .. } => {
-                $indexer.index_event_account_id(stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -272,18 +416,34 @@ macro_rules! index_democracy_event {
                 1
             }
             <$event_enum>::Delegated { who, target } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
-                $indexer.index_event_account_id(target, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(target.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Undelegated { account } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Vetoed {
                 who, proposal_hash, ..
             } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_proposal_hash(
                     proposal_hash.into(),
                     $block_number,
@@ -302,7 +462,11 @@ macro_rules! index_democracy_event {
             <$event_enum>::Voted {
                 voter, ref_index, ..
             } => {
-                $indexer.index_event_account_id(voter, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(voter.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_ref_index(ref_index, $block_number, $event_index)?;
                 2
             }
@@ -310,7 +474,11 @@ macro_rules! index_democracy_event {
                 seconder,
                 prop_index,
             } => {
-                $indexer.index_event_account_id(seconder, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(seconder.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_proposal_index(prop_index, $block_number, $event_index)?;
                 2
             }
@@ -345,7 +513,11 @@ macro_rules! index_collective_event {
                 proposal_hash,
                 ..
             } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
                 $indexer.index_event_proposal_hash(
                     proposal_hash.into(),
@@ -359,7 +531,11 @@ macro_rules! index_collective_event {
                 proposal_hash,
                 ..
             } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_proposal_hash(
                     proposal_hash.into(),
                     $block_number,
@@ -418,8 +594,8 @@ macro_rules! index_elections_phragmen_event {
         match $event {
             <$event_enum>::NewTerm { new_members } => {
                 for member in &new_members {
-                    $indexer.index_event_account_id(
-                        member.0.clone(),
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0 .0))),
                         $block_number,
                         $event_index,
                     )?;
@@ -427,19 +603,35 @@ macro_rules! index_elections_phragmen_event {
                 new_members.len().try_into().unwrap()
             }
             <$event_enum>::MemberKicked { member } => {
-                $indexer.index_event_account_id(member, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Renounced { candidate } => {
-                $indexer.index_event_account_id(candidate, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(candidate.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::CandidateSlashed { candidate, .. } => {
-                $indexer.index_event_account_id(candidate, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(candidate.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::SeatHolderSlashed { seat_holder, .. } => {
-                $indexer.index_event_account_id(seat_holder, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(seat_holder.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -461,7 +653,11 @@ macro_rules! index_treasury_event {
                 ..
             } => {
                 $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Rejected { proposal_index, .. } => {
@@ -474,7 +670,11 @@ macro_rules! index_treasury_event {
                 ..
             } => {
                 $indexer.index_event_proposal_index(proposal_index, $block_number, $event_index)?;
-                $indexer.index_event_account_id(beneficiary, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             _ => 0,
@@ -487,11 +687,19 @@ macro_rules! index_vesting_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::VestingUpdated { account, .. } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::VestingCompleted { account } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -504,15 +712,27 @@ macro_rules! index_identity_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::IdentitySet { who } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::IdentityCleared { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::IdentityKilled { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::JudgementRequested {
@@ -520,7 +740,11 @@ macro_rules! index_identity_event {
                 registrar_index,
                 ..
             } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_registrar_index(
                     registrar_index,
                     $block_number,
@@ -533,7 +757,11 @@ macro_rules! index_identity_event {
                 registrar_index,
                 ..
             } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_registrar_index(
                     registrar_index,
                     $block_number,
@@ -546,7 +774,11 @@ macro_rules! index_identity_event {
                 registrar_index,
                 ..
             } => {
-                $indexer.index_event_account_id(target, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(target.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_registrar_index(
                     registrar_index,
                     $block_number,
@@ -565,18 +797,42 @@ macro_rules! index_identity_event {
                 1
             }
             <$event_enum>::SubIdentityAdded { sub, main, .. } => {
-                $indexer.index_event_account_id(sub, $block_number, $event_index)?;
-                $indexer.index_event_account_id(main, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(sub.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(main.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::SubIdentityRemoved { sub, main, .. } => {
-                $indexer.index_event_account_id(sub, $block_number, $event_index)?;
-                $indexer.index_event_account_id(main, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(sub.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(main.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::SubIdentityRevoked { sub, main, .. } => {
-                $indexer.index_event_account_id(sub, $block_number, $event_index)?;
-                $indexer.index_event_account_id(main, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(sub.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(main.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             _ => 0,
@@ -589,13 +845,29 @@ macro_rules! index_proxy_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::PureCreated { pure, who, .. } => {
-                $indexer.index_event_account_id(pure, $block_number, $event_index)?;
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(pure.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Announced { real, proxy, .. } => {
-                $indexer.index_event_account_id(real, $block_number, $event_index)?;
-                $indexer.index_event_account_id(proxy, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(real.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(proxy.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::ProxyAdded {
@@ -603,8 +875,16 @@ macro_rules! index_proxy_event {
                 delegatee,
                 ..
             } => {
-                $indexer.index_event_account_id(delegator, $block_number, $event_index)?;
-                $indexer.index_event_account_id(delegatee, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(delegator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(delegatee.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::ProxyRemoved {
@@ -612,8 +892,16 @@ macro_rules! index_proxy_event {
                 delegatee,
                 ..
             } => {
-                $indexer.index_event_account_id(delegator, $block_number, $event_index)?;
-                $indexer.index_event_account_id(delegatee, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(delegator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(delegatee.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             _ => 0,
@@ -630,8 +918,16 @@ macro_rules! index_multisig_event {
                 multisig,
                 ..
             } => {
-                $indexer.index_event_account_id(approving, $block_number, $event_index)?;
-                $indexer.index_event_account_id(multisig, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(approving.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(multisig.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::MultisigApproval {
@@ -639,8 +935,16 @@ macro_rules! index_multisig_event {
                 multisig,
                 ..
             } => {
-                $indexer.index_event_account_id(approving, $block_number, $event_index)?;
-                $indexer.index_event_account_id(multisig, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(approving.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(multisig.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::MultisigExecuted {
@@ -648,8 +952,16 @@ macro_rules! index_multisig_event {
                 multisig,
                 ..
             } => {
-                $indexer.index_event_account_id(approving, $block_number, $event_index)?;
-                $indexer.index_event_account_id(multisig, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(approving.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(multisig.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::MultisigCancelled {
@@ -657,8 +969,16 @@ macro_rules! index_multisig_event {
                 multisig,
                 ..
             } => {
-                $indexer.index_event_account_id(cancelling, $block_number, $event_index)?;
-                $indexer.index_event_account_id(multisig, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(cancelling.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(multisig.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             _ => 0,
@@ -671,11 +991,19 @@ macro_rules! index_fast_unstake_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::Unstaked { stash, .. } => {
-                $indexer.index_event_account_id(stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Slashed { stash, .. } => {
-                $indexer.index_event_account_id(stash, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::BatchChecked { eras } => {
@@ -695,17 +1023,29 @@ macro_rules! index_election_provider_multi_phase_event {
         match $event {
             <$event_enum>::SolutionStored { origin, .. } => match origin {
                 Some(account) => {
-                    $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                        $block_number,
+                        $event_index,
+                    )?;
                     1
                 }
                 None => 0,
             },
             <$event_enum>::Rewarded { account, .. } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Slashed { account, .. } => {
-                $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -727,7 +1067,11 @@ macro_rules! index_tips_event {
             }
             <$event_enum>::TipClosed { tip_hash, who, .. } => {
                 $indexer.index_event_tip_hash(tip_hash.into(), $block_number, $event_index)?;
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::TipRetracted { tip_hash } => {
@@ -738,7 +1082,11 @@ macro_rules! index_tips_event {
                 tip_hash, finder, ..
             } => {
                 $indexer.index_event_tip_hash(tip_hash.into(), $block_number, $event_index)?;
-                $indexer.index_event_account_id(finder, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(finder.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             _ => 0,
@@ -764,14 +1112,22 @@ macro_rules! index_bounties_event {
             }
             <$event_enum>::BountyAwarded { index, beneficiary } => {
                 $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
-                $indexer.index_event_account_id(beneficiary, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::BountyClaimed {
                 index, beneficiary, ..
             } => {
                 $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
-                $indexer.index_event_account_id(beneficiary, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::BountyCanceled { index } => {
@@ -803,7 +1159,11 @@ macro_rules! index_child_bounties_event {
             } => {
                 $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
                 $indexer.index_event_bounty_index(child_index, $block_number, $event_index)?;
-                $indexer.index_event_account_id(beneficiary, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 3
             }
             <$event_enum>::Claimed {
@@ -814,7 +1174,11 @@ macro_rules! index_child_bounties_event {
             } => {
                 $indexer.index_event_bounty_index(index, $block_number, $event_index)?;
                 $indexer.index_event_bounty_index(child_index, $block_number, $event_index)?;
-                $indexer.index_event_account_id(beneficiary, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(beneficiary.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 3
             }
             <$event_enum>::Canceled { index, child_index } => {
@@ -832,11 +1196,19 @@ macro_rules! index_bags_list_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::Rebagged { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::ScoreUpdated { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
@@ -849,21 +1221,33 @@ macro_rules! index_nomination_pools_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::Created { depositor, pool_id } => {
-                $indexer.index_event_account_id(depositor, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(depositor.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
                 2
             }
             <$event_enum>::Bonded {
                 member, pool_id, ..
             } => {
-                $indexer.index_event_account_id(member, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
                 2
             }
             <$event_enum>::PaidOut {
                 member, pool_id, ..
             } => {
-                $indexer.index_event_account_id(member, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
                 2
             }
@@ -873,7 +1257,11 @@ macro_rules! index_nomination_pools_event {
                 era,
                 ..
             } => {
-                $indexer.index_event_account_id(member, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
                 $indexer.index_event_era_index(era, $block_number, $event_index)?;
                 3
@@ -881,7 +1269,11 @@ macro_rules! index_nomination_pools_event {
             <$event_enum>::Withdrawn {
                 member, pool_id, ..
             } => {
-                $indexer.index_event_account_id(member, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
                 2
             }
@@ -895,7 +1287,11 @@ macro_rules! index_nomination_pools_event {
             }
             <$event_enum>::MemberRemoved { pool_id, member } => {
                 $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
-                $indexer.index_event_account_id(member, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::RolesUpdated {
@@ -905,15 +1301,27 @@ macro_rules! index_nomination_pools_event {
             } => {
                 let mut count = 0;
                 if let Some(account) = root {
-                    $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                        $block_number,
+                        $event_index,
+                    )?;
                     count += 1;
                 }
                 if let Some(account) = bouncer {
-                    $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                        $block_number,
+                        $event_index,
+                    )?;
                     count += 1;
                 }
                 if let Some(account) = nominator {
-                    $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                        $block_number,
+                        $event_index,
+                    )?;
                     count += 1;
                 }
                 count
@@ -933,7 +1341,11 @@ macro_rules! index_nomination_pools_event {
                 $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
                 match current {
                     Some((_, account)) => {
-                        $indexer.index_event_account_id(account, $block_number, $event_index)?;
+                        $indexer.index_event(
+                            Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                            $block_number,
+                            $event_index,
+                        )?;
                         2
                     }
                     None => 1,

@@ -5,9 +5,7 @@ use log::*;
 use num_format::{Locale, ToFormattedString};
 use sled::Tree;
 use std::{collections::HashMap, sync::Mutex};
-use subxt::{
-    backend::legacy::LegacyRpcMethods, metadata::Metadata, utils::AccountId32, OnlineClient,
-};
+use subxt::{backend::legacy::LegacyRpcMethods, metadata::Metadata, OnlineClient};
 use tokio::{
     sync::{mpsc, watch, RwLock},
     time::{self, Duration, Instant, MissedTickBehavior},
@@ -150,26 +148,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
                 event_index,
             },
         );
-        Ok(())
-    }
-
-    pub fn index_event_account_id(
-        &self,
-        account_id: AccountId32,
-        block_number: u32,
-        event_index: u16,
-    ) -> Result<(), sled::Error> {
-        // Generate key
-        let key = Bytes32Key {
-            key: account_id.0,
-            block_number: block_number.into(),
-            event_index: event_index.into(),
-        };
-        // Insert record.
-        self.trees
-            .substrate
-            .account_id
-            .insert(key.as_bytes(), &[])?;
         Ok(())
     }
 
