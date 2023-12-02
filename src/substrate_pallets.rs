@@ -54,15 +54,27 @@ macro_rules! index_indices_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_account_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::IndexFreed { index } => {
-                $indexer.index_event_account_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::IndexFrozen { index, who } => {
-                $indexer.index_event_account_index(index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
                     $block_number,
