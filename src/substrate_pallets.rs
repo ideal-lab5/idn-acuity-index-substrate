@@ -849,8 +849,8 @@ macro_rules! index_identity_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_registrar_index(
-                    registrar_index,
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RegistrarIndex(registrar_index)),
                     $block_number,
                     $event_index,
                 )?;
@@ -866,8 +866,8 @@ macro_rules! index_identity_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_registrar_index(
-                    registrar_index,
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RegistrarIndex(registrar_index)),
                     $block_number,
                     $event_index,
                 )?;
@@ -883,8 +883,8 @@ macro_rules! index_identity_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_registrar_index(
-                    registrar_index,
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RegistrarIndex(registrar_index)),
                     $block_number,
                     $event_index,
                 )?;
@@ -893,8 +893,8 @@ macro_rules! index_identity_event {
             <$event_enum>::RegistrarAdded {
                 registrar_index, ..
             } => {
-                $indexer.index_event_registrar_index(
-                    registrar_index,
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RegistrarIndex(registrar_index)),
                     $block_number,
                     $event_index,
                 )?;
