@@ -151,23 +151,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         Ok(())
     }
 
-    pub fn index_event_ref_index(
-        &self,
-        ref_index: u32,
-        block_number: u32,
-        event_index: u16,
-    ) -> Result<(), sled::Error> {
-        // Generate key
-        let key = U32Key {
-            key: ref_index.into(),
-            block_number: block_number.into(),
-            event_index: event_index.into(),
-        };
-        // Insert record.
-        self.trees.substrate.ref_index.insert(key.as_bytes(), &[])?;
-        Ok(())
-    }
-
     pub fn index_event_registrar_index(
         &self,
         registrar_index: u32,

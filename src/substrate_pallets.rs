@@ -444,19 +444,35 @@ macro_rules! index_democracy_event {
                 1
             }
             <$event_enum>::Started { ref_index, .. } => {
-                $indexer.index_event_ref_index(ref_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(ref_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Passed { ref_index } => {
-                $indexer.index_event_ref_index(ref_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(ref_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::NotPassed { ref_index } => {
-                $indexer.index_event_ref_index(ref_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(ref_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Cancelled { ref_index } => {
-                $indexer.index_event_ref_index(ref_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(ref_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Delegated { who, target } => {
@@ -511,7 +527,11 @@ macro_rules! index_democracy_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_ref_index(ref_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(ref_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Seconded {
