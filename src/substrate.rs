@@ -151,23 +151,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         Ok(())
     }
 
-    pub fn index_event_pool_id(
-        &self,
-        pool_id: u32,
-        block_number: u32,
-        event_index: u16,
-    ) -> Result<(), sled::Error> {
-        // Generate key
-        let key = U32Key {
-            key: pool_id.into(),
-            block_number: block_number.into(),
-            event_index: event_index.into(),
-        };
-        // Insert record.
-        self.trees.substrate.pool_id.insert(key.as_bytes(), &[])?;
-        Ok(())
-    }
-
     pub fn index_event_preimage_hash(
         &self,
         preimage_hash: [u8; 32],

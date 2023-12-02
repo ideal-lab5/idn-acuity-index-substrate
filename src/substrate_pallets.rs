@@ -1314,7 +1314,11 @@ macro_rules! index_nomination_pools_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Bonded {
@@ -1325,7 +1329,11 @@ macro_rules! index_nomination_pools_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::PaidOut {
@@ -1336,7 +1344,11 @@ macro_rules! index_nomination_pools_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Unbonded {
@@ -1350,7 +1362,11 @@ macro_rules! index_nomination_pools_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::EraIndex(era)),
                     $block_number,
@@ -1366,19 +1382,35 @@ macro_rules! index_nomination_pools_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::Destroyed { pool_id } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::StateChanged { pool_id, .. } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::MemberRemoved { pool_id, member } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
                     $block_number,
@@ -1419,11 +1451,19 @@ macro_rules! index_nomination_pools_event {
                 count
             }
             <$event_enum>::PoolSlashed { pool_id, .. } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::UnbondingPoolSlashed { pool_id, era, .. } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::EraIndex(era)),
                     $block_number,
@@ -1434,7 +1474,11 @@ macro_rules! index_nomination_pools_event {
             <$event_enum>::PoolCommissionUpdated {
                 pool_id, current, ..
             } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 match current {
                     Some((_, account)) => {
                         $indexer.index_event(
@@ -1448,19 +1492,35 @@ macro_rules! index_nomination_pools_event {
                 }
             }
             <$event_enum>::PoolMaxCommissionUpdated { pool_id, .. } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::PoolCommissionChangeRateUpdated { pool_id, .. } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::PoolCommissionChangeRateUpdated { pool_id, .. } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::PoolCommissionClaimed { pool_id, .. } => {
-                $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             _ => 0,
