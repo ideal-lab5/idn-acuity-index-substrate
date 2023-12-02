@@ -280,7 +280,11 @@ macro_rules! index_staking_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
             <$event_enum>::EraPaid { era_index, .. } => {
-                $indexer.index_event_era_index(era_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::EraIndex(era_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 1
             }
             <$event_enum>::Rewarded { stash, .. } => {
@@ -309,7 +313,11 @@ macro_rules! index_staking_event {
                     $block_number,
                     $event_index,
                 )?;
-                $indexer.index_event_era_index(slash_era, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::EraIndex(slash_era)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::OldSlashingReportDiscarded { session_index } => {
@@ -365,7 +373,11 @@ macro_rules! index_staking_event {
                 era_index,
                 validator_stash,
             } => {
-                $indexer.index_event_era_index(era_index, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::EraIndex(era_index)),
+                    $block_number,
+                    $event_index,
+                )?;
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::AccountId(Bytes32(validator_stash.0))),
                     $block_number,
@@ -1020,7 +1032,11 @@ macro_rules! index_fast_unstake_event {
             }
             <$event_enum>::BatchChecked { eras } => {
                 for era in &eras {
-                    $indexer.index_event_era_index(*era, $block_number, $event_index)?;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::EraIndex(*era)),
+                        $block_number,
+                        $event_index,
+                    )?;
                 }
                 eras.len().try_into().unwrap()
             }
@@ -1335,7 +1351,11 @@ macro_rules! index_nomination_pools_event {
                     $event_index,
                 )?;
                 $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
-                $indexer.index_event_era_index(era, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::EraIndex(era)),
+                    $block_number,
+                    $event_index,
+                )?;
                 3
             }
             <$event_enum>::Withdrawn {
@@ -1404,7 +1424,11 @@ macro_rules! index_nomination_pools_event {
             }
             <$event_enum>::UnbondingPoolSlashed { pool_id, era, .. } => {
                 $indexer.index_event_pool_id(pool_id, $block_number, $event_index)?;
-                $indexer.index_event_era_index(era, $block_number, $event_index)?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::EraIndex(era)),
+                    $block_number,
+                    $event_index,
+                )?;
                 2
             }
             <$event_enum>::PoolCommissionUpdated {
