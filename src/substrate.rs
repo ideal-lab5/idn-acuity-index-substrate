@@ -44,7 +44,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
     }
 
     #[cfg(test)]
-    pub fn new_test(trees: Trees) -> Self {
+    pub fn new_test(trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>) -> Self {
         Indexer {
             trees,
             api: None,
