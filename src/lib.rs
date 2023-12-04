@@ -35,7 +35,7 @@ use websockets::websockets_listen;
 #[cfg(test)]
 mod tests;
 
-fn open_trees<R: RuntimeIndexer>(
+pub fn open_trees<R: RuntimeIndexer>(
     db_config: sled::Config,
 ) -> Result<Trees<<R::ChainKey as IndexKey>::ChainTrees>, sled::Error> {
     let db = db_config.open()?;
@@ -50,7 +50,7 @@ fn open_trees<R: RuntimeIndexer>(
     Ok(trees)
 }
 
-fn close_trees<R: RuntimeIndexer>(
+pub fn close_trees<R: RuntimeIndexer>(
     trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
 ) -> Result<(), sled::Error> {
     info!("Closing db.");
