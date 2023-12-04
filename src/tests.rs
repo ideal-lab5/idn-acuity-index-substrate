@@ -12,12 +12,32 @@ use zerocopy::{AsBytes, FromBytes};
 
 pub struct TestIndexer;
 
+#[derive(Clone, Debug)]
+pub struct ChainTrees {
+    pub test_index: Tree,
+    pub test_hash: Tree,
+}
+
+impl IndexTrees for ChainTrees {
+    fn open(db: &Db) -> Result<Self, sled::Error> {
+        Ok(ChainTrees {
+            test_index: db.open_tree(b"test_index")?,
+            test_hash: db.open_tree(b"candiate_hash")?,
+        })
+    }
+
+    fn flush(&self) -> Result<(), sled::Error> {
+        self.test_index.flush()?;
+        self.test_hash.flush()?;
+        Ok(())
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
 #[serde(tag = "type", content = "value")]
 pub enum ChainKey {
-    AuctionIndex(u32),
-    CandidateHash(Bytes32),
-    ParaId(u32),
+    TestIndex(u32),
+    TestHash(Bytes32),
 }
 
 impl IndexKey for ChainKey {
@@ -32,29 +52,21 @@ impl IndexKey for ChainKey {
         let block_number = block_number.into();
         let event_index = event_index.into();
         match self {
-            ChainKey::AuctionIndex(auction_index) => {
+            ChainKey::TestIndex(test_index) => {
                 let key = U32Key {
-                    key: (*auction_index).into(),
+                    key: (*test_index).into(),
                     block_number,
                     event_index,
                 };
-                trees.auction_index.insert(key.as_bytes(), &[])?
+                trees.test_index.insert(key.as_bytes(), &[])?
             }
-            ChainKey::CandidateHash(candidate_hash) => {
+            ChainKey::TestHash(test_hash) => {
                 let key = Bytes32Key {
-                    key: candidate_hash.0,
+                    key: test_hash.0,
                     block_number,
                     event_index,
                 };
-                trees.candidate_hash.insert(key.as_bytes(), &[])?
-            }
-            ChainKey::ParaId(para_id) => {
-                let key = U32Key {
-                    key: (*para_id).into(),
-                    block_number,
-                    event_index,
-                };
-                trees.para_id.insert(key.as_bytes(), &[])?
+                trees.test_hash.insert(key.as_bytes(), &[])?
             }
         };
         Ok(())
@@ -62,38 +74,9 @@ impl IndexKey for ChainKey {
 
     fn get_key_events(&self, trees: &ChainTrees) -> Vec<Event> {
         match self {
-            ChainKey::AuctionIndex(auction_index) => {
-                get_events_u32(&trees.auction_index, *auction_index)
-            }
-            ChainKey::CandidateHash(candidate_hash) => {
-                get_events_bytes32(&trees.candidate_hash, candidate_hash)
-            }
-            ChainKey::ParaId(para_id) => get_events_u32(&trees.para_id, *para_id),
+            ChainKey::TestIndex(test_index) => get_events_u32(&trees.test_index, *test_index),
+            ChainKey::TestHash(test_hash) => get_events_bytes32(&trees.test_hash, test_hash),
         }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct ChainTrees {
-    pub auction_index: Tree,
-    pub candidate_hash: Tree,
-    pub para_id: Tree,
-}
-
-impl IndexTrees for ChainTrees {
-    fn open(db: &Db) -> Result<Self, sled::Error> {
-        Ok(ChainTrees {
-            auction_index: db.open_tree(b"auction_index")?,
-            candidate_hash: db.open_tree(b"candiate_hash")?,
-            para_id: db.open_tree(b"para_id")?,
-        })
-    }
-
-    fn flush(&self) -> Result<(), sled::Error> {
-        self.auction_index.flush()?;
-        self.candidate_hash.flush()?;
-        self.para_id.flush()?;
-        Ok(())
     }
 }
 
@@ -280,66 +263,12 @@ async fn test_process_msg_account_index() {
 }
 
 #[tokio::test]
-async fn test_process_msg_auction_index() {
-    let db_config = sled::Config::new().temporary(true);
-    let trees = open_trees::<TestIndexer2>(db_config).unwrap();
-    let indexer = Indexer::<TestIndexer2>::new_test(trees.clone());
-    let auction_index = 88;
-    let key = Key::Chain(ChainKey::AuctionIndex(auction_index));
-    indexer.index_event(key.clone(), 4, 5).unwrap();
-    indexer.index_event(key.clone(), 8, 5).unwrap();
-    indexer.index_event(key.clone(), 10, 5).unwrap();
-
-    let response = process_msg_get_events::<TestIndexer2>(&trees, key.clone());
-
-    let ResponseMessage::Events {
-        key: response_key,
-        events,
-    } = response
-    else {
-        panic!("Wrong response message.");
-    };
-    assert_eq!(key, response_key);
-    assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 10);
-    assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 4);
-}
-
-#[tokio::test]
 async fn test_process_msg_bounty_index() {
     let db_config = sled::Config::new().temporary(true);
     let trees = open_trees::<TestIndexer>(db_config).unwrap();
     let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let bounty_index = 88;
     let key = Key::Substrate(SubstrateKey::BountyIndex(bounty_index));
-    indexer.index_event(key.clone(), 4, 5).unwrap();
-    indexer.index_event(key.clone(), 8, 5).unwrap();
-    indexer.index_event(key.clone(), 10, 5).unwrap();
-
-    let response = process_msg_get_events::<TestIndexer>(&trees, key.clone());
-
-    let ResponseMessage::Events {
-        key: response_key,
-        events,
-    } = response
-    else {
-        panic!("Wrong response message.");
-    };
-    assert_eq!(key, response_key);
-    assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 10);
-    assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 4);
-}
-
-#[tokio::test]
-async fn test_process_msg_candidate_hash() {
-    let db_config = sled::Config::new().temporary(true);
-    let trees = open_trees::<TestIndexer>(db_config).unwrap();
-    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
-    let candidate_hash = Bytes32([8; 32]);
-    let key = Key::Chain(ChainKey::CandidateHash(candidate_hash));
     indexer.index_event(key.clone(), 4, 5).unwrap();
     indexer.index_event(key.clone(), 8, 5).unwrap();
     indexer.index_event(key.clone(), 10, 5).unwrap();
@@ -394,33 +323,6 @@ async fn test_process_msg_message_id() {
     let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let message_id = Bytes32([8; 32]);
     let key = Key::Substrate(SubstrateKey::MessageId(message_id));
-    indexer.index_event(key.clone(), 4, 5).unwrap();
-    indexer.index_event(key.clone(), 8, 5).unwrap();
-    indexer.index_event(key.clone(), 10, 5).unwrap();
-
-    let response = process_msg_get_events::<TestIndexer>(&trees, key.clone());
-
-    let ResponseMessage::Events {
-        key: response_key,
-        events,
-    } = response
-    else {
-        panic!("Wrong response message.");
-    };
-    assert_eq!(key, response_key);
-    assert_eq!(events.len(), 3);
-    assert_eq!(events[0].block_number, 10);
-    assert_eq!(events[1].block_number, 8);
-    assert_eq!(events[2].block_number, 4);
-}
-
-#[tokio::test]
-async fn test_process_msg_para_id() {
-    let db_config = sled::Config::new().temporary(true);
-    let trees = open_trees::<TestIndexer>(db_config).unwrap();
-    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
-    let para_id = 88;
-    let key = Key::Chain(ChainKey::ParaId(para_id));
     indexer.index_event(key.clone(), 4, 5).unwrap();
     indexer.index_event(key.clone(), 8, 5).unwrap();
     indexer.index_event(key.clone(), 10, 5).unwrap();
@@ -637,6 +539,60 @@ async fn test_process_msg_tip_hash() {
     let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
     let tip_hash = Bytes32([8; 32]);
     let key = Key::Substrate(SubstrateKey::TipHash(tip_hash));
+    indexer.index_event(key.clone(), 4, 5).unwrap();
+    indexer.index_event(key.clone(), 8, 5).unwrap();
+    indexer.index_event(key.clone(), 10, 5).unwrap();
+
+    let response = process_msg_get_events::<TestIndexer>(&trees, key.clone());
+
+    let ResponseMessage::Events {
+        key: response_key,
+        events,
+    } = response
+    else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(key, response_key);
+    assert_eq!(events.len(), 3);
+    assert_eq!(events[0].block_number, 10);
+    assert_eq!(events[1].block_number, 8);
+    assert_eq!(events[2].block_number, 4);
+}
+
+#[tokio::test]
+async fn test_process_msg_chain_test_index() {
+    let db_config = sled::Config::new().temporary(true);
+    let trees = open_trees::<TestIndexer>(db_config).unwrap();
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
+    let test_index = 88;
+    let key = Key::Chain(ChainKey::TestIndex(test_index));
+    indexer.index_event(key.clone(), 4, 5).unwrap();
+    indexer.index_event(key.clone(), 8, 5).unwrap();
+    indexer.index_event(key.clone(), 10, 5).unwrap();
+
+    let response = process_msg_get_events::<TestIndexer>(&trees, key.clone());
+
+    let ResponseMessage::Events {
+        key: response_key,
+        events,
+    } = response
+    else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(key, response_key);
+    assert_eq!(events.len(), 3);
+    assert_eq!(events[0].block_number, 10);
+    assert_eq!(events[1].block_number, 8);
+    assert_eq!(events[2].block_number, 4);
+}
+
+#[tokio::test]
+async fn test_process_msg_chain_test_hash() {
+    let db_config = sled::Config::new().temporary(true);
+    let trees = open_trees::<TestIndexer>(db_config).unwrap();
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
+    let test_hash = Bytes32([8; 32]);
+    let key = Key::Chain(ChainKey::TestHash(test_hash));
     indexer.index_event(key.clone(), 4, 5).unwrap();
     indexer.index_event(key.clone(), 8, 5).unwrap();
     indexer.index_event(key.clone(), 10, 5).unwrap();
