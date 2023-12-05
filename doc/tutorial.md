@@ -61,8 +61,72 @@ Each chain to be indexed by the indexer implements the [RuntimeIndexer](https://
 Every event to be indexed is passed to `process_event()`. It needs to determine which pallet the event is from and use the correct macro to index it. Macros for Substrate pallets are provided by hybrid-indexer. Additional pallet macros can be provided.
 
 ```rust
+#[derive(Clone, Debug)]
+pub struct MyChainTrees {
+    pub my_index: Tree,
+}
+
+impl IndexTrees for MyChainTrees {
+    fn open(db: &Db) -> Result<Self, sled::Error> {
+        Ok(MyChainTrees {
+            my_index: db.open_tree(b"my_index")?,
+        })
+    }
+
+    fn flush(&self) -> Result<(), sled::Error> {
+        self.my_index.flush()?;
+        Ok(())
+    }
+}
+```
+
+```rust
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
+#[serde(tag = "type", content = "value")]
+pub enum MyChainKey {
+    MyIndex(u32),
+}
+
+impl IndexKey for ChainKey {
+    type ChainTrees = MyChainTrees;
+
+    fn write_db_key(
+        &self,
+        trees: &ChainTrees,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
+        let block_number = block_number.into();
+        let event_index = event_index.into();
+        match self {
+            ChainKey::MyIndex(my_index) => {
+                let key = U32Key {
+                    key: (*my_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.my_index.insert(key.as_bytes(), &[])?
+            }
+        };
+        Ok(())
+    }
+
+    fn get_key_events(&self, trees: &ChainTrees) -> Vec<Event> {
+        match self {
+            ChainKey::MyIndex(my_index) => {
+                get_events_u32(&trees.my_index, *my_index)
+            }
+        }
+    }
+}
+```
+
+```rust
+pub struct PolkadotIndexer;
+
 impl hybrid_indexer::shared::RuntimeIndexer for MyChainIndexer {
     type RuntimeConfig = MyChainConfig;
+    type ChainKey = MyChainKey;
 
     fn get_name() -> &'static str {
         "mychain"
