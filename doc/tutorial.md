@@ -114,7 +114,7 @@ impl IndexKey for ChainKey {
     fn get_key_events(&self, trees: &ChainTrees) -> Vec<Event> {
         match self {
             ChainKey::MyKey(my_key) => {
-                get_events_u32(&trees.my_key, *my_key)
+                get_events_u32(&trees.my_index, *my_key)
             }
         }
     }
