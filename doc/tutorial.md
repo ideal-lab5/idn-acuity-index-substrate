@@ -87,7 +87,7 @@ pub enum MyChainKey {
     MyKey(u32),
 }
 
-impl IndexKey for ChainKey {
+impl IndexKey for MyChainKey {
     type ChainTrees = MyChainTrees;
 
     fn write_db_key(
@@ -99,7 +99,7 @@ impl IndexKey for ChainKey {
         let block_number = block_number.into();
         let event_index = event_index.into();
         match self {
-            ChainKey::MyKey(my_key) => {
+            MyChainKey::MyKey(my_key) => {
                 let key = U32Key {
                     key: (*my_key).into(),
                     block_number,
@@ -113,7 +113,7 @@ impl IndexKey for ChainKey {
 
     fn get_key_events(&self, trees: &ChainTrees) -> Vec<Event> {
         match self {
-            ChainKey::MyKey(my_key) => {
+            MyChainKey::MyKey(my_key) => {
                 get_events_u32(&trees.my_index, *my_key)
             }
         }
