@@ -60,7 +60,7 @@ Run polkadot-indexer again with variant indexing enabled:
 📇 Event variant indexing: enabled
 ```
 
-Keys/second is equal to or more than events/sec because every event has at least the variant key.
+Keys/sec is equal to or more than events/sec because every event has at least the variant key.
 
 Observe that the previous span of indexed blocks is re-indexed.
 
