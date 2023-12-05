@@ -179,7 +179,7 @@ macro_rules! index_mypallet_event {
                     $event_index,
                 )?;
                 $indexer.index_event(
-                    Key::Chain(ChainKey::MyKey(my_key)),
+                    Key::Chain(MyChainKey::MyKey(my_key)),
                     $block_number,
                     $event_index,
                 )?;
