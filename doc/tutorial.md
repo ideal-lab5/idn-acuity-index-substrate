@@ -84,7 +84,7 @@ impl IndexTrees for MyChainTrees {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
 #[serde(tag = "type", content = "value")]
 pub enum MyChainKey {
-    MyIndex(u32),
+    MyKey(u32),
 }
 
 impl IndexKey for ChainKey {
@@ -99,9 +99,9 @@ impl IndexKey for ChainKey {
         let block_number = block_number.into();
         let event_index = event_index.into();
         match self {
-            ChainKey::MyIndex(my_index) => {
+            ChainKey::MyKey(my_key) => {
                 let key = U32Key {
-                    key: (*my_index).into(),
+                    key: (*my_key).into(),
                     block_number,
                     event_index,
                 };
@@ -113,8 +113,8 @@ impl IndexKey for ChainKey {
 
     fn get_key_events(&self, trees: &ChainTrees) -> Vec<Event> {
         match self {
-            ChainKey::MyIndex(my_index) => {
-                get_events_u32(&trees.my_index, *my_index)
+            ChainKey::MyKey(my_key) => {
+                get_events_u32(&trees.my_key, *my_key)
             }
         }
     }
@@ -172,8 +172,17 @@ Custom pallet indexer macros look something like this:
 macro_rules! index_mypallet_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
-            <$event_enum>::MyEvent { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index);
+            <$event_enum>::MyEvent { who, my_key.. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Chain(ChainKey::MyKey(my_key)),
+                    $block_number,
+                    $event_index,
+                )?;
             }
         }
     };
