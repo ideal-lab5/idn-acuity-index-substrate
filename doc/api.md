@@ -34,7 +34,7 @@
 }
 ```
 
-### Key
+### SubstrateKey
 
 ```json
 {
@@ -52,22 +52,8 @@
 
 ```json
 {
-  "type": "AuctionIndex",
-  "value": Number
-}
-```
-
-```json
-{
   "type": "BountyIndex",
   "value": Number
-}
-```
-
-```json
-{
-  "type": "CandidateHash",
-  "value": Bytes32HexString
 }
 ```
 
@@ -82,13 +68,6 @@
 {
   "type": "MessageId",
   "value": Bytes32HexString
-}
-```
-
-```json
-{
-  "type": "ParaId",
-  "value": Number
 }
 ```
 
@@ -148,10 +127,30 @@
 }
 ```
 
+### ChainKey
+
+Chain specific keys defined by chain indexer implementation.
+
+### Key
+
 ```json
 {
   "type": "Variant",
   "value": [Number, Number]
+}
+```
+
+```json
+{
+  "type": "Substrate",
+  "value": SubstrateKey
+}
+```
+
+```json
+{
+  "type": "Chain",
+  "value": ChainKey
 }
 ```
 
