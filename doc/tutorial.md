@@ -183,6 +183,7 @@ macro_rules! index_mypallet_event {
                     $block_number,
                     $event_index,
                 )?;
+                2
             }
         }
     };
