@@ -56,7 +56,7 @@ impl Config for MyChainConfig {
 }
 ```
 
-Each chain to be indexed by the indexer has a separate struct that implements the [RuntimeIndexer](https://docs.rs/hybrid-indexer/0.1.0/hybrid_indexer/shared/trait.RuntimeIndexer.html) trait. For example, look at [KusamaIndexer](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/indexer/src/kusama/mod.rs#L40).
+Each chain to be indexed by the indexer implements the [RuntimeIndexer](https://docs.rs/hybrid-indexer/0.4.0/hybrid_indexer/shared/trait.RuntimeIndexer.html), [IndexKey](https://docs.rs/hybrid-indexer/0.4.0/hybrid_indexer/shared/trait.IndexKey.html) and [IndexTrees](https://docs.rs/hybrid-indexer/0.4.0/hybrid_indexer/shared/trait.IndexTrees.html) traits. For example, look at [PolkadotIndexer](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/indexer/src/polkadot.rs#L46), [ChainKey](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/indexer/src/main.rs#L62) and [ChainTrees](https://github.com/hybrid-explorer/polkadot-indexer/blob/54f5cdaf225e65cbcd0d5d962b68e92f5997b806/indexer/src/main.rs#L37).
 
 Every event to be indexed is passed to `process_event()`. It needs to determine which pallet the event is from and use the correct macro to index it. Macros for Substrate pallets are provided by hybrid-indexer. Additional pallet macros can be provided.
 
