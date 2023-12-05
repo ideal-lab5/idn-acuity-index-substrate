@@ -16,6 +16,7 @@ use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
 
 use crate::shared::*;
 
+#[allow(clippy::type_complexity)]
 pub struct Indexer<R: RuntimeIndexer + ?Sized> {
     trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     api: Option<OnlineClient<R::RuntimeConfig>>,
@@ -248,7 +249,7 @@ pub fn check_span(
     Ok(())
 }
 
-pub fn check_next_batch_block(spans: &Vec<Span>, next_batch_block: &mut u32) {
+pub fn check_next_batch_block(spans: &[Span], next_batch_block: &mut u32) {
     // Figure out the next block to index, skipping the next span if we have reached it.
     let mut i = spans.len();
     while i != 0 {

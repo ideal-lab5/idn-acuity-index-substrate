@@ -161,7 +161,7 @@ pub fn process_msg_get_events<R: RuntimeIndexer>(
         Key::Variant(pallet_id, variant_id) => {
             get_events_variant(&trees.variant, pallet_id, variant_id)
         }
-        Key::Substrate(ref key) => process_msg_get_events_substrate::<R>(trees, &key),
+        Key::Substrate(ref key) => process_msg_get_events_substrate::<R>(trees, key),
         Key::Chain(ref key) => key.get_key_events(&trees.chain),
     };
     ResponseMessage::Events { key, events }

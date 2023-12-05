@@ -62,6 +62,7 @@ pub fn close_trees<R: RuntimeIndexer>(
 }
 
 /// Starts the indexer. Chain is defined by `R`.
+#[allow(clippy::too_many_arguments)]
 pub async fn start<R: RuntimeIndexer + 'static>(
     db_path: Option<String>,
     db_mode: sled::Mode,
