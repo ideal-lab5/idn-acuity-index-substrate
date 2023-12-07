@@ -56,13 +56,77 @@ impl Config for MyChainConfig {
 }
 ```
 
-Each chain to be indexed by the indexer has a separate struct that implements the [RuntimeIndexer](https://docs.rs/hybrid-indexer/0.1.0/hybrid_indexer/shared/trait.RuntimeIndexer.html) trait. For example, look at [KusamaIndexer](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/indexer/src/kusama/mod.rs#L40).
+Each chain to be indexed by the indexer implements the [RuntimeIndexer](https://docs.rs/hybrid-indexer/0.4.0/hybrid_indexer/shared/trait.RuntimeIndexer.html), [IndexKey](https://docs.rs/hybrid-indexer/0.4.0/hybrid_indexer/shared/trait.IndexKey.html) and [IndexTrees](https://docs.rs/hybrid-indexer/0.4.0/hybrid_indexer/shared/trait.IndexTrees.html) traits. For example, look at [PolkadotIndexer](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/indexer/src/polkadot.rs#L46), [ChainKey](https://github.com/hybrid-explorer/polkadot-indexer/blob/main/indexer/src/main.rs#L62) and [ChainTrees](https://github.com/hybrid-explorer/polkadot-indexer/blob/54f5cdaf225e65cbcd0d5d962b68e92f5997b806/indexer/src/main.rs#L37).
 
 Every event to be indexed is passed to `process_event()`. It needs to determine which pallet the event is from and use the correct macro to index it. Macros for Substrate pallets are provided by hybrid-indexer. Additional pallet macros can be provided.
 
 ```rust
+#[derive(Clone, Debug)]
+pub struct MyChainTrees {
+    pub my_index: Tree,
+}
+
+impl IndexTrees for MyChainTrees {
+    fn open(db: &Db) -> Result<Self, sled::Error> {
+        Ok(MyChainTrees {
+            my_index: db.open_tree(b"my_index")?,
+        })
+    }
+
+    fn flush(&self) -> Result<(), sled::Error> {
+        self.my_index.flush()?;
+        Ok(())
+    }
+}
+```
+
+```rust
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
+#[serde(tag = "type", content = "value")]
+pub enum MyChainKey {
+    MyKey(u32),
+}
+
+impl IndexKey for MyChainKey {
+    type ChainTrees = MyChainTrees;
+
+    fn write_db_key(
+        &self,
+        trees: &ChainTrees,
+        block_number: u32,
+        event_index: u16,
+    ) -> Result<(), sled::Error> {
+        let block_number = block_number.into();
+        let event_index = event_index.into();
+        match self {
+            MyChainKey::MyKey(my_key) => {
+                let key = U32Key {
+                    key: (*my_key).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.my_index.insert(key.as_bytes(), &[])?
+            }
+        };
+        Ok(())
+    }
+
+    fn get_key_events(&self, trees: &ChainTrees) -> Vec<Event> {
+        match self {
+            MyChainKey::MyKey(my_key) => {
+                get_events_u32(&trees.my_index, *my_key)
+            }
+        }
+    }
+}
+```
+
+```rust
+pub struct PolkadotIndexer;
+
 impl hybrid_indexer::shared::RuntimeIndexer for MyChainIndexer {
     type RuntimeConfig = MyChainConfig;
+    type ChainKey = MyChainKey;
 
     fn get_name() -> &'static str {
         "mychain"
@@ -108,8 +172,18 @@ Custom pallet indexer macros look something like this:
 macro_rules! index_mypallet_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
-            <$event_enum>::MyEvent { who, .. } => {
-                $indexer.index_event_account_id(who, $block_number, $event_index);
+            <$event_enum>::MyEvent { who, my_key.. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Chain(MyChainKey::MyKey(my_key)),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
             }
         }
     };
