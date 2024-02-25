@@ -267,7 +267,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     queue_depth: u32,
     index_variant: bool,
     mut exit_rx: watch::Receiver<bool>,
-    mut sub_rx: mpsc::UnboundedReceiver<SubscribeMessage<R::ChainKey>>,
+    mut sub_rx: mpsc::UnboundedReceiver<SubscriptionMessage<R::ChainKey>>,
 ) -> Result<(), IndexError> {
     info!(
         "📇 Event variant indexing: {}",
@@ -366,14 +366,27 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 return Ok(());
             }
             Some(msg) = sub_rx.recv() => {
-                let mut sub_map = indexer.sub_map.lock().unwrap();
-                match sub_map.get_mut(&msg.key) {
-                    Some(txs) => {
-                        txs.push(msg.sub_response_tx);
+                match msg {
+                    SubscriptionMessage::SubscribeEvents {key, sub_response_tx} => {
+                        let mut sub_map = indexer.sub_map.lock().unwrap();
+                        match sub_map.get_mut(&key) {
+                            Some(txs) => {
+                                txs.push(sub_response_tx);
+                            },
+                            None => {
+                                let txs = vec![sub_response_tx];
+                                sub_map.insert(key, txs);
+                            },
+                        };
                     },
-                    None => {
-                        let txs = vec![msg.sub_response_tx];
-                        sub_map.insert(msg.key, txs);
+                    SubscriptionMessage::UnsubscribeEvents {key, sub_response_tx} => {
+                        let mut sub_map = indexer.sub_map.lock().unwrap();
+                        match sub_map.get_mut(&key) {
+                            Some(txs) => {
+                                txs.retain(|value| !sub_response_tx.same_channel(value));
+                            },
+                            None => {},
+                        };
                     },
                 };
             }

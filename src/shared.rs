@@ -391,6 +391,7 @@ pub enum RequestMessage<CK: IndexKey> {
     Variants,
     GetEvents { key: Key<CK> },
     SubscribeEvents { key: Key<CK> },
+    UnsubscribeEvents { key: Key<CK> },
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -429,11 +430,18 @@ pub enum ResponseMessage<CK: IndexKey> {
         events: Vec<Event>,
     },
     Subscribed,
+    Unsubscribed,
     //    Error,
 }
 
 #[derive(Debug)]
-pub struct SubscribeMessage<CK: IndexKey> {
-    pub key: Key<CK>,
-    pub sub_response_tx: UnboundedSender<ResponseMessage<CK>>,
+pub enum SubscriptionMessage<CK: IndexKey> {
+    SubscribeEvents {
+        key: Key<CK>,
+        sub_response_tx: UnboundedSender<ResponseMessage<CK>>,
+    },
+    UnsubscribeEvents {
+        key: Key<CK>,
+        sub_response_tx: UnboundedSender<ResponseMessage<CK>>,
+    },
 }

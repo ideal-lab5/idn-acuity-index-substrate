@@ -171,7 +171,7 @@ pub async fn process_msg<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
     trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     msg: RequestMessage<R::ChainKey>,
-    sub_tx: UnboundedSender<SubscribeMessage<R::ChainKey>>,
+    sub_tx: UnboundedSender<SubscriptionMessage<R::ChainKey>>,
     sub_response_tx: UnboundedSender<ResponseMessage<R::ChainKey>>,
 ) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
     Ok(match msg {
@@ -179,12 +179,20 @@ pub async fn process_msg<R: RuntimeIndexer>(
         RequestMessage::Variants => process_msg_variants::<R>(rpc).await?,
         RequestMessage::GetEvents { key } => process_msg_get_events::<R>(trees, key),
         RequestMessage::SubscribeEvents { key } => {
-            let msg = SubscribeMessage {
+            let msg = SubscriptionMessage::SubscribeEvents {
                 key,
                 sub_response_tx,
             };
             sub_tx.send(msg).unwrap();
             ResponseMessage::Subscribed
+        }
+        RequestMessage::UnsubscribeEvents { key } => {
+            let msg = SubscriptionMessage::UnsubscribeEvents {
+                key,
+                sub_response_tx,
+            };
+            sub_tx.send(msg).unwrap();
+            ResponseMessage::Unsubscribed
         }
     })
 }
@@ -194,7 +202,7 @@ async fn handle_connection<R: RuntimeIndexer>(
     raw_stream: TcpStream,
     addr: SocketAddr,
     trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
-    sub_tx: UnboundedSender<SubscribeMessage<R::ChainKey>>,
+    sub_tx: UnboundedSender<SubscriptionMessage<R::ChainKey>>,
 ) -> Result<(), IndexError> {
     info!("Incoming TCP connection from: {}", addr);
     let ws_stream = tokio_tungstenite::accept_async(raw_stream).await?;
@@ -231,7 +239,7 @@ pub async fn websockets_listen<R: RuntimeIndexer + 'static>(
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
     port: u16,
     mut exit_rx: Receiver<bool>,
-    sub_tx: UnboundedSender<SubscribeMessage<R::ChainKey>>,
+    sub_tx: UnboundedSender<SubscriptionMessage<R::ChainKey>>,
 ) {
     let mut addr = "0.0.0.0:".to_string();
     addr.push_str(&port.to_string());
