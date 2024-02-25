@@ -194,6 +194,7 @@ pub async fn process_msg<R: RuntimeIndexer>(
             sub_tx.send(msg).unwrap();
             ResponseMessage::Unsubscribed
         }
+        RequestMessage::SizeOnDisk => ResponseMessage::SizeOnDisk(trees.root.size_on_disk()?),
     })
 }
 

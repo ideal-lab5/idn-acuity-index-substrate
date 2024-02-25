@@ -392,6 +392,7 @@ pub enum RequestMessage<CK: IndexKey> {
     GetEvents { key: Key<CK> },
     SubscribeEvents { key: Key<CK> },
     UnsubscribeEvents { key: Key<CK> },
+    SizeOnDisk,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -431,6 +432,7 @@ pub enum ResponseMessage<CK: IndexKey> {
     },
     Subscribed,
     Unsubscribed,
+    SizeOnDisk(u64),
     //    Error,
 }
 
