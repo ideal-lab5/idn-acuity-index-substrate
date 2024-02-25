@@ -1,6 +1,5 @@
 use crate::shared::*;
 use futures::{SinkExt, StreamExt};
-use log::{error, info};
 use sled::Tree;
 use std::net::SocketAddr;
 use subxt::backend::legacy::LegacyRpcMethods;
@@ -10,6 +9,7 @@ use tokio::sync::{
     watch::Receiver,
 };
 use tokio_tungstenite::tungstenite;
+use tracing::{error, info};
 use zerocopy::FromBytes;
 
 pub fn process_msg_status<R: RuntimeIndexer>(

@@ -6,7 +6,6 @@
 #![feature(let_chains)]
 use byte_unit::Byte;
 use futures::StreamExt;
-use log::{error, info, LevelFilter};
 use signal_hook::{consts::TERM_SIGNALS, flag};
 use signal_hook_tokio::Signals;
 use std::{
@@ -22,6 +21,8 @@ use tokio::{
     join, spawn,
     sync::{mpsc, watch},
 };
+use tracing::{error, info};
+use tracing_subscriber::filter::LevelFilter;
 
 pub mod shared;
 pub mod substrate;
@@ -73,7 +74,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     port: u16,
     log_level: LevelFilter,
 ) {
-    env_logger::Builder::new().filter_level(log_level).init();
+    tracing_subscriber::fmt().with_max_level(log_level).init();
     let name = R::get_name();
     info!("Indexing {}", name);
     let genesis_hash_config = R::get_genesis_hash().as_ref().to_vec();

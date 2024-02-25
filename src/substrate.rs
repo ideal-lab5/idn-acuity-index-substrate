@@ -1,7 +1,6 @@
 use ahash::AHashMap;
 use byteorder::BigEndian;
 use futures::future;
-use log::*;
 use num_format::{Locale, ToFormattedString};
 use sled::Tree;
 use std::{collections::HashMap, sync::Mutex};
@@ -10,6 +9,7 @@ use tokio::{
     sync::{mpsc, watch, RwLock},
     time::{self, Duration, Instant, MissedTickBehavior},
 };
+use tracing::{debug, error, info};
 use zerocopy::byteorder::{U16, U32};
 use zerocopy::{AsBytes, FromBytes};
 use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
