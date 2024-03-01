@@ -388,6 +388,7 @@ impl<CK: IndexKey> Key<CK> {
 #[serde(tag = "type")]
 pub enum RequestMessage<CK: IndexKey> {
     Status,
+    SubscribeStatus,
     Variants,
     GetEvents { key: Key<CK> },
     SubscribeEvents { key: Key<CK> },
@@ -415,21 +416,27 @@ pub struct PalletMeta {
     pub events: Vec<EventMeta>,
 }
 
+#[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
+#[repr(C)]
+pub struct SpanDbValue {
+    pub start: U32<BigEndian>,
+    pub version: U16<BigEndian>,
+    pub index_variant: u8,
+}
+
+#[derive(Serialize, Debug, Clone, PartialEq)]
+pub struct Span {
+    pub start: u32,
+    pub end: u32,
+}
+
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "type", content = "data")]
 #[serde(rename_all = "camelCase")]
 pub enum ResponseMessage<CK: IndexKey> {
-    #[serde(rename_all = "camelCase")]
-    Status {
-        last_head_block: u32,
-        last_batch_block: u32,
-        batch_indexing_complete: bool,
-    },
+    Status(Vec<Span>),
     Variants(Vec<PalletMeta>),
-    Events {
-        key: Key<CK>,
-        events: Vec<Event>,
-    },
+    Events { key: Key<CK>, events: Vec<Event> },
     Subscribed,
     Unsubscribed,
     SizeOnDisk(u64),
@@ -438,6 +445,12 @@ pub enum ResponseMessage<CK: IndexKey> {
 
 #[derive(Debug)]
 pub enum SubscriptionMessage<CK: IndexKey> {
+    SubscribeStatus {
+        sub_response_tx: UnboundedSender<ResponseMessage<CK>>,
+    },
+    UnsubscribeStatus {
+        sub_response_tx: UnboundedSender<ResponseMessage<CK>>,
+    },
     SubscribeEvents {
         key: Key<CK>,
         sub_response_tx: UnboundedSender<ResponseMessage<CK>>,

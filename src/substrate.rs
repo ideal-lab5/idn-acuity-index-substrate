@@ -23,7 +23,8 @@ pub struct Indexer<R: RuntimeIndexer + ?Sized> {
     rpc: Option<LegacyRpcMethods<R::RuntimeConfig>>,
     index_variant: bool,
     metadata_map_lock: RwLock<AHashMap<u32, Metadata>>,
-    sub_map:
+    status_sub: Mutex<Vec<mpsc::UnboundedSender<ResponseMessage<R::ChainKey>>>>,
+    events_sub_map:
         Mutex<HashMap<Key<R::ChainKey>, Vec<mpsc::UnboundedSender<ResponseMessage<R::ChainKey>>>>>,
 }
 
@@ -40,7 +41,8 @@ impl<R: RuntimeIndexer> Indexer<R> {
             rpc: Some(rpc),
             index_variant,
             metadata_map_lock: RwLock::new(AHashMap::new()),
-            sub_map: HashMap::new().into(),
+            status_sub: Vec::new().into(),
+            events_sub_map: HashMap::new().into(),
         }
     }
 
@@ -51,7 +53,8 @@ impl<R: RuntimeIndexer> Indexer<R> {
             rpc: None,
             index_variant: true,
             metadata_map_lock: RwLock::new(AHashMap::new()),
-            sub_map: HashMap::new().into(),
+            status_sub: Vec::new().into(),
+            events_sub_map: HashMap::new().into(),
         }
     }
 
@@ -86,6 +89,10 @@ impl<R: RuntimeIndexer> Indexer<R> {
                             runtime_version.spec_version
                         );
                         let metadata = rpc.state_get_metadata(Some(block_hash)).await?;
+                        info!(
+                            "Finished downloading metadata for spec version {}",
+                            runtime_version.spec_version
+                        );
                         metadata_map.insert(runtime_version.spec_version, metadata.clone());
                         metadata
                     }
@@ -121,9 +128,25 @@ impl<R: RuntimeIndexer> Indexer<R> {
         Ok((block_number, events.len(), key_count))
     }
 
+    pub fn notify_status_subscribers(&self) {
+        let mut spans = vec![];
+        for (key, value) in self.trees.span.into_iter().flatten() {
+            let span_value = SpanDbValue::read_from(&value).unwrap();
+            let start: u32 = span_value.start.into();
+            let end: u32 = u32::from_be_bytes(key.as_ref().try_into().unwrap());
+            let span = Span { start, end };
+            spans.push(span);
+        }
+        let msg = ResponseMessage::Status(spans);
+        let txs = self.status_sub.lock().unwrap();
+        for tx in txs.iter() {
+            if tx.send(msg.clone()).is_ok() {}
+        }
+    }
+
     pub fn notify_subscribers(&self, search_key: Key<R::ChainKey>, event: Event) {
-        let sub_map = self.sub_map.lock().unwrap();
-        if let Some(txs) = sub_map.get(&search_key) {
+        let events_sub_map = self.events_sub_map.lock().unwrap();
+        if let Some(txs) = events_sub_map.get(&search_key) {
             let msg = ResponseMessage::Events {
                 key: search_key,
                 events: vec![event],
@@ -150,20 +173,6 @@ impl<R: RuntimeIndexer> Indexer<R> {
         );
         Ok(())
     }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Span {
-    pub start: u32,
-    pub end: u32,
-}
-
-#[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
-#[repr(C)]
-pub struct SpanDbValue {
-    pub start: U32<BigEndian>,
-    pub version: U16<BigEndian>,
-    pub index_variant: u8,
 }
 
 pub fn load_spans<R: RuntimeIndexer>(
@@ -367,21 +376,29 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             }
             Some(msg) = sub_rx.recv() => {
                 match msg {
+                    SubscriptionMessage::SubscribeStatus {sub_response_tx} => {
+                        let mut txs = indexer.status_sub.lock().unwrap();
+                        txs.push(sub_response_tx);
+                    },
+                    SubscriptionMessage::UnsubscribeStatus {sub_response_tx} => {
+                        let mut txs = indexer.status_sub.lock().unwrap();
+                        txs.retain(|value| !sub_response_tx.same_channel(value));
+                    },
                     SubscriptionMessage::SubscribeEvents {key, sub_response_tx} => {
-                        let mut sub_map = indexer.sub_map.lock().unwrap();
-                        match sub_map.get_mut(&key) {
+                        let mut events_sub_map = indexer.events_sub_map.lock().unwrap();
+                        match events_sub_map.get_mut(&key) {
                             Some(txs) => {
                                 txs.push(sub_response_tx);
                             },
                             None => {
                                 let txs = vec![sub_response_tx];
-                                sub_map.insert(key, txs);
+                                events_sub_map.insert(key, txs);
                             },
                         };
                     },
                     SubscriptionMessage::UnsubscribeEvents {key, sub_response_tx} => {
-                        let mut sub_map = indexer.sub_map.lock().unwrap();
-                        match sub_map.get_mut(&key) {
+                        let mut events_sub_map = indexer.events_sub_map.lock().unwrap();
+                        match events_sub_map.get_mut(&key) {
                             Some(txs) => {
                                 txs.retain(|value| !sub_response_tx.same_channel(value));
                             },
@@ -407,6 +424,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                             event_count.to_formatted_string(&Locale::en),
                             key_count.to_formatted_string(&Locale::en),
                         );
+                        indexer.notify_status_subscribers();
                     },
                     Err(error) => {
                         match error {
@@ -468,7 +486,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                                 is_batching = false;
                             },
                             _ => {
-                                error!("📚 Batch indexing failed.");
+                                error!("📚 Batch indexing failed: {:?}", error);
                                 is_batching = false;
                             },
                         }

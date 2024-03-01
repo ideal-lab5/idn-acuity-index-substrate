@@ -13,22 +13,17 @@ use tracing::{error, info};
 use zerocopy::FromBytes;
 
 pub fn process_msg_status<R: RuntimeIndexer>(
-    trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
+    span_db: &Tree,
 ) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
-    Ok(ResponseMessage::Status {
-        last_head_block: match trees.root.get("last_head_block")? {
-            Some(value) => u32::from_be_bytes(value.as_ref().try_into().unwrap()),
-            None => 0,
-        },
-        last_batch_block: match trees.root.get("last_batch_block")? {
-            Some(value) => u32::from_be_bytes(value.as_ref().try_into().unwrap()),
-            None => 0,
-        },
-        batch_indexing_complete: match trees.root.get("batch_indexing_complete")? {
-            Some(value) => value.to_vec()[0] == 1,
-            None => false,
-        },
-    })
+    let mut spans = vec![];
+    for (key, value) in span_db.into_iter().flatten() {
+        let span_value = SpanDbValue::read_from(&value).unwrap();
+        let start: u32 = span_value.start.into();
+        let end: u32 = u32::from_be_bytes(key.as_ref().try_into().unwrap());
+        let span = Span { start, end };
+        spans.push(span);
+    }
+    Ok(ResponseMessage::Status(spans))
 }
 
 pub async fn process_msg_variants<R: RuntimeIndexer>(
@@ -175,7 +170,12 @@ pub async fn process_msg<R: RuntimeIndexer>(
     sub_response_tx: UnboundedSender<ResponseMessage<R::ChainKey>>,
 ) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
     Ok(match msg {
-        RequestMessage::Status => process_msg_status::<R>(trees)?,
+        RequestMessage::Status => process_msg_status::<R>(&trees.span)?,
+        RequestMessage::SubscribeStatus => {
+            let msg = SubscriptionMessage::SubscribeStatus { sub_response_tx };
+            sub_tx.send(msg).unwrap();
+            ResponseMessage::Subscribed
+        }
         RequestMessage::Variants => process_msg_variants::<R>(rpc).await?,
         RequestMessage::GetEvents { key } => process_msg_get_events::<R>(trees, key),
         RequestMessage::SubscribeEvents { key } => {
