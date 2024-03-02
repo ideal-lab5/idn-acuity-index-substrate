@@ -389,6 +389,7 @@ impl<CK: IndexKey> Key<CK> {
 pub enum RequestMessage<CK: IndexKey> {
     Status,
     SubscribeStatus,
+    UnsubscribeStatus,
     Variants,
     GetEvents { key: Key<CK> },
     SubscribeEvents { key: Key<CK> },

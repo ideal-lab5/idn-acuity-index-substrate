@@ -176,6 +176,11 @@ pub async fn process_msg<R: RuntimeIndexer>(
             sub_tx.send(msg).unwrap();
             ResponseMessage::Subscribed
         }
+        RequestMessage::UnsubscribeStatus => {
+            let msg = SubscriptionMessage::UnsubscribeStatus { sub_response_tx };
+            sub_tx.send(msg).unwrap();
+            ResponseMessage::Unsubscribed
+        }
         RequestMessage::Variants => process_msg_variants::<R>(rpc).await?,
         RequestMessage::GetEvents { key } => process_msg_get_events::<R>(trees, key),
         RequestMessage::SubscribeEvents { key } => {
