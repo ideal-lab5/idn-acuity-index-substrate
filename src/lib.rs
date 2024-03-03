@@ -2,7 +2,6 @@
 //!
 //! A library for indexing events from Substrate blockchains.
 
-#![feature(trivial_bounds)]
 #![feature(let_chains)]
 use byte_unit::Byte;
 use futures::StreamExt;

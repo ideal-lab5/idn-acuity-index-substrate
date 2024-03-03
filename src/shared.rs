@@ -1,6 +1,7 @@
 use byteorder::BigEndian;
 use serde::{Deserialize, Serialize};
 use sled::{Db, Tree};
+use std::fmt;
 use std::hash::Hash;
 use tokio::sync::mpsc::UnboundedSender;
 use tokio_tungstenite::tungstenite;
@@ -397,20 +398,30 @@ pub enum RequestMessage<CK: IndexKey> {
     SizeOnDisk,
 }
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Event {
     pub block_number: u32,
     pub event_index: u16,
 }
 
-#[derive(Serialize, Debug, Clone)]
+impl fmt::Display for Event {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "block number: {}, event index: {}",
+            self.block_number, self.event_index
+        )
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct EventMeta {
     pub index: u8,
     pub name: String,
 }
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, Deserialize, PartialEq)]
 pub struct PalletMeta {
     pub index: u8,
     pub name: String,
@@ -425,10 +436,16 @@ pub struct SpanDbValue {
     pub index_variant: u8,
 }
 
-#[derive(Serialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Debug, Clone, PartialEq, Deserialize)]
 pub struct Span {
     pub start: u32,
     pub end: u32,
+}
+
+impl fmt::Display for Span {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "start: {}, end: {}", self.start, self.end)
+    }
 }
 
 #[derive(Serialize, Debug, Clone)]
