@@ -11,30 +11,20 @@ use zerocopy::{
 };
 use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum IndexError {
-    Sled(sled::Error),
-    Subxt(subxt::Error),
-    Tungstenite(tungstenite::Error),
+    #[error("database error")]
+    Sled(#[from] sled::Error),
+    #[error("connection error")]
+    Subxt(#[from] subxt::Error),
+    #[error("connection error")]
+    Tungstenite(#[from] tungstenite::Error),
+    #[error("parse error")]
+    Hex(#[from] hex::FromHexError),
+    #[error("parse error")]
+    ParseError,
+    #[error("connection error")]
     BlockNotFound(u32),
-}
-
-impl From<sled::Error> for IndexError {
-    fn from(err: sled::Error) -> IndexError {
-        IndexError::Sled(err)
-    }
-}
-
-impl From<subxt::Error> for IndexError {
-    fn from(err: subxt::Error) -> IndexError {
-        IndexError::Subxt(err)
-    }
-}
-
-impl From<tungstenite::Error> for IndexError {
-    fn from(err: tungstenite::Error) -> IndexError {
-        IndexError::Tungstenite(err)
-    }
 }
 
 /// Indexer for a specific chain.
@@ -167,6 +157,18 @@ pub struct U32Key {
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
 pub struct Bytes32(pub [u8; 32]);
 
+impl AsRef<[u8; 32]> for Bytes32 {
+    fn as_ref(&self) -> &[u8; 32] {
+        &self.0
+    }
+}
+
+impl From<[u8; 32]> for Bytes32 {
+    fn from(x: [u8; 32]) -> Self {
+        Bytes32(x)
+    }
+}
+
 impl AsRef<[u8]> for Bytes32 {
     fn as_ref(&self) -> &[u8] {
         &self.0[..]
@@ -196,6 +198,18 @@ impl<'de> Deserialize<'de> for Bytes32 {
             },
             None => Err(serde::de::Error::custom("error")),
         }
+    }
+}
+
+impl std::str::FromStr for Bytes32 {
+    type Err = IndexError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Bytes32(
+            hex::decode(s)?
+                .try_into()
+                .map_err(|_| IndexError::ParseError)?,
+        ))
     }
 }
 
