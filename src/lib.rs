@@ -137,16 +137,16 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     info!("Connecting to: {}", url);
     let rpc_client = match RpcClient::from_url(&url).await {
         Ok(rpc_client) => rpc_client,
-        Err(_) => {
-            error!("Failed to connect.");
+        Err(err) => {
+            error!("Failed to connect: {}", err);
             let _ = close_trees::<R>(trees);
             exit(1);
         }
     };
     let api = match OnlineClient::<R::RuntimeConfig>::from_rpc_client(rpc_client.clone()).await {
         Ok(api) => api,
-        Err(_) => {
-            error!("Failed to connect.");
+        Err(err) => {
+            error!("Failed to connect: {}", err);
             let _ = close_trees::<R>(trees);
             exit(1);
         }
