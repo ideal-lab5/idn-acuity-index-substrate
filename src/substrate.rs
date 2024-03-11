@@ -2,8 +2,8 @@ use ahash::AHashMap;
 use futures::future;
 use num_format::{Locale, ToFormattedString};
 use sled::Tree;
-use std::{collections::HashMap, sync::Mutex};
-use subxt::{backend::legacy::LegacyRpcMethods, metadata::Metadata, OnlineClient};
+use std::{collections::HashMap, future::Future, sync::Mutex};
+use subxt::{backend::legacy::LegacyRpcMethods, blocks::Block, metadata::Metadata, OnlineClient};
 use tokio::{
     sync::{mpsc, watch, RwLock},
     time::{self, Duration, Instant, MissedTickBehavior},
@@ -53,6 +53,19 @@ impl<R: RuntimeIndexer> Indexer<R> {
             status_sub: Vec::new().into(),
             events_sub_map: HashMap::new().into(),
         }
+    }
+
+    async fn index_head(
+        &self,
+        next: impl Future<
+            Output = Option<
+                Result<Block<R::RuntimeConfig, OnlineClient<R::RuntimeConfig>>, subxt::Error>,
+            >,
+        >,
+    ) -> Result<(u32, u32, u32), IndexError> {
+        let block = next.await.unwrap()?;
+        self.index_block(block.number().into().try_into().unwrap())
+            .await
     }
 
     async fn index_block(&self, block_number: u32) -> Result<(u32, u32, u32), IndexError> {
@@ -325,6 +338,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
 
     let indexer = Indexer::<R>::new(trees.clone(), api, rpc, index_variant);
 
+    let mut head_future = Box::pin(indexer.index_head(blocks_sub.next()));
+
     info!("📚 Queue depth: {}", queue_depth);
     let mut futures = Vec::with_capacity(queue_depth.try_into().unwrap());
 
@@ -404,8 +419,8 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                     },
                 };
             }
-            Some(Ok(block)) = blocks_sub.next() => {
-                match indexer.index_block(block.number().into().try_into().unwrap()).await {
+            result = &mut head_future => {
+                match result {
                     Ok((block_number, event_count, key_count)) => {
                         trees.span.remove(current_span.end.to_be_bytes())?;
                         current_span.end = block_number;
@@ -422,14 +437,16 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                             key_count.to_formatted_string(&Locale::en),
                         );
                         indexer.notify_status_subscribers();
+                        drop (head_future);
+                        head_future = Box::pin(indexer.index_head(blocks_sub.next()));
                     },
                     Err(error) => {
                         match error {
                             IndexError::BlockNotFound(block_number) => {
                                 error!("✨ Block not found #{}", block_number.to_formatted_string(&Locale::en));
                             },
-                            _ => {
-                                error!("✨ Indexing failed.");
+                            err => {
+                                error!("✨ Indexing failed: {}", err);
                             },
                         }
                     },
