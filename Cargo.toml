@@ -1,6 +1,6 @@
 [package]
 name = "hybrid-indexer"
-version = "0.5.1"
+version = "0.5.2"
 edition = "2021"
 authors = ["Jonathan Brown"]
 description = "A library for indexing events from Substrate blockchains."
@@ -29,7 +29,7 @@ sled = "0.34.7"
 subxt = "0.34.0"
 thiserror = "1.0.40"
 tokio = { version = "1.28.0", features = ["full"] }
-tokio-tungstenite = "0.18.0"
+tokio-tungstenite = "0.21.0"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 zerocopy = "0.7.8"
