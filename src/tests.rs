@@ -765,6 +765,86 @@ async fn test_process_msg_chain_test_hash() {
     assert_eq!(events[2].block_number, 4);
 }
 
+#[tokio::test]
+async fn test_process_msg_subscribe_events() {
+    let db_config = sled::Config::new().temporary(true);
+    let trees = open_trees::<TestIndexer>(db_config).unwrap();
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
+    let (sub_tx, mut sub_rx) = unbounded_channel();
+    let (sub_response_tx, mut sub_response_rx) = unbounded_channel();
+    let key = Key::Variant(3, 65);
+
+    let response =
+        process_msg_subscribe_events::<TestIndexer>(key.clone(), &sub_tx, &sub_response_tx);
+
+    let ResponseMessage::Subscribed = response else {
+        panic!("Wrong response message.");
+    };
+
+    let msg = sub_rx.recv().await.unwrap();
+    process_sub_msg(&indexer, msg);
+
+    indexer.index_event(key.clone(), 4, 5).unwrap();
+
+    let response_msg = sub_response_rx.recv().await.unwrap();
+    let ResponseMessage::Events {
+        key: response_key,
+        events,
+    } = response_msg
+    else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(key, response_key);
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].block_number, 4);
+
+    indexer.index_event(key.clone(), 8, 5).unwrap();
+
+    let response_msg = sub_response_rx.recv().await.unwrap();
+    let ResponseMessage::Events {
+        key: response_key,
+        events,
+    } = response_msg
+    else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(key, response_key);
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].block_number, 8);
+
+    indexer.index_event(key.clone(), 10, 5).unwrap();
+
+    let response_msg = sub_response_rx.recv().await.unwrap();
+    let ResponseMessage::Events {
+        key: response_key,
+        events,
+    } = response_msg
+    else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(key, response_key);
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].block_number, 10);
+
+    let response =
+        process_msg_unsubscribe_events::<TestIndexer>(key.clone(), &sub_tx, &sub_response_tx);
+
+    let ResponseMessage::Unsubscribed = response else {
+        panic!("Wrong response message.");
+    };
+
+    let msg = sub_rx.recv().await.unwrap();
+    process_sub_msg(&indexer, msg);
+
+    indexer.index_event(key.clone(), 18, 5).unwrap();
+
+    let response_msg = sub_response_rx.try_recv();
+
+    let Err(TryRecvError::Empty) = response_msg else {
+        panic!("Wrong response message.");
+    };
+}
+
 #[test]
 fn test_load_spans() {
     let db_config = sled::Config::new().temporary(true);

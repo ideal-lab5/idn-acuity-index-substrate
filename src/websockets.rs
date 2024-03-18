@@ -182,6 +182,32 @@ pub fn process_msg_get_events<R: RuntimeIndexer>(
     ResponseMessage::Events { key, events }
 }
 
+pub fn process_msg_subscribe_events<R: RuntimeIndexer>(
+    key: Key<R::ChainKey>,
+    sub_tx: &UnboundedSender<SubscriptionMessage<R::ChainKey>>,
+    sub_response_tx: &UnboundedSender<ResponseMessage<R::ChainKey>>,
+) -> ResponseMessage<R::ChainKey> {
+    let msg = SubscriptionMessage::SubscribeEvents {
+        key,
+        sub_response_tx: sub_response_tx.clone(),
+    };
+    sub_tx.send(msg).unwrap();
+    ResponseMessage::Subscribed
+}
+
+pub fn process_msg_unsubscribe_events<R: RuntimeIndexer>(
+    key: Key<R::ChainKey>,
+    sub_tx: &UnboundedSender<SubscriptionMessage<R::ChainKey>>,
+    sub_response_tx: &UnboundedSender<ResponseMessage<R::ChainKey>>,
+) -> ResponseMessage<R::ChainKey> {
+    let msg = SubscriptionMessage::UnsubscribeEvents {
+        key,
+        sub_response_tx: sub_response_tx.clone(),
+    };
+    sub_tx.send(msg).unwrap();
+    ResponseMessage::Unsubscribed
+}
+
 pub async fn process_msg<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
     trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
@@ -200,20 +226,10 @@ pub async fn process_msg<R: RuntimeIndexer>(
         RequestMessage::Variants => process_msg_variants::<R>(rpc).await?,
         RequestMessage::GetEvents { key } => process_msg_get_events::<R>(trees, key),
         RequestMessage::SubscribeEvents { key } => {
-            let msg = SubscriptionMessage::SubscribeEvents {
-                key,
-                sub_response_tx: sub_response_tx.clone(),
-            };
-            sub_tx.send(msg).unwrap();
-            ResponseMessage::Subscribed
+            process_msg_subscribe_events::<R>(key, sub_tx, sub_response_tx)
         }
         RequestMessage::UnsubscribeEvents { key } => {
-            let msg = SubscriptionMessage::UnsubscribeEvents {
-                key,
-                sub_response_tx: sub_response_tx.clone(),
-            };
-            sub_tx.send(msg).unwrap();
-            ResponseMessage::Unsubscribed
+            process_msg_unsubscribe_events::<R>(key, sub_tx, sub_response_tx)
         }
         RequestMessage::SizeOnDisk => ResponseMessage::SizeOnDisk(trees.root.size_on_disk()?),
     })
