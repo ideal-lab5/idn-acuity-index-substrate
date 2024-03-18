@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use sled::{Db, Tree};
 use std::str::FromStr;
 use subxt::utils::AccountId32;
+use tokio::sync::mpsc::{error::TryRecvError, unbounded_channel};
 use zerocopy::{AsBytes, FromBytes};
 
 pub struct TestIndexer;
@@ -189,6 +190,108 @@ async fn test_process_msg_status() {
     assert_eq!(spans[1].end, 52);
     assert_eq!(spans[2].start, 60);
     assert_eq!(spans[2].end, 92);
+}
+
+#[tokio::test]
+async fn test_process_msg_subscribe_status() {
+    let db_config = sled::Config::new().temporary(true);
+    let trees = open_trees::<TestIndexer>(db_config).unwrap();
+    let indexer = Indexer::<TestIndexer>::new_test(trees.clone());
+    let (sub_tx, mut sub_rx) = unbounded_channel();
+    let (sub_response_tx, mut sub_response_rx) = unbounded_channel();
+
+    let value = SpanDbValue {
+        start: 0_u32.try_into().unwrap(),
+        version: 0_u16.try_into().unwrap(),
+        index_variant: 0.try_into().unwrap(),
+    };
+    trees
+        .span
+        .insert(40_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+
+    let response = process_msg_subscribe_status::<TestIndexer>(&sub_tx, &sub_response_tx);
+
+    let ResponseMessage::Subscribed = response else {
+        panic!("Wrong response message.");
+    };
+
+    let msg = sub_rx.recv().await.unwrap();
+    process_sub_msg(&indexer, msg);
+    indexer.notify_status_subscribers();
+
+    let response_msg = sub_response_rx.recv().await.unwrap();
+
+    let ResponseMessage::Status(spans) = response_msg else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(spans.len(), 1);
+    assert_eq!(spans[0].start, 0);
+    assert_eq!(spans[0].end, 40);
+
+    let value = SpanDbValue {
+        start: 60_u32.try_into().unwrap(),
+        version: 0_u16.try_into().unwrap(),
+        index_variant: 0.try_into().unwrap(),
+    };
+    trees
+        .span
+        .insert(92_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+
+    indexer.notify_status_subscribers();
+
+    let response_msg = sub_response_rx.recv().await.unwrap();
+
+    let ResponseMessage::Status(spans) = response_msg else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(spans.len(), 2);
+    assert_eq!(spans[0].start, 0);
+    assert_eq!(spans[0].end, 40);
+    assert_eq!(spans[1].start, 60);
+    assert_eq!(spans[1].end, 92);
+
+    let value = SpanDbValue {
+        start: 42_u32.try_into().unwrap(),
+        version: 0_u16.try_into().unwrap(),
+        index_variant: 0.try_into().unwrap(),
+    };
+    trees
+        .span
+        .insert(52_u32.to_be_bytes(), value.as_bytes())
+        .unwrap();
+
+    indexer.notify_status_subscribers();
+
+    let response_msg = sub_response_rx.recv().await.unwrap();
+
+    let ResponseMessage::Status(spans) = response_msg else {
+        panic!("Wrong response message.");
+    };
+    assert_eq!(spans.len(), 3);
+    assert_eq!(spans[0].start, 0);
+    assert_eq!(spans[0].end, 40);
+    assert_eq!(spans[1].start, 42);
+    assert_eq!(spans[1].end, 52);
+    assert_eq!(spans[2].start, 60);
+    assert_eq!(spans[2].end, 92);
+
+    let response = process_msg_unsubscribe_status::<TestIndexer>(&sub_tx, &sub_response_tx);
+
+    let ResponseMessage::Unsubscribed = response else {
+        panic!("Wrong response message.");
+    };
+
+    let msg = sub_rx.recv().await.unwrap();
+    process_sub_msg(&indexer, msg);
+    indexer.notify_status_subscribers();
+
+    let response_msg = sub_response_rx.try_recv();
+
+    let Err(TryRecvError::Empty) = response_msg else {
+        panic!("Wrong response message.");
+    };
 }
 
 #[test]

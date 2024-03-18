@@ -270,6 +270,49 @@ pub fn check_next_batch_block(spans: &[Span], next_batch_block: &mut u32) {
     }
 }
 
+pub fn process_sub_msg<R: RuntimeIndexer>(
+    indexer: &Indexer<R>,
+    msg: SubscriptionMessage<R::ChainKey>,
+) {
+    match msg {
+        SubscriptionMessage::SubscribeStatus { sub_response_tx } => {
+            let mut txs = indexer.status_sub.lock().unwrap();
+            txs.push(sub_response_tx);
+        }
+        SubscriptionMessage::UnsubscribeStatus { sub_response_tx } => {
+            let mut txs = indexer.status_sub.lock().unwrap();
+            txs.retain(|value| !sub_response_tx.same_channel(value));
+        }
+        SubscriptionMessage::SubscribeEvents {
+            key,
+            sub_response_tx,
+        } => {
+            let mut events_sub_map = indexer.events_sub_map.lock().unwrap();
+            match events_sub_map.get_mut(&key) {
+                Some(txs) => {
+                    txs.push(sub_response_tx);
+                }
+                None => {
+                    let txs = vec![sub_response_tx];
+                    events_sub_map.insert(key, txs);
+                }
+            };
+        }
+        SubscriptionMessage::UnsubscribeEvents {
+            key,
+            sub_response_tx,
+        } => {
+            let mut events_sub_map = indexer.events_sub_map.lock().unwrap();
+            match events_sub_map.get_mut(&key) {
+                Some(txs) => {
+                    txs.retain(|value| !sub_response_tx.same_channel(value));
+                }
+                None => {}
+            };
+        }
+    };
+}
+
 pub async fn substrate_index<R: RuntimeIndexer>(
     trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     api: OnlineClient<R::RuntimeConfig>,
@@ -377,39 +420,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                 }
                 return Ok(());
             }
-            Some(msg) = sub_rx.recv() => {
-                match msg {
-                    SubscriptionMessage::SubscribeStatus {sub_response_tx} => {
-                        let mut txs = indexer.status_sub.lock().unwrap();
-                        txs.push(sub_response_tx);
-                    },
-                    SubscriptionMessage::UnsubscribeStatus {sub_response_tx} => {
-                        let mut txs = indexer.status_sub.lock().unwrap();
-                        txs.retain(|value| !sub_response_tx.same_channel(value));
-                    },
-                    SubscriptionMessage::SubscribeEvents {key, sub_response_tx} => {
-                        let mut events_sub_map = indexer.events_sub_map.lock().unwrap();
-                        match events_sub_map.get_mut(&key) {
-                            Some(txs) => {
-                                txs.push(sub_response_tx);
-                            },
-                            None => {
-                                let txs = vec![sub_response_tx];
-                                events_sub_map.insert(key, txs);
-                            },
-                        };
-                    },
-                    SubscriptionMessage::UnsubscribeEvents {key, sub_response_tx} => {
-                        let mut events_sub_map = indexer.events_sub_map.lock().unwrap();
-                        match events_sub_map.get_mut(&key) {
-                            Some(txs) => {
-                                txs.retain(|value| !sub_response_tx.same_channel(value));
-                            },
-                            None => {},
-                        };
-                    },
-                };
-            }
+            Some(msg) = sub_rx.recv() => process_sub_msg(&indexer, msg),
             result = &mut head_future => {
                 match result {
                     Ok((block_number, event_count, key_count)) => {

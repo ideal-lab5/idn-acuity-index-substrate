@@ -24,6 +24,28 @@ pub fn process_msg_status<R: RuntimeIndexer>(span_db: &Tree) -> ResponseMessage<
     ResponseMessage::Status(spans)
 }
 
+pub fn process_msg_subscribe_status<R: RuntimeIndexer>(
+    sub_tx: &UnboundedSender<SubscriptionMessage<R::ChainKey>>,
+    sub_response_tx: &UnboundedSender<ResponseMessage<R::ChainKey>>,
+) -> ResponseMessage<R::ChainKey> {
+    let msg = SubscriptionMessage::SubscribeStatus {
+        sub_response_tx: sub_response_tx.clone(),
+    };
+    sub_tx.send(msg).unwrap();
+    ResponseMessage::Subscribed
+}
+
+pub fn process_msg_unsubscribe_status<R: RuntimeIndexer>(
+    sub_tx: &UnboundedSender<SubscriptionMessage<R::ChainKey>>,
+    sub_response_tx: &UnboundedSender<ResponseMessage<R::ChainKey>>,
+) -> ResponseMessage<R::ChainKey> {
+    let msg = SubscriptionMessage::UnsubscribeStatus {
+        sub_response_tx: sub_response_tx.clone(),
+    };
+    sub_tx.send(msg).unwrap();
+    ResponseMessage::Unsubscribed
+}
+
 pub async fn process_msg_variants<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
 ) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
@@ -164,27 +186,23 @@ pub async fn process_msg<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
     trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     msg: RequestMessage<R::ChainKey>,
-    sub_tx: UnboundedSender<SubscriptionMessage<R::ChainKey>>,
-    sub_response_tx: UnboundedSender<ResponseMessage<R::ChainKey>>,
+    sub_tx: &UnboundedSender<SubscriptionMessage<R::ChainKey>>,
+    sub_response_tx: &UnboundedSender<ResponseMessage<R::ChainKey>>,
 ) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
     Ok(match msg {
         RequestMessage::Status => process_msg_status::<R>(&trees.span),
         RequestMessage::SubscribeStatus => {
-            let msg = SubscriptionMessage::SubscribeStatus { sub_response_tx };
-            sub_tx.send(msg).unwrap();
-            ResponseMessage::Subscribed
+            process_msg_subscribe_status::<R>(sub_tx, sub_response_tx)
         }
         RequestMessage::UnsubscribeStatus => {
-            let msg = SubscriptionMessage::UnsubscribeStatus { sub_response_tx };
-            sub_tx.send(msg).unwrap();
-            ResponseMessage::Unsubscribed
+            process_msg_unsubscribe_status::<R>(sub_tx, sub_response_tx)
         }
         RequestMessage::Variants => process_msg_variants::<R>(rpc).await?,
         RequestMessage::GetEvents { key } => process_msg_get_events::<R>(trees, key),
         RequestMessage::SubscribeEvents { key } => {
             let msg = SubscriptionMessage::SubscribeEvents {
                 key,
-                sub_response_tx,
+                sub_response_tx: sub_response_tx.clone(),
             };
             sub_tx.send(msg).unwrap();
             ResponseMessage::Subscribed
@@ -192,7 +210,7 @@ pub async fn process_msg<R: RuntimeIndexer>(
         RequestMessage::UnsubscribeEvents { key } => {
             let msg = SubscriptionMessage::UnsubscribeEvents {
                 key,
-                sub_response_tx,
+                sub_response_tx: sub_response_tx.clone(),
             };
             sub_tx.send(msg).unwrap();
             ResponseMessage::Unsubscribed
@@ -222,7 +240,7 @@ async fn handle_connection<R: RuntimeIndexer>(
                 if msg.is_text() || msg.is_binary() {
                     match serde_json::from_str(msg.to_text()?) {
                         Ok(request_json) => {
-                            let response_msg = process_msg::<R>(&rpc, &trees, request_json, sub_tx.clone(), sub_events_tx.clone()).await?;
+                            let response_msg = process_msg::<R>(&rpc, &trees, request_json, &sub_tx, &sub_events_tx).await?;
                             let response_json = serde_json::to_string(&response_msg).unwrap();
                             ws_sender.send(tungstenite::Message::Text(response_json)).await?;
                         },
