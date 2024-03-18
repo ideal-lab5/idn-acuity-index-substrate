@@ -179,7 +179,7 @@ async fn test_process_msg_status() {
 
     let response = process_msg_status::<TestIndexer>(&trees.span);
 
-    let Ok(ResponseMessage::Status(spans)) = response else {
+    let ResponseMessage::Status(spans) = response else {
         panic!("Wrong response message.");
     };
     assert_eq!(spans.len(), 3);

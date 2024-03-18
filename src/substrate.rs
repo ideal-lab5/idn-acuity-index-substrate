@@ -11,7 +11,7 @@ use tokio::{
 use tracing::{debug, error, info};
 use zerocopy::{AsBytes, FromBytes};
 
-use crate::shared::*;
+use crate::{shared::*, websockets::process_msg_status};
 
 #[allow(clippy::type_complexity)]
 pub struct Indexer<R: RuntimeIndexer + ?Sized> {
@@ -139,15 +139,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
     }
 
     pub fn notify_status_subscribers(&self) {
-        let mut spans = vec![];
-        for (key, value) in self.trees.span.into_iter().flatten() {
-            let span_value = SpanDbValue::read_from(&value).unwrap();
-            let start: u32 = span_value.start.into();
-            let end: u32 = u32::from_be_bytes(key.as_ref().try_into().unwrap());
-            let span = Span { start, end };
-            spans.push(span);
-        }
-        let msg = ResponseMessage::Status(spans);
+        let msg = process_msg_status::<R>(&self.trees.span);
         let txs = self.status_sub.lock().unwrap();
         for tx in txs.iter() {
             if tx.send(msg.clone()).is_ok() {}

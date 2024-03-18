@@ -12,9 +12,7 @@ use tokio_tungstenite::tungstenite;
 use tracing::{error, info};
 use zerocopy::FromBytes;
 
-pub fn process_msg_status<R: RuntimeIndexer>(
-    span_db: &Tree,
-) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
+pub fn process_msg_status<R: RuntimeIndexer>(span_db: &Tree) -> ResponseMessage<R::ChainKey> {
     let mut spans = vec![];
     for (key, value) in span_db.into_iter().flatten() {
         let span_value = SpanDbValue::read_from(&value).unwrap();
@@ -23,7 +21,7 @@ pub fn process_msg_status<R: RuntimeIndexer>(
         let span = Span { start, end };
         spans.push(span);
     }
-    Ok(ResponseMessage::Status(spans))
+    ResponseMessage::Status(spans)
 }
 
 pub async fn process_msg_variants<R: RuntimeIndexer>(
@@ -170,7 +168,7 @@ pub async fn process_msg<R: RuntimeIndexer>(
     sub_response_tx: UnboundedSender<ResponseMessage<R::ChainKey>>,
 ) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
     Ok(match msg {
-        RequestMessage::Status => process_msg_status::<R>(&trees.span)?,
+        RequestMessage::Status => process_msg_status::<R>(&trees.span),
         RequestMessage::SubscribeStatus => {
             let msg = SubscriptionMessage::SubscribeStatus { sub_response_tx };
             sub_tx.send(msg).unwrap();
