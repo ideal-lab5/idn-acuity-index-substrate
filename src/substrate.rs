@@ -437,7 +437,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                             key_count.to_formatted_string(&Locale::en),
                         );
                         indexer.notify_status_subscribers();
-                        drop (head_future);
+                        drop(head_future);
                         head_future = Box::pin(indexer.index_head(blocks_sub.next()));
                     },
                     Err(error) => {
