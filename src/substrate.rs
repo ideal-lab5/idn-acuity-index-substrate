@@ -210,17 +210,16 @@ pub fn load_spans<R: RuntimeIndexer>(
                         end.to_formatted_string(&Locale::en)
                     );
                     continue 'span;
-                } else {
-                    info!(
-                        "📚 Re-indexing span of blocks from #{} to #{}.",
-                        block_number.to_formatted_string(&Locale::en),
-                        end.to_formatted_string(&Locale::en)
-                    );
-                    // Truncate the span.
-                    end = block_number - 1;
-                    span_db.insert(end.to_be_bytes(), value)?;
-                    break;
                 }
+                info!(
+                    "📚 Re-indexing span of blocks from #{} to #{}.",
+                    block_number.to_formatted_string(&Locale::en),
+                    end.to_formatted_string(&Locale::en)
+                );
+                // Truncate the span.
+                end = block_number - 1;
+                span_db.insert(end.to_be_bytes(), value)?;
+                break;
             }
         }
         let span = Span { start, end };
