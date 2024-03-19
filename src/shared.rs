@@ -11,6 +11,7 @@ use zerocopy::{
 };
 use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
 
+/// Errors this crate can return
 #[derive(thiserror::Error, Debug)]
 pub enum IndexError {
     #[error("database error")]
@@ -27,7 +28,7 @@ pub enum IndexError {
     BlockNotFound(u32),
 }
 
-/// Indexer for a specific chain.
+/// Indexer for a specific chain
 pub trait RuntimeIndexer {
     type RuntimeConfig: subxt::Config;
     type ChainKey: IndexKey
@@ -62,6 +63,7 @@ pub trait IndexTrees {
     fn flush(&self) -> Result<(), sled::Error>;
 }
 
+/// Database trees for built-in Substrate keys
 #[derive(Clone)]
 pub struct SubstrateTrees {
     pub account_id: Tree,
@@ -116,6 +118,7 @@ impl SubstrateTrees {
     }
 }
 
+/// Database trees for the indexer
 #[derive(Clone)]
 pub struct Trees<CT> {
     pub root: sled::Db,
@@ -125,10 +128,7 @@ pub struct Trees<CT> {
     pub chain: CT,
 }
 
-/**
- * Each tree has its own key format.
- */
-
+/// On-disk format for variant keys
 #[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
 #[repr(C)]
 pub struct VariantKey {
@@ -138,6 +138,7 @@ pub struct VariantKey {
     pub event_index: U16<BigEndian>,
 }
 
+/// On-disk format for 32-byte keys
 #[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
 #[repr(C)]
 pub struct Bytes32Key {
@@ -146,6 +147,7 @@ pub struct Bytes32Key {
     pub event_index: U16<BigEndian>,
 }
 
+/// On-disk format for u32 keys
 #[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
 #[repr(C)]
 pub struct U32Key {
@@ -154,6 +156,7 @@ pub struct U32Key {
     pub event_index: U16<BigEndian>,
 }
 
+/// Datatype to hold 32-byte keys
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
 pub struct Bytes32(pub [u8; 32]);
 
@@ -213,6 +216,7 @@ impl std::str::FromStr for Bytes32 {
     }
 }
 
+/// All the key types that are built-in to Substrate
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
 #[serde(tag = "type", content = "value")]
 pub enum SubstrateKey {
@@ -363,6 +367,7 @@ pub trait IndexKey {
     fn get_key_events(&self, trees: &Self::ChainTrees) -> Vec<Event>;
 }
 
+/// All the key types for the chain
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
 #[serde(tag = "type", content = "value")]
 pub enum Key<CK: IndexKey> {
@@ -399,6 +404,7 @@ impl<CK: IndexKey> Key<CK> {
     }
 }
 
+/// JSON request messages
 #[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "type")]
 pub enum RequestMessage<CK: IndexKey> {
@@ -412,6 +418,7 @@ pub enum RequestMessage<CK: IndexKey> {
     SizeOnDisk,
 }
 
+/// Identifies an event by block number and event index
 #[derive(Serialize, Debug, Clone, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Event {
@@ -429,12 +436,14 @@ impl fmt::Display for Event {
     }
 }
 
+/// Index and name of an event type
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct EventMeta {
     pub index: u8,
     pub name: String,
 }
 
+/// Index, name and list of event types for a pallet
 #[derive(Serialize, Debug, Clone, Deserialize, PartialEq)]
 pub struct PalletMeta {
     pub index: u8,
@@ -442,6 +451,7 @@ pub struct PalletMeta {
     pub events: Vec<EventMeta>,
 }
 
+/// On-disk format for span value
 #[derive(FromZeroes, FromBytes, AsBytes, Unaligned, PartialEq, Debug)]
 #[repr(C)]
 pub struct SpanDbValue {
@@ -450,6 +460,7 @@ pub struct SpanDbValue {
     pub index_variant: u8,
 }
 
+/// Start and end block number for a span of blocks
 #[derive(Serialize, Debug, Clone, PartialEq, Deserialize)]
 pub struct Span {
     pub start: u32,
@@ -462,6 +473,7 @@ impl fmt::Display for Span {
     }
 }
 
+/// JSON response messages
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "type", content = "data")]
 #[serde(rename_all = "camelCase")]
@@ -475,6 +487,7 @@ pub enum ResponseMessage<CK: IndexKey> {
     //    Error,
 }
 
+/// Subscription message sent from a WebSocket connection thread to the indexer thread
 #[derive(Debug)]
 pub enum SubscriptionMessage<CK: IndexKey> {
     SubscribeStatus {
