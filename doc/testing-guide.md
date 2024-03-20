@@ -15,7 +15,7 @@ cargo test
 ```
 
 
-Build the polkadot-indexer docker image (this will take 20+ mins) and run it (replace [image_hash] with the hash outputted from the build):
+Build the polkadot-indexer docker image (this will take 20+ mins):
 
 ```
 git clone https://github.com/hybrid-explorer/polkadot-indexer/
@@ -24,9 +24,13 @@ git checkout milestone-2.4
 docker build .
 ```
 
+Enter the docker image (replace [image_hash] with the hash outputted from the build):
+
 ```
 docker run -p 8172:8172 -it [image_hash] /bin/bash
 ```
+
+Run the indexer from within docker:
 
 ```
 ./target/release/polkadot-indexer -i --queue-depth 1
@@ -40,7 +44,7 @@ In a separate terminal, install hybrid-cli:
 cargo +nightly install hybrid-cli
 ```
 
-## Deliverable 1,2 - Status subscription
+## Deliverable 1,2 - Status subscription, unsubscribing
 
 Run the following command:
 
@@ -48,7 +52,7 @@ Run the following command:
 hybrid --url ws://127.0.0.1:8172 subscribe-status
 ```
 
-Observe that when a new head block is indexed a list of indexed spans is outputted. Press ctrl+c to stop. It will unsubscribe before exiting.
+Observe that when a new head block is indexed a list of indexed spans of blocks is outputted. Press ctrl+c to stop. It will unsubscribe before exiting.
 
 Run the following command:
 
