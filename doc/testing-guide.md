@@ -1,95 +1,69 @@
-# Grant 2 Milestone 3 Testing Guide
+# Grant 2 Milestone 4 Testing Guide
 
 To run the unit tests:
 
 ```
 git clone https://github.com/hybrid-explorer/hybrid-indexer
 cd hybrid-indexer
-rustup default nightly
+git checkout milestone-2.4
+cargo test
+
+git clone https://github.com/hybrid-explorer/hybrid-api-rs
+cd hybrid-api-rs
+git checkout milestone-2.4
 cargo test
 ```
 
-## Deliverable 1 - Support additional indexes
 
-Observe that the RuntimeIndexer trait now has a [ChainKey](https://github.com/hybrid-explorer/hybrid-indexer/blob/main/src/shared.rs#L42) Associated type:
-
-ChainKey must implement the [IndexKey](https://github.com/hybrid-explorer/hybrid-indexer/blob/main/src/shared.rs#L338) trait. This type is used to read and write custom keys. It has the ChainTrees associated type that implements the [IndexTrees](https://github.com/hybrid-explorer/hybrid-indexer/blob/main/src/shared.rs#L67) trait.
-
-IndexTrees is used to open and flush the database trees for custom keys.
-
-The [tutorial](https://github.com/hybrid-explorer/hybrid-indexer/blob/main/doc/tutorial.md) and [API](https://github.com/hybrid-explorer/hybrid-indexer/blob/main/doc/api.md) docs have been updated to reflect these changes.
-
-[Tests](https://github.com/hybrid-explorer/hybrid-indexer/blob/main/src/tests.rs#L563) have been written for custom keys.
-
-## Deliverable 2 - Variant index optional
-
-Build and enter the docker image:
+Build the polkadot-indexer docker image (this takes a long time) and run it:
 
 ```
 git clone https://github.com/hybrid-explorer/polkadot-indexer/
 cd polkadot-indexer
+git checkout milestone-2.4
 docker build .
-docker run -it [image_hash] /bin/bash
+docker run -p 8172:8172 -it [image_hash] /bin/bash
+./target/release/polkadot-indexer -i --queue-depth 1
 ```
 
-(Replace `[image_hash]` with the hash at the end of the build step.)
+Due to rate limiting, indexing public endpoints must have a depth queue of 1 and is therefore much slower than indexing a local node. Indexing a local node has been observed at 1,500 blocks per second with a higher queue depth.
 
-Run polkadot-indexer:
-
-```
-./target/release/polkadot-indexer
-```
-
-Observe that event variant indexing is disabled:
+In a separate terminal, install hybrid-cli:
 
 ```
-📇 Event variant indexing: disabled
+cargo +nightly install hybrid-cli
 ```
 
-Keys/sec is typically less than events/sec.
+## Deliverable 1,2 - Status subscription
 
-Press ctrl+c to stop the indexer.
-
-Run polkadot-indexer again with variant indexing enabled:
+Run the following command:
 
 ```
-./target/release/polkadot-indexer --index-variant
+hybrid --url ws://127.0.0.1:8172 subscribe-status
 ```
 
-```
-📇 Event variant indexing: enabled
-```
+Observe that when a new head block is indexed a list of indexed spans is outputted. Press ctrl+c to stop. It will unsubscribe before exiting.
 
-Keys/sec is equal to or more than events/sec because every event has at least the variant key.
-
-Observe that the previous span of indexed blocks is re-indexed.
-
-Press ctrl+c to stop the indexer.
-
-## Deliverable 3 - Expose cache_capacity() and mode()
-
-Run polkadot-indexer:
+Run the following command:
 
 ```
-./target/release/polkadot-indexer
+hybrid --url ws://127.0.0.1:8172 subscribe-events variant -p 0 -v 0
 ```
 
-Observe the database mode and cache capacity:
+Observe that when a new block is indexed the block number and event index of any ExtrinsicSuccess events is outputted. Press ctrl+c to stop. It will unsubscribe before exiting.
+
+## Deliverable 3 - Report each index size
+
+Run the following command:
 
 ```
-Database mode: LowSpace
-Database cache capacity: 1024.00 MiB
+hybrid --url ws://127.0.0.1:8172 size-on-disk
 ```
 
-Run polkadot-indexer with different database settings:
+Observe that the size on disk is outputted.
 
-```
-./target/release/polkadot-indexer --db-cache-capacity 0.5GiB --db-mode high-throughput
-```
+## Deliverable 4 - Rust API
 
-Observe the database mode and cache capacity:
+The documentation for the Hybrid API library can be found here: https://docs.rs/hybrid-api/latest/hybrid_api/
 
-```
-Database mode: HighThroughput
-Database cache capacity: 512.00 MiB
-```
+The Hybrid CLI source code shows how to use it: https://github.com/hybrid-explorer/hybrid-cli/blob/master/src/main.rs
