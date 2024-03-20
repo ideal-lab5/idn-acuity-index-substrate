@@ -15,14 +15,20 @@ cargo test
 ```
 
 
-Build the polkadot-indexer docker image (this takes a long time) and run it:
+Build the polkadot-indexer docker image (this will take 20+ mins) and run it (replace [image_hash] with the hash outputted from the build):
 
 ```
 git clone https://github.com/hybrid-explorer/polkadot-indexer/
 cd polkadot-indexer
 git checkout milestone-2.4
 docker build .
+```
+
+```
 docker run -p 8172:8172 -it [image_hash] /bin/bash
+```
+
+```
 ./target/release/polkadot-indexer -i --queue-depth 1
 ```
 
@@ -64,6 +70,8 @@ Observe that the size on disk is outputted.
 
 ## Deliverable 4 - Rust API
 
-The documentation for the Hybrid API library can be found here: https://docs.rs/hybrid-api/latest/hybrid_api/
+The source code can be found here: https://github.com/hybrid-explorer/hybrid-api-rs/tree/milestone-2.4
+
+The documentation can be found here: https://docs.rs/hybrid-api/latest/hybrid_api/
 
 The Hybrid CLI source code shows how to use it: https://github.com/hybrid-explorer/hybrid-cli/blob/master/src/main.rs
