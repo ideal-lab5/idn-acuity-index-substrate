@@ -1,6 +1,6 @@
 [package]
 name = "hybrid-indexer"
-version = "0.5.3"
+version = "0.5.4"
 edition = "2021"
 authors = ["Jonathan Brown"]
 description = "A library for indexing events from Substrate blockchains."
