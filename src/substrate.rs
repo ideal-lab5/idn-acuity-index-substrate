@@ -303,11 +303,8 @@ pub fn process_sub_msg<R: RuntimeIndexer>(
             sub_response_tx,
         } => {
             let mut events_sub_map = indexer.events_sub_map.lock().unwrap();
-            match events_sub_map.get_mut(&key) {
-                Some(txs) => {
-                    txs.retain(|value| !sub_response_tx.same_channel(value));
-                }
-                None => {}
+            if let Some(txs) = events_sub_map.get_mut(&key) {
+                txs.retain(|value| !sub_response_tx.same_channel(value));
             };
         }
     };
