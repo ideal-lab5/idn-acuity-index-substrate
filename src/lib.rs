@@ -1,4 +1,4 @@
-//! # Hybrid Indexer
+//! # Acuity Index Substrate
 //!
 //! A library for indexing events from Substrate blockchains.
 

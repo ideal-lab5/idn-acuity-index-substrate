@@ -1,14 +1,12 @@
 [package]
-name = "hybrid-indexer"
+name = "acuity-index-substrate"
 version = "0.5.4"
 edition = "2021"
 authors = ["Jonathan Brown"]
 description = "A library for indexing events from Substrate blockchains."
-homepage = "https://hybridscan.app/"
-repository = "https://github.com/hybrid-explorer/hybrid-indexer"
+homepage = "https://index.acuity.network/"
+repository = "https://github.com/acuity-network/acuity-index-substrate"
 license = "Apache-2.0"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 ahash = "0.8.3"
