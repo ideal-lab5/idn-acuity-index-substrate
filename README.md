@@ -1,4 +1,4 @@
-# Hybrid Indexer
+# Acuity Index Substrate
 Substrate event indexer.
 
 Development of this tool was funded by a [grant](https://github.com/w3f/Grants-Program/blob/master/applications/hybrid.md) from the Web3 Foundation.
