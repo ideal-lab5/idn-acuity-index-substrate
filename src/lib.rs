@@ -82,7 +82,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         Some(db_path) => PathBuf::from(db_path),
         None => match home::home_dir() {
             Some(mut db_path) => {
-                db_path.push(".local/share/hybrid-indexer");
+                db_path.push(".local/share/acuity-index/");
                 db_path.push(name);
                 db_path.push("db");
                 db_path
