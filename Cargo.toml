@@ -1,6 +1,6 @@
 [package]
 name = "acuity-index-substrate"
-version = "0.6.1"
+version = "0.6.2"
 edition = "2021"
 authors = ["Jonathan Brown"]
 description = "A library for indexing events from Substrate blockchains."
