@@ -9,7 +9,7 @@ use zerocopy::{
     byteorder::{U16, U32},
     AsBytes,
 };
-use zerocopy_derive::{AsBytes, FromBytes, FromZeroes, Unaligned};
+use zerocopy_derive::*;
 
 /// Errors this crate can return
 #[derive(thiserror::Error, Debug)]
