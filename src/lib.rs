@@ -35,6 +35,9 @@ use websockets::websockets_listen;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+mod tests_idn;
+
 pub fn open_trees<R: RuntimeIndexer>(
     db_config: sled::Config,
 ) -> Result<Trees<<R::ChainKey as IndexKey>::ChainTrees>, sled::Error> {
