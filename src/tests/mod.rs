@@ -1,3 +1,5 @@
+mod idn;
+
 use crate::shared::*;
 use crate::substrate::*;
 use crate::websockets::*;
@@ -1217,12 +1219,5 @@ fn test_idn_key_storage() {
     assert_eq!(trees.substrate.beacon_public_key.len(), 1);
 }
 
-// Add this function to ChainKey implementation to fix test errors
-impl ChainKey {
-    fn get_key_events(&self, trees: &ChainTrees) -> Vec<Event> {
-        match self {
-            ChainKey::TestIndex(test_index) => get_events_u32(&trees.test_index, *test_index),
-            ChainKey::TestHash(test_hash) => get_events_bytes32(&trees.test_hash, test_hash),
-        }
-    }
-}
+// Note: The get_key_events method is already defined in the primary ChainKey impl block above
+// This was a duplicate definition causing a warning
