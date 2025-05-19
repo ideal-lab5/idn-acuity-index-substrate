@@ -38,7 +38,7 @@ Hybrid currently supports indexing of the following event parameters: `AccountId
 
 ## IDeal Network Extensions
 
-In addition to the standard Substrate pallets, this fork adds support for IDeal Network (IDN) specific pallets and event parameters. The following IDN-specific features have been implemented:
+In addition to the standard Substrate pallets, this fork adds support for Ideal Network (IDN) specific pallets and event parameters. The following IDN-specific features have been implemented:
 
 - **IDN Manager Pallet**: Support for indexing subscription-related events and tracking subscription IDs.
 - **Randomness Beacon Pallet**: Support for indexing beacon events, pulse rounds, and beacon public keys.

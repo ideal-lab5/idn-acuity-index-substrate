@@ -242,7 +242,7 @@ pub enum SubstrateKey {
     RegistrarIndex(u32),
     SessionIndex(u32),
     TipHash(Bytes32),
-    // IDeal Network specific keys
+    // Ideal Network specific keys
     SubscriptionId(u32),
     PulseRound(u32),
     BeaconPublicKey(Bytes32),

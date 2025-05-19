@@ -165,7 +165,7 @@ pub fn process_msg_get_events_substrate<R: RuntimeIndexer>(
             get_events_u32(&trees.substrate.session_index, *session_index)
         }
         SubstrateKey::TipHash(tip_hash) => get_events_bytes32(&trees.substrate.tip_hash, tip_hash),
-        // Handle IDeal Network specific keys
+        // Handle Ideal Network specific keys
         SubstrateKey::SubscriptionId(subscription_id) => {
             get_events_u32(&trees.substrate.subscription_id, *subscription_id)
         }
