@@ -79,6 +79,9 @@ pub struct SubstrateTrees {
     pub registrar_index: Tree,
     pub session_index: Tree,
     pub tip_hash: Tree,
+    pub subscription_id: Tree,
+    pub pulse_round: Tree,
+    pub beacon_public_key: Tree,
 }
 
 impl SubstrateTrees {
@@ -97,6 +100,9 @@ impl SubstrateTrees {
             registrar_index: db.open_tree(b"registrar_index")?,
             session_index: db.open_tree(b"session_index")?,
             tip_hash: db.open_tree(b"tip_hash")?,
+            subscription_id: db.open_tree(b"subscription_id")?,
+            pulse_round: db.open_tree(b"pulse_round")?,
+            beacon_public_key: db.open_tree(b"beacon_public_key")?,
         })
     }
 
@@ -114,6 +120,9 @@ impl SubstrateTrees {
         self.registrar_index.flush()?;
         self.session_index.flush()?;
         self.tip_hash.flush()?;
+        self.subscription_id.flush()?;
+        self.pulse_round.flush()?;
+        self.beacon_public_key.flush()?;
         Ok(())
     }
 }
@@ -233,6 +242,10 @@ pub enum SubstrateKey {
     RegistrarIndex(u32),
     SessionIndex(u32),
     TipHash(Bytes32),
+    // Ideal Network specific keys
+    SubscriptionId(u32),
+    PulseRound(u32),
+    BeaconPublicKey(Bytes32),
 }
 
 impl SubstrateKey {
@@ -348,6 +361,30 @@ impl SubstrateKey {
                     event_index,
                 };
                 trees.tip_hash.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::SubscriptionId(subscription_id) => {
+                let key = U32Key {
+                    key: (*subscription_id).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.subscription_id.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::PulseRound(pulse_round) => {
+                let key = U32Key {
+                    key: (*pulse_round).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.pulse_round.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::BeaconPublicKey(beacon_public_key) => {
+                let key = Bytes32Key {
+                    key: beacon_public_key.0,
+                    block_number,
+                    event_index,
+                };
+                trees.beacon_public_key.insert(key.as_bytes(), &[])?
             }
         };
         Ok(())

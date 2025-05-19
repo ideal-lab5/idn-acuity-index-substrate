@@ -36,6 +36,20 @@ Hybrid has built-in indexing macros for the following Substrate pallets: System,
 
 Hybrid currently supports indexing of the following event parameters: `AccountId`, `AccountIndex`, `AuctionIndex`, `BountyIndex`, `CandidateHash`, `EraIndex`, `MessageId`, `ParaId`, `PoolId`, `PreimageHash`, `ProposalHash`, `RefIndex`, `RegistrarIndex`, `SessionIndex`, `TipHash`.
 
+## IDeal Network Extensions
+
+In addition to the standard Substrate pallets, this fork adds support for Ideal Network (IDN) specific pallets and event parameters. The following IDN-specific features have been implemented:
+
+- **IDN Manager Pallet**: Support for indexing subscription-related events and tracking subscription IDs.
+- **Randomness Beacon Pallet**: Support for indexing beacon events, pulse rounds, and beacon public keys.
+
+Additional event parameters that are now indexed:
+- `SubscriptionId`: Track subscription-related events by their unique identifier
+- `PulseRound`: Index events by their randomness pulse round number
+- `BeaconPublicKey`: Index events related to specific beacon public keys
+
+The indexer is configured to work with the IDN runtime and handle both standard Substrate events and IDN-specific events. This allows for efficient querying of IDN-related operations through the same WSS interface.
+
 Additionally, all events are indexed by event variant. This means that, for example, a list of all balance transfers for all accounts can be obtained. 
 
 To index a block, first a query has to be made to determine the hash from the block number. Then a second query for the metadata version. Finally the block itself is downloaded. In order to ensure throughput is as high as possible, multiple blocks are indexed simultaneously to counteract the round-trip delay.

@@ -1,4 +1,217 @@
 #[macro_export]
+macro_rules! index_idn_manager_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        // Use the variant index to determine which event type it is
+        match $event.variant_index() {
+            // SubscriptionCreated - Assuming variant index 0
+            0 => {
+                // Parse the event data to extract the actual subscription ID and account
+                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
+                    // Access the subscription_id and subscriber fields from the event data
+                    // Assuming fields are named subscription_id (u32) and subscriber (AccountId32)
+                    let sub_id = event_data.subscription_id;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    
+                    // Index by account ID
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::AccountId(Bytes32(event_data.subscriber.0))),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    2
+                } else {
+                    // Failed to decode event data
+                    0
+                }
+            },
+            
+            // SubscriptionUpdated - Assuming variant index 1
+            1 => {
+                // Parse the event data to extract the actual subscription ID
+                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
+                    // Access the subscription_id field from the event data
+                    let sub_id = event_data.subscription_id;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    1
+                } else {
+                    // Failed to decode event data
+                    0
+                }
+            },
+            
+            // SubscriptionDistributed - Assuming variant index 2
+            2 => {
+                // Parse the event data to extract the actual subscription ID
+                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
+                    // Access the subscription_id field from the event data
+                    let sub_id = event_data.subscription_id;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    1
+                } else {
+                    // Failed to decode event data
+                    0
+                }
+            },
+            
+            // SubscriptionRemoved - Assuming variant index 3
+            3 => {
+                // Parse the event data to extract the actual subscription ID and account
+                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
+                    // Access the subscription_id and subscriber fields from the event data
+                    let sub_id = event_data.subscription_id;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    
+                    // Index by account ID if available in this event
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::AccountId(Bytes32(event_data.subscriber.0))),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    2
+                } else {
+                    // Failed to decode event data
+                    0
+                }
+            },
+            
+            // SubscriptionPaused - Assuming variant index 4
+            4 => {
+                // Parse the event data to extract the actual subscription ID
+                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
+                    // Access the subscription_id field from the event data
+                    let sub_id = event_data.subscription_id;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    1
+                } else {
+                    // Failed to decode event data
+                    0
+                }
+            },
+            
+            // SubscriptionActivated - Assuming variant index 5
+            5 => {
+                // Parse the event data to extract the actual subscription ID
+                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
+                    // Access the subscription_id field from the event data
+                    let sub_id = event_data.subscription_id;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    1
+                } else {
+                    // Failed to decode event data
+                    0
+                }
+            },
+            
+            // SubQuoted - Assuming variant index 6
+            6 => {
+                // We don't have a specific key for the requester location or quote
+                // so we're not indexing this event currently except by variant (already done)
+                0
+            },
+            
+            // Any other variant
+            _ => 0,
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! index_randomness_beacon_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        // Use the variant index to determine which event type it is
+        match $event.variant_index() {
+            // BeaconConfigSet - Assuming variant index 0
+            0 => {
+                // Already indexed by variant, no specific key needed for this event
+                1
+            },
+            
+            // PulseProduced - Assuming variant index 1
+            1 => {
+                // Parse the event data to extract the pulse round
+                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
+                    // Access the pulse_round field from the event data
+                    let pulse_round = event_data.pulse_round;
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::PulseRound(pulse_round)),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    1
+                } else {
+                    // Failed to decode event data
+                    0
+                }
+            },
+            
+            // NodeAdded - Assuming variant index 2
+            2 => {
+                // Parse the event data to extract the beacon public key
+                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
+                    // Access the public_key field from the event data
+                    // Assuming public_key is a 32-byte array that can be converted to Bytes32
+                    let public_key = Bytes32(event_data.public_key);
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::BeaconPublicKey(public_key)),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    1
+                } else {
+                    // Failed to decode event data
+                    0
+                }
+            },
+            
+            // NodeRemoved - Assuming variant index 3
+            3 => {
+                // Parse the event data to extract the beacon public key
+                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
+                    // Access the public_key field from the event data
+                    let public_key = Bytes32(event_data.public_key);
+                    $indexer.index_event(
+                        Key::Substrate(SubstrateKey::BeaconPublicKey(public_key)),
+                        $block_number,
+                        $event_index,
+                    )?;
+                    1
+                } else {
+                    // Failed to decode event data
+                    0
+                }
+            },
+            
+            // Any other variant
+            _ => 0,
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! index_system_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
@@ -1481,103 +1694,6 @@ macro_rules! index_nomination_pools_event {
                     $event_index,
                 )?;
                 3
-            }
-            <$event_enum>::Withdrawn {
-                member, pool_id, ..
-            } => {
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
-                    $block_number,
-                    $event_index,
-                )?;
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
-                    $block_number,
-                    $event_index,
-                )?;
-                2
-            }
-            <$event_enum>::Destroyed { pool_id } => {
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
-                    $block_number,
-                    $event_index,
-                )?;
-                1
-            }
-            <$event_enum>::StateChanged { pool_id, .. } => {
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
-                    $block_number,
-                    $event_index,
-                )?;
-                1
-            }
-            <$event_enum>::MemberRemoved { pool_id, member } => {
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
-                    $block_number,
-                    $event_index,
-                )?;
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
-                    $block_number,
-                    $event_index,
-                )?;
-                2
-            }
-            <$event_enum>::RolesUpdated {
-                root,
-                bouncer,
-                nominator,
-            } => {
-                let mut count = 0;
-                if let Some(account) = root {
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    count += 1;
-                }
-                if let Some(account) = bouncer {
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    count += 1;
-                }
-                if let Some(account) = nominator {
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    count += 1;
-                }
-                count
-            }
-            <$event_enum>::PoolSlashed { pool_id, .. } => {
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
-                    $block_number,
-                    $event_index,
-                )?;
-                1
-            }
-            <$event_enum>::UnbondingPoolSlashed { pool_id, era, .. } => {
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
-                    $block_number,
-                    $event_index,
-                )?;
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::EraIndex(era)),
-                    $block_number,
-                    $event_index,
-                )?;
-                2
             }
             <$event_enum>::PoolCommissionUpdated {
                 pool_id, current, ..
