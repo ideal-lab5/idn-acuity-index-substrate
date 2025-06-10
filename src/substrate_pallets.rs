@@ -388,6 +388,8 @@ macro_rules! index_staking_event {
             <$event_enum>::PayoutStarted {
                 era_index,
                 validator_stash,
+                page,
+                next,
             } => {
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::EraIndex(era_index)),
@@ -691,7 +693,7 @@ macro_rules! index_elections_phragmen_event {
             <$event_enum>::NewTerm { new_members } => {
                 for member in &new_members {
                     $indexer.index_event(
-                        Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0 .0))),
+                        Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0.0))),
                         $block_number,
                         $event_index,
                     )?;
@@ -739,14 +741,6 @@ macro_rules! index_elections_phragmen_event {
 macro_rules! index_treasury_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
         match $event {
-            <$event_enum>::Proposed { proposal_index } => {
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::ProposalIndex(proposal_index)),
-                    $block_number,
-                    $event_index,
-                )?;
-                1
-            }
             <$event_enum>::Awarded {
                 proposal_index,
                 account,
@@ -763,14 +757,6 @@ macro_rules! index_treasury_event {
                     $event_index,
                 )?;
                 2
-            }
-            <$event_enum>::Rejected { proposal_index, .. } => {
-                $indexer.index_event(
-                    Key::Substrate(SubstrateKey::ProposalIndex(proposal_index)),
-                    $block_number,
-                    $event_index,
-                )?;
-                1
             }
             <$event_enum>::SpendApproved {
                 proposal_index,
@@ -1513,7 +1499,11 @@ macro_rules! index_nomination_pools_event {
                 )?;
                 1
             }
-            <$event_enum>::MemberRemoved { pool_id, member } => {
+            <$event_enum>::MemberRemoved {
+                pool_id,
+                member,
+                released_balance,
+            } => {
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::PoolId(pool_id)),
                     $block_number,
