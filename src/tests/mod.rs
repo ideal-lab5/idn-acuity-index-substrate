@@ -1110,113 +1110,48 @@ fn test_check_next_batch_block() {
 fn test_subscription_id_key() {
     let db_config = sled::Config::new().temporary(true);
     let trees = open_trees::<TestIndexer>(db_config).unwrap();
-    
+
     // Create a subscription ID key
     let subscription_id: u32 = 123;
     let key = SubstrateKey::SubscriptionId(subscription_id);
-    
+
     // Write it to the database
     key.write_db_key(&trees.substrate, 100, 2).unwrap();
-    
+
     // Check that the key was written correctly
     let mut iter = trees.substrate.subscription_id.iter();
     let (db_key, _) = iter.next().unwrap().unwrap();
-    
+
     // Since from_bytes is not available, we'll manually extract the data
     assert_eq!(db_key.len(), std::mem::size_of::<U32Key>());
     let key_bytes: [u8; 4] = db_key[0..4].try_into().unwrap();
     let block_number_bytes: [u8; 4] = db_key[4..8].try_into().unwrap();
     let event_index_bytes: [u8; 2] = db_key[8..10].try_into().unwrap();
-    
+
     let extracted_key = u32::from_be_bytes(key_bytes);
     let extracted_block_number = u32::from_be_bytes(block_number_bytes);
     let extracted_event_index = u16::from_be_bytes(event_index_bytes);
-    
+
     assert_eq!(extracted_key, subscription_id);
     assert_eq!(extracted_block_number, 100);
     assert_eq!(extracted_event_index, 2);
 }
 
 #[test]
-fn test_pulse_round_key() {
-    let db_config = sled::Config::new().temporary(true);
-    let trees = open_trees::<TestIndexer>(db_config).unwrap();
-    
-    // Create a pulse round key
-    let pulse_round: u32 = 456;
-    let key = SubstrateKey::PulseRound(pulse_round);
-    
-    // Write it to the database
-    key.write_db_key(&trees.substrate, 200, 3).unwrap();
-    
-    // Check that the key was written correctly
-    let mut iter = trees.substrate.pulse_round.iter();
-    let (db_key, _) = iter.next().unwrap().unwrap();
-    
-    // Since from_bytes is not available, we'll manually extract the data
-    assert_eq!(db_key.len(), std::mem::size_of::<U32Key>());
-    let key_bytes: [u8; 4] = db_key[0..4].try_into().unwrap();
-    let block_number_bytes: [u8; 4] = db_key[4..8].try_into().unwrap();
-    let event_index_bytes: [u8; 2] = db_key[8..10].try_into().unwrap();
-    
-    let extracted_key = u32::from_be_bytes(key_bytes);
-    let extracted_block_number = u32::from_be_bytes(block_number_bytes);
-    let extracted_event_index = u16::from_be_bytes(event_index_bytes);
-    
-    assert_eq!(extracted_key, pulse_round);
-    assert_eq!(extracted_block_number, 200);
-    assert_eq!(extracted_event_index, 3);
-}
-
-#[test]
-fn test_beacon_public_key() {
-    let db_config = sled::Config::new().temporary(true);
-    let trees = open_trees::<TestIndexer>(db_config).unwrap();
-    
-    // Create a beacon public key
-    let public_key = Bytes32([1u8; 32]);
-    let key = SubstrateKey::BeaconPublicKey(public_key);
-    
-    // Write it to the database
-    key.write_db_key(&trees.substrate, 300, 4).unwrap();
-    
-    // Check that the key was written correctly
-    let mut iter = trees.substrate.beacon_public_key.iter();
-    let (db_key, _) = iter.next().unwrap().unwrap();
-    
-    // Since from_bytes is not available, we'll manually extract the data
-    assert_eq!(db_key.len(), std::mem::size_of::<Bytes32Key>());
-    let key_bytes: [u8; 32] = db_key[0..32].try_into().unwrap();
-    let block_number_bytes: [u8; 4] = db_key[32..36].try_into().unwrap();
-    let event_index_bytes: [u8; 2] = db_key[36..38].try_into().unwrap();
-    
-    let extracted_block_number = u32::from_be_bytes(block_number_bytes);
-    let extracted_event_index = u16::from_be_bytes(event_index_bytes);
-    
-    assert_eq!(key_bytes, public_key.0);
-    assert_eq!(extracted_block_number, 300);
-    assert_eq!(extracted_event_index, 4);
-}
-
-#[test]
 fn test_idn_key_storage() {
     let db_config = sled::Config::new().temporary(true);
     let trees = open_trees::<TestIndexer>(db_config).unwrap();
-    
-    // Create test data for all new key types
+
+    // Create test data for the subscription key type
     let subscription_id = SubstrateKey::SubscriptionId(555);
-    let pulse_round = SubstrateKey::PulseRound(666);
-    let beacon_key = SubstrateKey::BeaconPublicKey(Bytes32([2u8; 32]));
-    
+
     // Write events to the database
-    subscription_id.write_db_key(&trees.substrate, 700, 7).unwrap();
-    pulse_round.write_db_key(&trees.substrate, 800, 8).unwrap();
-    beacon_key.write_db_key(&trees.substrate, 900, 9).unwrap();
-    
-    // Verify counts
+    subscription_id
+        .write_db_key(&trees.substrate, 700, 7)
+        .unwrap();
+
+    // Verify count
     assert_eq!(trees.substrate.subscription_id.len(), 1);
-    assert_eq!(trees.substrate.pulse_round.len(), 1);
-    assert_eq!(trees.substrate.beacon_public_key.len(), 1);
 }
 
 // Note: The get_key_events method is already defined in the primary ChainKey impl block above

@@ -169,12 +169,6 @@ pub fn process_msg_get_events_substrate<R: RuntimeIndexer>(
         SubstrateKey::SubscriptionId(subscription_id) => {
             get_events_u32(&trees.substrate.subscription_id, *subscription_id)
         }
-        SubstrateKey::PulseRound(pulse_round) => {
-            get_events_u32(&trees.substrate.pulse_round, *pulse_round)
-        }
-        SubstrateKey::BeaconPublicKey(beacon_public_key) => {
-            get_events_bytes32(&trees.substrate.beacon_public_key, beacon_public_key)
-        }
     }
 }
 
