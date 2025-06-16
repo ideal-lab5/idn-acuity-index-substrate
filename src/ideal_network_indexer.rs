@@ -166,14 +166,19 @@ impl RuntimeIndexer for IdealNetworkIndexer {
 
             // IDeal Network pallets - use the actual pallet indices from your runtime
             // You'll need to determine the actual pallet indices from your runtime metadata
-            50 => index_idn_manager_event!(
+            //
+            // IMPORTANT: The randomness beacon pallet only has 2 events with no indexable fields:
+            // - BeaconConfigSet (no fields)
+            // - SignatureVerificationSuccess (no fields)
+            // So PulseRound and BeaconPublicKey keys have been removed from shared.rs
+            40 => index_idn_manager_event!(
                 pallet_idn_manager::pallet::Event,
                 event,
                 indexer,
                 block_number,
                 event_index
             ),
-            51 => index_randomness_beacon_event!(
+            41 => index_randomness_beacon_event!(
                 pallet_randomness_beacon::pallet::Event,
                 event,
                 indexer,
