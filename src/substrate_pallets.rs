@@ -1,162 +1,75 @@
 #[macro_export]
 macro_rules! index_idn_manager_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
-        // Use the variant index to determine which event type it is
-        match $event.variant_index() {
-            // SubscriptionCreated - variant index 0
-            0 => {
-                // Parse the event data to extract the subscription ID
-                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
-                    // Access the sub_id field from the event data
-                    let sub_id = event_data.sub_id;
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    1
-                } else {
-                    // Failed to decode event data
-                    0
-                }
-            },
-
-            // SubscriptionTerminated - variant index 1
-            1 => {
-                // Parse the event data to extract the subscription ID
-                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
-                    // Access the sub_id field from the event data
-                    let sub_id = event_data.sub_id;
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    1
-                } else {
-                    // Failed to decode event data
-                    0
-                }
-            },
-
-            // SubscriptionPaused - variant index 2
-            2 => {
-                // Parse the event data to extract the subscription ID
-                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
-                    // Access the sub_id field from the event data
-                    let sub_id = event_data.sub_id;
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    1
-                } else {
-                    // Failed to decode event data
-                    0
-                }
-            },
-
-            // SubscriptionUpdated - variant index 3
-            3 => {
-                // Parse the event data to extract the subscription ID
-                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
-                    // Access the sub_id field from the event data
-                    let sub_id = event_data.sub_id;
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    1
-                } else {
-                    // Failed to decode event data
-                    0
-                }
-            },
-
-            // SubscriptionReactivated - variant index 4
-            4 => {
-                // Parse the event data to extract the subscription ID
-                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
-                    // Access the sub_id field from the event data
-                    let sub_id = event_data.sub_id;
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    1
-                } else {
-                    // Failed to decode event data
-                    0
-                }
-            },
-
-            // RandomnessDistributed - variant index 5
-            5 => {
-                // Parse the event data to extract the subscription ID
-                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
-                    // Access the sub_id field from the event data
-                    let sub_id = event_data.sub_id;
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    1
-                } else {
-                    // Failed to decode event data
-                    0
-                }
-            },
-
-            // FeesCollected - variant index 6
-            6 => {
-                // Parse the event data to extract the subscription ID and fees
-                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
-                    // Access the sub_id field from the event data
-                    let sub_id = event_data.sub_id;
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    // Note: fees field is available but we're only indexing by subscription_id for now
-                    1
-                } else {
-                    // Failed to decode event data
-                    0
-                }
-            },
-
-            // SubQuoted - variant index 7
-            7 => {
-                // We don't have a specific key for the requester location or quote
-                // so we're not indexing this event currently except by variant (already done)
-                // Note: This event has requester (Location) and quote fields but no indexable keys
+        match $event {
+            <$event_enum>::SubscriptionCreated { sub_id } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SubscriptionId(*sub_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::SubscriptionTerminated { sub_id } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SubscriptionId(*sub_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::SubscriptionPaused { sub_id } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SubscriptionId(*sub_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::SubscriptionUpdated { sub_id } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SubscriptionId(*sub_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::SubscriptionReactivated { sub_id } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SubscriptionId(*sub_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::RandomnessDistributed { sub_id } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SubscriptionId(*sub_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::FeesCollected { sub_id, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SubscriptionId(*sub_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::SubQuoted { .. } => {
+                // This event might not have indexable fields, or we need to check the actual structure
                 0
-            },
-
-            // SubscriptionDistributed - variant index 8
-            8 => {
-                // Parse the event data to extract the subscription ID
-                if let Ok(event_data) = <$event_enum as subxt::events::StaticEvent>::decode(&mut &$event.bytes()[..]) {
-                    // Access the sub_id field from the event data
-                    let sub_id = event_data.sub_id;
-                    $indexer.index_event(
-                        Key::Substrate(SubstrateKey::SubscriptionId(sub_id)),
-                        $block_number,
-                        $event_index,
-                    )?;
-                    1
-                } else {
-                    // Failed to decode event data
-                    0
-                }
-            },
-
-            // Any other variant
+            }
+            <$event_enum>::SubscriptionDistributed { sub_id } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SubscriptionId(*sub_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
             _ => 0,
         }
     };
@@ -165,23 +78,15 @@ macro_rules! index_idn_manager_event {
 #[macro_export]
 macro_rules! index_randomness_beacon_event {
     ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
-        // Use the variant index to determine which event type it is
-        match $event.variant_index() {
-            // BeaconConfigSet - variant index 0
-            0 => {
-                // This event has no fields to index besides the variant itself
-                // Already indexed by variant, no additional keys needed
+        match $event {
+            <$event_enum>::BeaconConfigSet { .. } => {
+                // This event might contain configuration data but no indexable keys
                 0
             }
-
-            // SignatureVerificationSuccess - variant index 1
-            1 => {
-                // This event has no fields to index besides the variant itself
-                // Already indexed by variant, no additional keys needed
+            <$event_enum>::SignatureVerificationSuccess { .. } => {
+                // This event indicates successful signature verification but no indexable keys
                 0
             }
-
-            // Any other variant
             _ => 0,
         }
     };
