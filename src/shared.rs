@@ -237,7 +237,7 @@ pub enum SubstrateKey {
     SessionIndex(u32),
     TipHash(Bytes32),
     // Ideal Network specific keys
-    SubscriptionId(u32),
+    SubscriptionId(Bytes32),
 }
 
 impl SubstrateKey {
@@ -355,8 +355,8 @@ impl SubstrateKey {
                 trees.tip_hash.insert(key.as_bytes(), &[])?
             }
             SubstrateKey::SubscriptionId(subscription_id) => {
-                let key = U32Key {
-                    key: (*subscription_id).into(),
+                let key = Bytes32Key {
+                    key: subscription_id.0,
                     block_number,
                     event_index,
                 };

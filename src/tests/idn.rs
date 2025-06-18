@@ -61,35 +61,35 @@ impl MockEventDetails {
 
 // IDN Manager Events data structures
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SubscriptionCreatedEvent {
-    pub subscription_id: u32,
+pub struct MockSubscriptionCreatedEvent {
+    pub subscription_id: Bytes32,
     pub subscriber: AccountId32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionUpdatedEvent {
-    pub subscription_id: u32,
+    pub subscription_id: Bytes32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionDistributedEvent {
-    pub subscription_id: u32,
+    pub subscription_id: Bytes32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionRemovedEvent {
-    pub subscription_id: u32,
+    pub subscription_id: Bytes32,
     pub subscriber: AccountId32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionPausedEvent {
-    pub subscription_id: u32,
+    pub subscription_id: Bytes32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionActivatedEvent {
-    pub subscription_id: u32,
+    pub subscription_id: Bytes32,
 }
 
 // Randomness Beacon Events data structures
@@ -137,8 +137,12 @@ fn check_variant_events<R: RuntimeIndexer>(
 
 /// Helper function to create a mocked SubscriptionCreated event
 fn create_subscription_created_event(sub_id: u32, subscriber: AccountId32) -> Vec<u8> {
-    let event = SubscriptionCreatedEvent {
-        subscription_id: sub_id,
+    let event = MockSubscriptionCreatedEvent {
+        subscription_id: Bytes32::from({
+            let mut bytes = [0u8; 32];
+            bytes[28..32].copy_from_slice(&sub_id.to_be_bytes());
+            bytes
+        }),
         subscriber,
     };
     serde_json::to_vec(&event).unwrap()
@@ -167,7 +171,8 @@ fn process_idn_manager_event(
         // SubscriptionCreated
         0 => {
             if let Some(data) = &event.data {
-                if let Ok(created_event) = serde_json::from_slice::<SubscriptionCreatedEvent>(data)
+                if let Ok(created_event) =
+                    serde_json::from_slice::<MockSubscriptionCreatedEvent>(data)
                 {
                     indexer.index_event(
                         Key::Substrate(SubstrateKey::SubscriptionId(created_event.subscription_id)),
@@ -380,7 +385,11 @@ async fn test_end_to_end_idn_event_processing() {
     let (trees, indexer) = setup_test_db();
 
     // Simulate a block with various IDN events
-    let subscription_id = 54321;
+    let subscription_id = {
+        let mut bytes = [0u8; 32];
+        bytes[28..32].copy_from_slice(&12345u32.to_be_bytes());
+        Bytes32::from(bytes)
+    };
 
     // Create keys for the events
     let subscription_key = Key::Substrate(SubstrateKey::SubscriptionId(subscription_id));
@@ -418,7 +427,11 @@ async fn test_websocket_subscription_to_idn_events() {
         mpsc::unbounded_channel::<ResponseMessage<ChainKey>>();
 
     // Create a subscription key
-    let subscription_id = 98765;
+    let subscription_id = {
+        let mut bytes = [0u8; 32];
+        bytes[28..32].copy_from_slice(&98765u32.to_be_bytes());
+        Bytes32::from(bytes)
+    };
     let sub_key = Key::Substrate(SubstrateKey::SubscriptionId(subscription_id));
 
     // Subscribe to events for this subscription ID
@@ -441,7 +454,11 @@ async fn test_idn_event_edge_cases() {
     let (trees, indexer) = setup_test_db();
 
     // Test: Multiple events for the same subscription
-    let subscription_id = 12345;
+    let subscription_id = {
+        let mut bytes = [0u8; 32];
+        bytes[28..32].copy_from_slice(&12345u32.to_be_bytes());
+        Bytes32::from(bytes)
+    };
     let sub_key = Key::Substrate(SubstrateKey::SubscriptionId(subscription_id));
 
     // Index multiple events for the same subscription
@@ -488,7 +505,11 @@ async fn test_ideal_network_indexer_process_event() {
     // Verify subscription ID is indexed
     let sub_events = process_msg_get_events_substrate::<IdnTestIndexer>(
         &trees,
-        &SubstrateKey::SubscriptionId(sub_id),
+        &SubstrateKey::SubscriptionId({
+            let mut bytes = [0u8; 32];
+            bytes[28..32].copy_from_slice(&sub_id.to_be_bytes());
+            Bytes32::from(bytes)
+        }),
     );
     assert_eq!(sub_events.len(), 1);
     assert_eq!(sub_events[0].block_number, 600);
