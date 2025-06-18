@@ -1111,9 +1111,9 @@ fn test_subscription_id_key() {
     let db_config = sled::Config::new().temporary(true);
     let trees = open_trees::<TestIndexer>(db_config).unwrap();
 
-    // Create a subscription ID key
-    let subscription_id: u32 = 123;
-    let key = SubstrateKey::SubscriptionId(subscription_id);
+    // Create a subscription ID key - use a simple pattern for testing
+    let test_bytes = [123u8; 32];
+    let key = SubstrateKey::SubscriptionId(Bytes32::from(test_bytes));
 
     // Write it to the database
     key.write_db_key(&trees.substrate, 100, 2).unwrap();
@@ -1122,17 +1122,18 @@ fn test_subscription_id_key() {
     let mut iter = trees.substrate.subscription_id.iter();
     let (db_key, _) = iter.next().unwrap().unwrap();
 
-    // Since from_bytes is not available, we'll manually extract the data
-    assert_eq!(db_key.len(), std::mem::size_of::<U32Key>());
-    let key_bytes: [u8; 4] = db_key[0..4].try_into().unwrap();
-    let block_number_bytes: [u8; 4] = db_key[4..8].try_into().unwrap();
-    let event_index_bytes: [u8; 2] = db_key[8..10].try_into().unwrap();
+    // Check the total size for Bytes32Key (32 bytes key + 4 bytes block + 2 bytes event = 38 bytes)
+    assert_eq!(db_key.len(), std::mem::size_of::<Bytes32Key>());
 
-    let extracted_key = u32::from_be_bytes(key_bytes);
+    // Extract the data
+    let key_bytes: [u8; 32] = db_key[0..32].try_into().unwrap();
+    let block_number_bytes: [u8; 4] = db_key[32..36].try_into().unwrap();
+    let event_index_bytes: [u8; 2] = db_key[36..38].try_into().unwrap();
+
     let extracted_block_number = u32::from_be_bytes(block_number_bytes);
     let extracted_event_index = u16::from_be_bytes(event_index_bytes);
 
-    assert_eq!(extracted_key, subscription_id);
+    assert_eq!(key_bytes, test_bytes);
     assert_eq!(extracted_block_number, 100);
     assert_eq!(extracted_event_index, 2);
 }
@@ -1143,7 +1144,7 @@ fn test_idn_key_storage() {
     let trees = open_trees::<TestIndexer>(db_config).unwrap();
 
     // Create test data for the subscription key type
-    let subscription_id = SubstrateKey::SubscriptionId(555);
+    let subscription_id = SubstrateKey::SubscriptionId(Bytes32::from([55 as u8; 32]));
 
     // Write events to the database
     subscription_id
