@@ -26,7 +26,7 @@ macro_rules! index_idn_manager_event {
         match $event {
             <$event_enum>::SubscriptionCreated { sub_id } => {
                 $indexer.index_event(
-                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(*sub_id))),
+                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(sub_id))),
                     $block_number,
                     $event_index,
                 )?;
@@ -34,7 +34,7 @@ macro_rules! index_idn_manager_event {
             }
             <$event_enum>::SubscriptionTerminated { sub_id } => {
                 $indexer.index_event(
-                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(*sub_id))),
+                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(sub_id))),
                     $block_number,
                     $event_index,
                 )?;
@@ -42,7 +42,7 @@ macro_rules! index_idn_manager_event {
             }
             <$event_enum>::SubscriptionPaused { sub_id } => {
                 $indexer.index_event(
-                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(*sub_id))),
+                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(sub_id))),
                     $block_number,
                     $event_index,
                 )?;
@@ -50,7 +50,7 @@ macro_rules! index_idn_manager_event {
             }
             <$event_enum>::SubscriptionUpdated { sub_id } => {
                 $indexer.index_event(
-                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(*sub_id))),
+                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(sub_id))),
                     $block_number,
                     $event_index,
                 )?;
@@ -58,7 +58,7 @@ macro_rules! index_idn_manager_event {
             }
             <$event_enum>::SubscriptionReactivated { sub_id } => {
                 $indexer.index_event(
-                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(*sub_id))),
+                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(sub_id))),
                     $block_number,
                     $event_index,
                 )?;
@@ -66,7 +66,7 @@ macro_rules! index_idn_manager_event {
             }
             <$event_enum>::RandomnessDistributed { sub_id } => {
                 $indexer.index_event(
-                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(*sub_id))),
+                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(sub_id))),
                     $block_number,
                     $event_index,
                 )?;
@@ -74,7 +74,7 @@ macro_rules! index_idn_manager_event {
             }
             <$event_enum>::FeesCollected { sub_id, .. } => {
                 $indexer.index_event(
-                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(*sub_id))),
+                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(sub_id))),
                     $block_number,
                     $event_index,
                 )?;
@@ -86,7 +86,7 @@ macro_rules! index_idn_manager_event {
             }
             <$event_enum>::SubscriptionDistributed { sub_id } => {
                 $indexer.index_event(
-                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(*sub_id))),
+                    Key::Substrate(SubstrateKey::SubscriptionId(SubscriptionId::from(sub_id))),
                     $block_number,
                     $event_index,
                 )?;
