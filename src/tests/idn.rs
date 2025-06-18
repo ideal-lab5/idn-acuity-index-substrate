@@ -62,34 +62,34 @@ impl MockEventDetails {
 // IDN Manager Events data structures
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MockSubscriptionCreatedEvent {
-    pub subscription_id: Bytes32,
+    pub subscription_id: SubscriptionId,
     pub subscriber: AccountId32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionUpdatedEvent {
-    pub subscription_id: Bytes32,
+    pub subscription_id: SubscriptionId,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionDistributedEvent {
-    pub subscription_id: Bytes32,
+    pub subscription_id: SubscriptionId,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionRemovedEvent {
-    pub subscription_id: Bytes32,
+    pub subscription_id: SubscriptionId,
     pub subscriber: AccountId32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionPausedEvent {
-    pub subscription_id: Bytes32,
+    pub subscription_id: SubscriptionId,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubscriptionActivatedEvent {
-    pub subscription_id: Bytes32,
+    pub subscription_id: SubscriptionId,
 }
 
 // Randomness Beacon Events data structures
@@ -138,7 +138,7 @@ fn check_variant_events<R: RuntimeIndexer>(
 /// Helper function to create a mocked SubscriptionCreated event
 fn create_subscription_created_event(sub_id: u32, subscriber: AccountId32) -> Vec<u8> {
     let event = MockSubscriptionCreatedEvent {
-        subscription_id: Bytes32::from({
+        subscription_id: SubscriptionId::from({
             let mut bytes = [0u8; 32];
             bytes[28..32].copy_from_slice(&sub_id.to_be_bytes());
             bytes
@@ -388,7 +388,7 @@ async fn test_end_to_end_idn_event_processing() {
     let subscription_id = {
         let mut bytes = [0u8; 32];
         bytes[28..32].copy_from_slice(&12345u32.to_be_bytes());
-        Bytes32::from(bytes)
+        SubscriptionId::from(bytes)
     };
 
     // Create keys for the events
@@ -430,7 +430,7 @@ async fn test_websocket_subscription_to_idn_events() {
     let subscription_id = {
         let mut bytes = [0u8; 32];
         bytes[28..32].copy_from_slice(&98765u32.to_be_bytes());
-        Bytes32::from(bytes)
+        SubscriptionId::from(bytes)
     };
     let sub_key = Key::Substrate(SubstrateKey::SubscriptionId(subscription_id));
 
@@ -457,7 +457,7 @@ async fn test_idn_event_edge_cases() {
     let subscription_id = {
         let mut bytes = [0u8; 32];
         bytes[28..32].copy_from_slice(&12345u32.to_be_bytes());
-        Bytes32::from(bytes)
+        SubscriptionId::from(bytes)
     };
     let sub_key = Key::Substrate(SubstrateKey::SubscriptionId(subscription_id));
 
@@ -508,7 +508,7 @@ async fn test_ideal_network_indexer_process_event() {
         &SubstrateKey::SubscriptionId({
             let mut bytes = [0u8; 32];
             bytes[28..32].copy_from_slice(&sub_id.to_be_bytes());
-            Bytes32::from(bytes)
+            SubscriptionId::from(bytes)
         }),
     );
     assert_eq!(sub_events.len(), 1);

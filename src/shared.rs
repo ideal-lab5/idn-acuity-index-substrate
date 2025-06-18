@@ -219,6 +219,42 @@ impl std::str::FromStr for Bytes32 {
     }
 }
 
+/// Newtype wrapper for subscription IDs providing compile-time type safety
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash, Copy)]
+pub struct SubscriptionId(pub Bytes32);
+
+impl From<[u8; 32]> for SubscriptionId {
+    fn from(bytes: [u8; 32]) -> Self {
+        SubscriptionId(Bytes32::from(bytes))
+    }
+}
+
+impl From<Bytes32> for SubscriptionId {
+    fn from(bytes32: Bytes32) -> Self {
+        SubscriptionId(bytes32)
+    }
+}
+
+impl AsRef<[u8; 32]> for SubscriptionId {
+    fn as_ref(&self) -> &[u8; 32] {
+        self.0.as_ref()
+    }
+}
+
+impl AsRef<[u8]> for SubscriptionId {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+
+impl std::str::FromStr for SubscriptionId {
+    type Err = IndexError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(SubscriptionId(Bytes32::from_str(s)?))
+    }
+}
+
 /// All the key types that are built-in to Substrate
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
 #[serde(tag = "type", content = "value")]
@@ -237,7 +273,7 @@ pub enum SubstrateKey {
     SessionIndex(u32),
     TipHash(Bytes32),
     // Ideal Network specific keys
-    SubscriptionId(Bytes32),
+    SubscriptionId(SubscriptionId),
 }
 
 impl SubstrateKey {
@@ -356,7 +392,7 @@ impl SubstrateKey {
             }
             SubstrateKey::SubscriptionId(subscription_id) => {
                 let key = Bytes32Key {
-                    key: subscription_id.0,
+                    key: subscription_id.0.0,
                     block_number,
                     event_index,
                 };

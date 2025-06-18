@@ -1113,7 +1113,7 @@ fn test_subscription_id_key() {
 
     // Create a subscription ID key - use a simple pattern for testing
     let test_bytes = [123u8; 32];
-    let key = SubstrateKey::SubscriptionId(Bytes32::from(test_bytes));
+    let key = SubstrateKey::SubscriptionId(SubscriptionId::from(test_bytes));
 
     // Write it to the database
     key.write_db_key(&trees.substrate, 100, 2).unwrap();
@@ -1144,7 +1144,7 @@ fn test_idn_key_storage() {
     let trees = open_trees::<TestIndexer>(db_config).unwrap();
 
     // Create test data for the subscription key type
-    let subscription_id = SubstrateKey::SubscriptionId(Bytes32::from([55 as u8; 32]));
+    let subscription_id = SubstrateKey::SubscriptionId(SubscriptionId::from([55 as u8; 32]));
 
     // Write events to the database
     subscription_id
