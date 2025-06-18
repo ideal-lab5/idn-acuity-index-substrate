@@ -19,9 +19,10 @@
 // for an Ideal Network runtime that includes custom pallets
 
 use crate::{
-    index_balances_event, index_idn_manager_event, index_indices_event,
-    index_preimage_event, index_randomness_beacon_event, index_session_event,
+    index_balances_event, index_indices_event,
+    index_preimage_event, index_session_event,
     index_staking_event, index_system_event, index_transaction_payment_event,
+    ideal_network_pallets::{index_idn_manager_event, index_randomness_beacon_event},
     shared::*, substrate::Indexer, IndexError,
 };
 use serde::{Deserialize, Serialize};

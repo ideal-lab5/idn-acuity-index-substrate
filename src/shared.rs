@@ -392,7 +392,7 @@ impl SubstrateKey {
             }
             SubstrateKey::SubscriptionId(subscription_id) => {
                 let key = Bytes32Key {
-                    key: subscription_id.0.0,
+                    key: subscription_id.0 .0,
                     block_number,
                     event_index,
                 };

@@ -26,6 +26,7 @@ use tracing_subscriber::filter::LevelFilter;
 pub mod shared;
 pub mod substrate;
 pub mod substrate_pallets;
+pub mod ideal_network_pallets;
 pub mod websockets;
 
 use crate::shared::*;
