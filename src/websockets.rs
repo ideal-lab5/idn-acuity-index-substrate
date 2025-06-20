@@ -5,7 +5,7 @@ use std::net::SocketAddr;
 use subxt::backend::legacy::LegacyRpcMethods;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{
-    mpsc::{unbounded_channel, UnboundedSender},
+    mpsc::{UnboundedSender, unbounded_channel},
     watch::Receiver,
 };
 use tokio_tungstenite::tungstenite;
@@ -165,6 +165,9 @@ pub fn process_msg_get_events_substrate<R: RuntimeIndexer>(
             get_events_u32(&trees.substrate.session_index, *session_index)
         }
         SubstrateKey::TipHash(tip_hash) => get_events_bytes32(&trees.substrate.tip_hash, tip_hash),
+        SubstrateKey::SpendIndex(spend_index) => {
+            get_events_u32(&trees.substrate.spend_index, *spend_index)
+        }
     }
 }
 

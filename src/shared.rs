@@ -6,8 +6,8 @@ use std::hash::Hash;
 use tokio::sync::mpsc::UnboundedSender;
 use tokio_tungstenite::tungstenite;
 use zerocopy::{
-    byteorder::{U16, U32},
     AsBytes,
+    byteorder::{U16, U32},
 };
 use zerocopy_derive::*;
 
@@ -79,6 +79,7 @@ pub struct SubstrateTrees {
     pub registrar_index: Tree,
     pub session_index: Tree,
     pub tip_hash: Tree,
+    pub spend_index: Tree,
 }
 
 impl SubstrateTrees {
@@ -97,6 +98,7 @@ impl SubstrateTrees {
             registrar_index: db.open_tree(b"registrar_index")?,
             session_index: db.open_tree(b"session_index")?,
             tip_hash: db.open_tree(b"tip_hash")?,
+            spend_index: db.open_tree(b"spend_index")?,
         })
     }
 
@@ -233,6 +235,7 @@ pub enum SubstrateKey {
     RegistrarIndex(u32),
     SessionIndex(u32),
     TipHash(Bytes32),
+    SpendIndex(u32),
 }
 
 impl SubstrateKey {
@@ -348,6 +351,14 @@ impl SubstrateKey {
                     event_index,
                 };
                 trees.tip_hash.insert(key.as_bytes(), &[])?
+            }
+            SubstrateKey::SpendIndex(spend_index) => {
+                let key = U32Key {
+                    key: (*spend_index).into(),
+                    block_number,
+                    event_index,
+                };
+                trees.spend_index.insert(key.as_bytes(), &[])?
             }
         };
         Ok(())

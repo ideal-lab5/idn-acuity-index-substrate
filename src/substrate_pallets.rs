@@ -18,6 +18,14 @@ macro_rules! index_system_event {
                 )?;
                 1
             }
+            <$event_enum>::Remarked { sender, hash } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(sender.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
             _ => 0,
         }
     };
@@ -94,6 +102,19 @@ macro_rules! index_indices_event {
                 )?;
                 2
             }
+            // <$event_enum>::DepositPoked { who, index, .. } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountIndex(index)),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     2
+            // }
             _ => 0,
         }
     };
@@ -411,6 +432,14 @@ macro_rules! index_staking_event {
                 )?;
                 1
             }
+            // <$event_enum>::CurrencyMigrated { stash, .. } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(stash.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     1
+            // }
             _ => 0,
         }
     };
@@ -428,6 +457,22 @@ macro_rules! index_session_event {
                 )?;
                 1
             }
+            // <$event_enum>::ValidatorDisabled { validator } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::ValidatorId(validator)),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     1
+            // }
+            // <$event_enum>::ValidatorReenabled { validator } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::ValidatorId(validator)),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     1
+            // }
             _ => 0,
         }
     };
@@ -775,6 +820,46 @@ macro_rules! index_treasury_event {
                 )?;
                 2
             }
+            <$event_enum>::AssetSpendApproved { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SpendIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::AssetSpendVoided { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SpendIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::Paid { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SpendIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::PaymentFailed { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SpendIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::SpendProcessed { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::SpendIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
             _ => 0,
         }
     };
@@ -1002,6 +1087,14 @@ macro_rules! index_proxy_event {
                 )?;
                 2
             }
+            // <$event_enum>::DepositPoked { who, .. } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     1
+            // }
             _ => 0,
         }
     };
@@ -1079,6 +1172,14 @@ macro_rules! index_multisig_event {
                 )?;
                 2
             }
+            // <$event_enum>::DepositPoked { who, .. } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     1
+            // }
             _ => 0,
         }
     };
@@ -1287,6 +1388,48 @@ macro_rules! index_bounties_event {
                     $event_index,
                 )?;
                 1
+            }
+            <$event_enum>::BountyApproved { index } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::CuratorProposed { bounty_id, curator } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(bounty_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(curator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::CuratorUnassigned { bounty_id } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(bounty_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::CuratorAccepted { bounty_id, curator } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::BountyIndex(bounty_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(curator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
             }
             _ => 0,
         }
@@ -1605,7 +1748,7 @@ macro_rules! index_nomination_pools_event {
                 )?;
                 1
             }
-            <$event_enum>::PoolCommissionChangeRateUpdated { pool_id, .. } => {
+            <$event_enum>::PoolCommissionClaimPermissionUpdated { pool_id, .. } => {
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::PoolId(pool_id)),
                     $block_number,
@@ -1621,6 +1764,69 @@ macro_rules! index_nomination_pools_event {
                 )?;
                 1
             }
+            <$event_enum>::MinBalanceDeficitAdjusted { pool_id, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::MinBalanceExcessAdjusted { pool_id, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::PoolId(pool_id)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            // <$event_enum>::MemberClaimPermissionUpdated { member, .. } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(member.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     1
+            // }
+            // <$event_enum>::MetadataUpdated { pool_id, account } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::PoolId(pool_id)),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     2
+            // }
+            // <$event_enum>::PoolNominationMade { pool_id, account } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::PoolId(pool_id)),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     2
+            // }
+            // <$event_enum>::PoolNominatorChilled { pool_id, account } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::PoolId(pool_id)),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     2
+            // }
             _ => 0,
         }
     };
