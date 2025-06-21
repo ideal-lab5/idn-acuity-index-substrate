@@ -1883,3 +1883,154 @@ macro_rules! index_conviction_voting_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_referenda_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Submitted { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::DecisionDepositPlaced { index, who, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::DecisionDepositRefunded { index, who, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::DepositSlashed { who, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::DecisionStarted { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::ConfirmStarted { index } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::ConfirmAborted { index } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::Confirmed { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::Approved { index } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::Rejected { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::TimedOut { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::Cancelled { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::Killed { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::SubmissionDepositRefunded { index, who, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::MetadataSet { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::MetadataCleared { index, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::RefIndex(index)),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+        }
+    };
+}
