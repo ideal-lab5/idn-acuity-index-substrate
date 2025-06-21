@@ -1831,3 +1831,55 @@ macro_rules! index_nomination_pools_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_conviction_voting_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Delegated(who, target) => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(target.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::Undelegated(account) => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::Voted { who, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::VoteRemoved { who, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            } // <$event_enum>::VoteUnlocked { who, .. } => {
+              //     $indexer.index_event(
+              //         Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+              //         $block_number,
+              //         $event_index,
+              //     )?;
+              //     1
+              // }
+        }
+    };
+}
