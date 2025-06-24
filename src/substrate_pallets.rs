@@ -2034,3 +2034,71 @@ macro_rules! index_referenda_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_delegated_staking_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Delegated {
+                agent, delegator, ..
+            } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(agent.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(delegator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::Released {
+                agent, delegator, ..
+            } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(agent.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(delegator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::Slashed {
+                agent, delegator, ..
+            } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(agent.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(delegator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::MigratedDelegation {
+                agent, delegator, ..
+            } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(agent.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(delegator.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+        }
+    };
+}
