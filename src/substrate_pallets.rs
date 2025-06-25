@@ -2102,3 +2102,20 @@ macro_rules! index_delegated_staking_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_state_trie_migration_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::Slashed { who, .. } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            _ => 0,
+        }
+    };
+}
