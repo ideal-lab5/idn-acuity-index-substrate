@@ -211,8 +211,10 @@ impl std::str::FromStr for Bytes32 {
     type Err = IndexError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        // Handle hex strings with or without "0x" prefix
+        let hex_str = s.strip_prefix("0x").unwrap_or(s);
         Ok(Bytes32(
-            hex::decode(s)?
+            hex::decode(hex_str)?
                 .try_into()
                 .map_err(|_| IndexError::ParseError)?,
         ))
@@ -462,6 +464,7 @@ pub enum RequestMessage<CK: IndexKey> {
     UnsubscribeStatus,
     Variants,
     GetEvents { key: Key<CK> },
+    GetEventsWithLimit { key: Key<CK>, limit: Option<usize> },
     SubscribeEvents { key: Key<CK> },
     UnsubscribeEvents { key: Key<CK> },
     SizeOnDisk,
@@ -530,10 +533,11 @@ pub enum ResponseMessage<CK: IndexKey> {
     Status(Vec<Span>),
     Variants(Vec<PalletMeta>),
     Events { key: Key<CK>, events: Vec<Event> },
+    EventsWithLimit { key: Key<CK>, events: Vec<Event>, has_more: bool, total_returned: usize },
     Subscribed,
     Unsubscribed,
     SizeOnDisk(u64),
-    //    Error,
+    Error { message: String },
 }
 
 /// Subscription message sent from a WebSocket connection thread to the indexer thread
