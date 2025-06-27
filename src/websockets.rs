@@ -1,4 +1,5 @@
 use crate::shared::*;
+
 use futures::{SinkExt, StreamExt};
 use sled::Tree;
 use std::net::SocketAddr;
@@ -73,101 +74,144 @@ pub async fn process_msg_variants<R: RuntimeIndexer>(
 }
 
 pub fn get_events_variant(tree: &Tree, pallet_id: u8, variant_id: u8) -> Vec<Event> {
+    get_events_variant_with_limit(tree, pallet_id, variant_id, Some(100)).0
+}
+
+/// Get events by variant with optional limit (None = unlimited)
+/// Returns (events, has_more) tuple
+pub fn get_events_variant_with_limit(tree: &Tree, pallet_id: u8, variant_id: u8, limit: Option<usize>) -> (Vec<Event>, bool) {
     let mut events = Vec::new();
     let mut iter = tree.scan_prefix([pallet_id, variant_id]).keys();
+    let mut has_more = false;
 
     while let Some(Ok(key)) = iter.next_back() {
         let key = VariantKey::read_from(&key).unwrap();
 
+        // Check if we've reached the limit before adding the event
+        if let Some(limit) = limit {
+            if events.len() == limit {
+                has_more = true; // There's at least one more event
+                break;
+            }
+        }
+
         events.push(Event {
             block_number: key.block_number.into(),
             event_index: key.event_index.into(),
         });
-
-        if events.len() == 100 {
-            break;
-        }
     }
-    events
+    (events, has_more)
 }
 
 pub fn get_events_bytes32(tree: &Tree, key: &Bytes32) -> Vec<Event> {
+    get_events_bytes32_with_limit(tree, key, Some(100)).0
+}
+
+/// Get events by bytes32 key with optional limit (None = unlimited)
+/// Returns (events, has_more) tuple
+pub fn get_events_bytes32_with_limit(tree: &Tree, key: &Bytes32, limit: Option<usize>) -> (Vec<Event>, bool) {
     let mut events = Vec::new();
-    let mut iter = tree.scan_prefix(key).keys();
+    let mut iter = tree.scan_prefix(&key.0).keys();
+    let mut has_more = false;
 
     while let Some(Ok(key)) = iter.next_back() {
         let key = Bytes32Key::read_from(&key).unwrap();
 
+        // Check if we've reached the limit before adding the event
+        if let Some(limit) = limit {
+            if events.len() == limit {
+                has_more = true; // There's at least one more event
+                break;
+            }
+        }
+
         events.push(Event {
             block_number: key.block_number.into(),
             event_index: key.event_index.into(),
         });
-
-        if events.len() == 100 {
-            break;
-        }
     }
-    events
+    (events, has_more)
 }
 
 pub fn get_events_u32(tree: &Tree, key: u32) -> Vec<Event> {
+    get_events_u32_with_limit(tree, key, Some(100)).0
+}
+
+/// Get events by u32 key with optional limit (None = unlimited)
+/// Returns (events, has_more) tuple
+pub fn get_events_u32_with_limit(tree: &Tree, key: u32, limit: Option<usize>) -> (Vec<Event>, bool) {
     let mut events = Vec::new();
     let mut iter = tree.scan_prefix(key.to_be_bytes()).keys();
+    let mut has_more = false;
 
     while let Some(Ok(key)) = iter.next_back() {
         let key = U32Key::read_from(&key).unwrap();
 
+        // Check if we've reached the limit before adding the event
+        if let Some(limit) = limit {
+            if events.len() == limit {
+                has_more = true; // There's at least one more event
+                break;
+            }
+        }
+
         events.push(Event {
             block_number: key.block_number.into(),
             event_index: key.event_index.into(),
         });
-
-        if events.len() == 100 {
-            break;
-        }
     }
-    events
+    (events, has_more)
 }
 
 pub fn process_msg_get_events_substrate<R: RuntimeIndexer>(
     trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     key: &SubstrateKey,
 ) -> Vec<Event> {
+    process_msg_get_events_substrate_with_limit::<R>(trees, key, Some(100)).0
+}
+
+/// Get substrate events with optional limit (None = unlimited)
+/// Returns (events, has_more) tuple
+pub fn process_msg_get_events_substrate_with_limit<R: RuntimeIndexer>(
+    trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
+    key: &SubstrateKey,
+    limit: Option<usize>,
+) -> (Vec<Event>, bool) {
     match key {
         SubstrateKey::AccountId(account_id) => {
-            get_events_bytes32(&trees.substrate.account_id, account_id)
+            get_events_bytes32_with_limit(&trees.substrate.account_id, account_id, limit)
         }
         SubstrateKey::AccountIndex(account_index) => {
-            get_events_u32(&trees.substrate.account_index, *account_index)
+            get_events_u32_with_limit(&trees.substrate.account_index, *account_index, limit)
         }
         SubstrateKey::BountyIndex(bounty_index) => {
-            get_events_u32(&trees.substrate.bounty_index, *bounty_index)
+            get_events_u32_with_limit(&trees.substrate.bounty_index, *bounty_index, limit)
         }
-        SubstrateKey::EraIndex(era_index) => get_events_u32(&trees.substrate.era_index, *era_index),
+        SubstrateKey::EraIndex(era_index) => get_events_u32_with_limit(&trees.substrate.era_index, *era_index, limit),
         SubstrateKey::MessageId(message_id) => {
-            get_events_bytes32(&trees.substrate.message_id, message_id)
+            get_events_bytes32_with_limit(&trees.substrate.message_id, message_id, limit)
         }
-        SubstrateKey::PoolId(pool_id) => get_events_u32(&trees.substrate.pool_id, *pool_id),
+        SubstrateKey::PoolId(pool_id) => get_events_u32_with_limit(&trees.substrate.pool_id, *pool_id, limit),
         SubstrateKey::PreimageHash(preimage_hash) => {
-            get_events_bytes32(&trees.substrate.preimage_hash, preimage_hash)
+            get_events_bytes32_with_limit(&trees.substrate.preimage_hash, preimage_hash, limit)
         }
         SubstrateKey::ProposalHash(proposal_hash) => {
-            get_events_bytes32(&trees.substrate.proposal_hash, proposal_hash)
+            get_events_bytes32_with_limit(&trees.substrate.proposal_hash, proposal_hash, limit)
         }
         SubstrateKey::ProposalIndex(proposal_index) => {
-            get_events_u32(&trees.substrate.proposal_index, *proposal_index)
+            get_events_u32_with_limit(&trees.substrate.proposal_index, *proposal_index, limit)
         }
-        SubstrateKey::RefIndex(ref_index) => get_events_u32(&trees.substrate.ref_index, *ref_index),
+        SubstrateKey::RefIndex(ref_index) => get_events_u32_with_limit(&trees.substrate.ref_index, *ref_index, limit),
         SubstrateKey::RegistrarIndex(registrar_index) => {
-            get_events_u32(&trees.substrate.registrar_index, *registrar_index)
+            get_events_u32_with_limit(&trees.substrate.registrar_index, *registrar_index, limit)
         }
         SubstrateKey::SessionIndex(session_index) => {
-            get_events_u32(&trees.substrate.session_index, *session_index)
+            get_events_u32_with_limit(&trees.substrate.session_index, *session_index, limit)
         }
-        SubstrateKey::TipHash(tip_hash) => get_events_bytes32(&trees.substrate.tip_hash, tip_hash),
+        SubstrateKey::TipHash(tip_hash) => get_events_bytes32_with_limit(&trees.substrate.tip_hash, tip_hash, limit),
         // Handle Ideal Network specific keys
         SubstrateKey::SubscriptionId(subscription_id) => {
-            get_events_bytes32(&trees.substrate.subscription_id, &subscription_id.0)
+            get_events_bytes32_with_limit(&trees.substrate.subscription_id, &subscription_id.0, limit)
         }
     }
 }
@@ -184,6 +228,34 @@ pub fn process_msg_get_events<R: RuntimeIndexer>(
         Key::Chain(ref key) => key.get_key_events(&trees.chain),
     };
     ResponseMessage::Events { key, events }
+}
+
+/// Process GetEventsWithLimit requests with pagination support
+pub fn process_msg_get_events_with_limit<R: RuntimeIndexer>(
+    trees: &Trees<<R::ChainKey as IndexKey>::ChainTrees>,
+    key: Key<R::ChainKey>,
+    limit: Option<usize>,
+) -> ResponseMessage<R::ChainKey> {
+    let (events, has_more) = match key {
+        Key::Variant(pallet_id, variant_id) => {
+            get_events_variant_with_limit(&trees.variant, pallet_id, variant_id, limit)
+        }
+        Key::Substrate(ref substrate_key) => process_msg_get_events_substrate_with_limit::<R>(trees, substrate_key, limit),
+        Key::Chain(ref chain_key) => {
+            // For chain-specific keys, we'd need to add similar limit support
+            // For now, fall back to existing implementation without limit tracking
+            let events = chain_key.get_key_events(&trees.chain);
+            (events, false) // Assume no more events for now
+        }
+    };
+    
+    let total_returned = events.len();
+    ResponseMessage::EventsWithLimit { 
+        key, 
+        events, 
+        has_more, 
+        total_returned 
+    }
 }
 
 pub fn process_msg_subscribe_events<R: RuntimeIndexer>(
@@ -228,7 +300,14 @@ pub async fn process_msg<R: RuntimeIndexer>(
             process_msg_unsubscribe_status::<R>(sub_tx, sub_response_tx)
         }
         RequestMessage::Variants => process_msg_variants::<R>(rpc).await?,
-        RequestMessage::GetEvents { key } => process_msg_get_events::<R>(trees, key),
+        RequestMessage::GetEvents { key } => {
+            // Note: Subscription ID hex parsing may not be needed if the client already sends proper format
+            // If you need hex string parsing, ensure the client sends the subscription ID in the correct format
+            process_msg_get_events::<R>(trees, key)
+        },
+        RequestMessage::GetEventsWithLimit { key, limit } => {
+            process_msg_get_events_with_limit::<R>(trees, key, limit)
+        },
         RequestMessage::SubscribeEvents { key } => {
             process_msg_subscribe_events::<R>(key, sub_tx, sub_response_tx)
         }
